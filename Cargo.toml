@@ -1,0 +1,11 @@
+[package]
+name = "rust_gb_2"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+strum = "0.26"
+strum_macros = "0.26"
+num = "0.4"
+num-derive = "0.4"
+num-traits = "0.2"
