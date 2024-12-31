@@ -1,12 +1,16 @@
 use crate::{
     cart::Cart,
-    mem_map::{self, Addr},
+    mem_map::{self, Addr, MemSection},
+    ram::Ram,
     regs::{CpuReg16, CpuRegs},
 };
 
 pub struct Sys {
     pub cart: Cart,
     pub regs: CpuRegs,
+    pub wram: Ram,
+    pub vram: Ram,
+    pub ext_ram: Ram,
 
     pub crash: bool,
 }
@@ -16,6 +20,9 @@ impl Sys {
         Self {
             cart: Cart::new(),
             regs: CpuRegs::new(),
+            wram: Ram::new(MemSection::Wram.size()),
+            vram: Ram::new(MemSection::Vram.size()),
+            ext_ram: Ram::new(MemSection::ExtRam.size()),
 
             crash: false,
         }

@@ -20,6 +20,7 @@ mod data;
 mod math;
 mod mem_map;
 mod print;
+mod ram;
 mod regs;
 mod sys;
 mod temp_tests;

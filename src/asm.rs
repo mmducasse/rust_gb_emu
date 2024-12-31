@@ -29,11 +29,25 @@ pub enum Asm {
 
     Ld_R8_Imm8 { dst: R8 },
 
-    // Rlca etc...
+    // todo Rlca etc...
     Jr_Imm8,
     Jr_Cond_Imm8 { cond: Cond },
 
     Stop,
+
+    // Block 1 instrs (8-bit register to register loads).
+    Ld_R8_R8 { dst: R8, src: R8 },
+    Halt,
+
+    // Block 2 instrs (8-bit arithmetic).
+    Add_A_R8 { operand: R8 },
+    Adc_A_R8 { operand: R8 },
+    Sub_A_R8 { operand: R8 },
+    Sbc_A_R8 { operand: R8 },
+    And_A_R8 { operand: R8 },
+    Xor_A_R8 { operand: R8 },
+    Or_A_R8 { operand: R8 },
+    Cp_A_R8 { operand: R8 },
 }
 
 impl Asm {
@@ -66,8 +80,8 @@ impl R8 {
         return num::FromPrimitive::from_u8(x).unwrap();
     }
 
-    pub fn get_reg(self) -> CpuReg8 {
-        match self {
+    pub fn get_reg(self) -> Option<CpuReg8> {
+        let reg = match self {
             R8::B => CpuReg8::B,
             R8::C => CpuReg8::C,
             R8::D => CpuReg8::D,
@@ -75,10 +89,12 @@ impl R8 {
             R8::H => CpuReg8::H,
             R8::L => CpuReg8::L,
             R8::HlMem => {
-                panic!("Doesn't correspond to a CPU Reg8");
+                return None;
             }
             R8::A => CpuReg8::A,
-        }
+        };
+
+        return Some(reg);
     }
 }
 
@@ -206,10 +222,16 @@ pub enum ImmType {
 // }
 
 pub fn interpret(op: u8) -> Asm {
+    if op == 0xCB {
+        panic!("0xCB opcode");
+    }
+
     let block = (op >> 6) & 0b11;
 
     match block {
         0b00 => interpret_block_0_opcode(op),
+        0b01 => interpret_block_1_opcode(op),
+        0b10 => interpret_block_2_opcode(op),
         _ => Asm::Nop,
     }
 }
@@ -274,9 +296,40 @@ fn interpret_block_0_opcode(op: u8) -> Asm {
     } else if bits8(&op, 3, 0) == 0b1010 {
         let src = R16Mem::from_u8(bits8(&op, 5, 4));
         return Asm::Ld_A_R16MemP { src };
-    } else if bits8(&op, 3, 0) == 0b10000 {
+    } else if bits8(&op, 3, 0) == 0b1000 {
         return Asm::Ld_Imm16P_Sp;
     }
 
     panic!("Unexpected block 0 opcode: {:#02x} ({:#02b})", op, op);
+}
+
+fn interpret_block_1_opcode(op: u8) -> Asm {
+    if op == 0b0111_0110 {
+        return Asm::Halt;
+    } else {
+        let dst = R8::from_u8(bits8(&op, 5, 3));
+        let src = R8::from_u8(bits8(&op, 2, 0));
+
+        return Asm::Ld_R8_R8 { dst, src };
+    }
+}
+
+fn interpret_block_2_opcode(op: u8) -> Asm {
+    let operand = R8::from_u8(bits8(&op, 2, 0));
+
+    match bits8(&op, 5, 3) {
+        0b000 => Asm::Add_A_R8 { operand },
+        0b001 => Asm::Adc_A_R8 { operand },
+        0b010 => Asm::Sub_A_R8 { operand },
+        0b011 => Asm::Sbc_A_R8 { operand },
+
+        0b100 => Asm::And_A_R8 { operand },
+        0b101 => Asm::Xor_A_R8 { operand },
+        0b110 => Asm::Or_A_R8 { operand },
+        0b111 => Asm::Cp_A_R8 { operand },
+
+        _ => {
+            panic!()
+        }
+    }
 }

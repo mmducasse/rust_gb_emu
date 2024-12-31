@@ -9,7 +9,7 @@ pub type Addr = u16;
 pub enum MemSection {
     CartRom,
     Vram,
-    ExternalRam,
+    ExtRam,
     Wram,
     EchoRam,
     Oam,
@@ -25,7 +25,7 @@ impl MemSection {
         match self {
             MemSection::CartRom => 0x0000,
             MemSection::Vram => 0x8000,
-            MemSection::ExternalRam => 0xA000,
+            MemSection::ExtRam => 0xA000,
             MemSection::Wram => 0xC000,
             MemSection::EchoRam => 0xE000,
             MemSection::Oam => 0xFE00,
@@ -68,15 +68,9 @@ pub fn read(sys: &mut Sys, addr: Addr) -> u8 {
 
     match section {
         MemSection::CartRom => sys.cart.rom[addr as usize],
-        MemSection::Vram => {
-            todo!("Read from VRAM");
-        }
-        MemSection::ExternalRam => {
-            todo!("Read from Ext RAM");
-        }
-        MemSection::Wram => {
-            todo!("Read from WRAM");
-        }
+        MemSection::Vram => sys.vram.rd(addr),
+        MemSection::ExtRam => sys.ext_ram.rd(addr),
+        MemSection::Wram => sys.wram.rd(addr),
         MemSection::EchoRam => {
             panic!("Attempted to read from Echo RAM");
         }
@@ -106,13 +100,13 @@ pub fn write(sys: &mut Sys, addr: Addr, data: u8) {
             sys.cart.rom[addr as usize] = data;
         }
         MemSection::Vram => {
-            todo!("Write to VRAM");
+            sys.vram.wr(addr, data);
         }
-        MemSection::ExternalRam => {
-            todo!("Write to Ext RAM");
+        MemSection::ExtRam => {
+            sys.ext_ram.wr(addr, data);
         }
         MemSection::Wram => {
-            todo!("Write to WRAM");
+            sys.wram.wr(addr, data);
         }
         MemSection::EchoRam => {
             panic!("Attempted to write to Echo RAM");
