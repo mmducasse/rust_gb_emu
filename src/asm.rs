@@ -48,6 +48,29 @@ pub enum Asm {
     Xor_A_R8 { operand: R8 },
     Or_A_R8 { operand: R8 },
     Cp_A_R8 { operand: R8 },
+
+    // Block 3 instrs.
+    Add_A_Imm8,
+    Adc_A_Imm8,
+    Sub_A_Imm8,
+    Sbc_A_Imm8,
+    And_A_Imm8,
+    Xor_A_Imm8,
+    Or_A_Imm8,
+    Cp_A_Imm8,
+
+    Ret_Cond { cond: Cond },
+    Ret,
+    Reti,
+    Jp_Cond_Imm16 { cond: Cond },
+    Jp_Imm16,
+    Jp_Hl,
+    Call_Cond_Imm16 { cond: Cond },
+    Call_Imm16,
+    Rst_Tgt3 { tgt3: u8 },
+
+    Pop_R16Stk { reg: R16Stk },
+    Push_R16Stk { reg: R16Stk },
 }
 
 impl Asm {
@@ -232,6 +255,7 @@ pub fn interpret(op: u8) -> Asm {
         0b00 => interpret_block_0_opcode(op),
         0b01 => interpret_block_1_opcode(op),
         0b10 => interpret_block_2_opcode(op),
+        0b11 => interpret_block_3_opcode(op),
         _ => Asm::Nop,
     }
 }
@@ -332,4 +356,75 @@ fn interpret_block_2_opcode(op: u8) -> Asm {
             panic!()
         }
     }
+}
+
+fn interpret_block_3_opcode(op: u8) -> Asm {
+    if op == 0xCB {
+        panic!();
+    }
+
+    // ARITH A IMM8
+    if bits8(&op, 2, 0) == 0b110 {
+        return match bits8(&op, 5, 3) {
+            0b000 => Asm::Add_A_Imm8,
+            0b001 => Asm::Adc_A_Imm8,
+            0b010 => Asm::Sub_A_Imm8,
+            0b011 => Asm::Sbc_A_Imm8,
+
+            0b100 => Asm::And_A_Imm8,
+            0b101 => Asm::Xor_A_Imm8,
+            0b110 => Asm::Or_A_Imm8,
+            0b111 => Asm::Cp_A_Imm8,
+
+            _ => {
+                panic!()
+            }
+        };
+    }
+
+    // RET COND, RET, RETI
+    let cond = Cond::from_u8(bits8(&op, 4, 3));
+    if bit8(&op, 5) == 0b0 && bits8(&op, 2, 0) == 0b000 {
+        return Asm::Ret_Cond { cond };
+    }
+    if bits8(&op, 5, 0) == 0b00_1001 {
+        return Asm::Ret;
+    }
+    if bits8(&op, 5, 0) == 0b01_1001 {
+        return Asm::Reti;
+    }
+
+    // JP COND IMM16, JP IMM16, JP HL
+    if bit8(&op, 5) == 0b0 && bits8(&op, 2, 0) == 0b010 {
+        return Asm::Jp_Cond_Imm16 { cond };
+    }
+    if bits8(&op, 5, 0) == 0b00_0011 {
+        return Asm::Jp_Imm16;
+    }
+    if bits8(&op, 5, 0) == 0b10_1001 {
+        return Asm::Jp_Hl;
+    }
+
+    // CALL COND IMM16, CALL IMM16, RST TGT3
+    if bit8(&op, 5) == 0b0 && bits8(&op, 2, 0) == 0b110 {
+        return Asm::Call_Cond_Imm16 { cond };
+    }
+    if bits8(&op, 5, 0) == 0b00_1101 {
+        return Asm::Call_Imm16;
+    }
+    if bits8(&op, 2, 0) == 0b111 {
+        let tgt3 = bits8(&op, 5, 3);
+        return Asm::Rst_Tgt3 { tgt3 };
+    }
+
+    // POP R16STK, PUSH R16STK
+    let reg = R16Stk::from_u8(bits8(&op, 5, 4));
+    if bits8(&op, 3, 0) == 0b0001 {
+        return Asm::Pop_R16Stk { reg };
+    }
+    if bits8(&op, 3, 0) == 0b0101 {
+        return Asm::Push_R16Stk { reg };
+    }
+
+    panic!("Unexpected block 3 opcode: {:#02x} ({:#02b})", op, op);
 }
