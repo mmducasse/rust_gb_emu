@@ -67,9 +67,7 @@ pub fn read(sys: &mut Sys, addr: Addr) -> u8 {
     let (section, addr) = MemSection::from_addr(addr);
 
     match section {
-        MemSection::CartRom => {
-            todo!("Read from cart ROM");
-        }
+        MemSection::CartRom => sys.cart.rom[addr as usize],
         MemSection::Vram => {
             todo!("Read from VRAM");
         }
@@ -105,7 +103,7 @@ pub fn write(sys: &mut Sys, addr: Addr, data: u8) {
 
     match section {
         MemSection::CartRom => {
-            todo!("Write to cart ROM");
+            sys.cart.rom[addr as usize] = data;
         }
         MemSection::Vram => {
             todo!("Write to VRAM");

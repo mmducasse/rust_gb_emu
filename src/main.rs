@@ -5,6 +5,7 @@
 #![allow(unused_variables)]
 #![allow(static_mut_refs)]
 
+use cpu::execute_next_instr;
 use sys::Sys;
 
 extern crate num;
@@ -12,8 +13,11 @@ extern crate num;
 extern crate num_derive;
 
 mod alu;
+mod asm;
 mod cart;
+mod cpu;
 mod data;
+mod math;
 mod mem_map;
 mod print;
 mod regs;
@@ -25,4 +29,8 @@ fn main() {
 
     let mut sys = Sys::new();
     temp_tests::run(&mut sys);
+
+    while !sys.crash {
+        execute_next_instr(&mut sys);
+    }
 }
