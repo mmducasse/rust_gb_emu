@@ -44,6 +44,12 @@ impl Sys {
         self.regs.set_16(CpuReg16::PC, addr);
     }
 
+    pub fn inc_pc(&mut self) {
+        let mut pc = self.get_pc();
+        pc = u16::wrapping_add(pc, 1);
+        self.set_pc(pc);
+    }
+
     pub fn get_sp(&self) -> Addr {
         return self.regs.get_16(CpuReg16::SP);
     }

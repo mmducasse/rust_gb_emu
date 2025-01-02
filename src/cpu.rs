@@ -9,51 +9,16 @@ use crate::{
 };
 
 pub fn execute_next_instr(sys: &mut Sys) {
-    let mut pc = sys.regs.get_16(CpuReg16::PC);
-
-    let op = sys.rd_mem(pc);
+    let op = sys.rd_mem(sys.get_pc());
     let asm = interpret(op);
     //println!("[{:#02x}] {:?}", pc, asm);
-    pc += 1;
-
-    if true {
-        todo!("Read imm8/imm16 on demand, not premtively");
-    }
-
-    let mut imm8: u8 = 0;
-    let mut imm16: u16 = 0;
-    let imm_type = asm.imm_type();
-    match imm_type {
-        ImmType::Imm8 => {
-            imm8 = sys.rd_mem(pc);
-            //println!("[{:#02x}] {:?}", pc, Asm::Imm8(imm8));
-            pc += 1;
-        }
-        ImmType::Imm16 => {
-            let lo = sys.rd_mem(pc);
-            //println!("[{:#02x}] {:?}", pc, Asm::Imm16Lo(lo));
-            pc += 1;
-            let hi = sys.rd_mem(pc);
-            //println!("[{:#02x}] {:?}", pc, Asm::Imm16Hi(hi));
-            pc += 1;
-
-            imm16 = ((hi as u16) << 8) | (lo as u16);
-        }
-        _ => {}
-    }
-
-    sys.regs.set_16(CpuReg16::PC, pc);
+    sys.inc_pc();
 
     match asm {
-        // Immediate values (not used here)/
-        Asm::Imm8(_) => todo!(),
-        Asm::Imm16Hi(_) => todo!(),
-        Asm::Imm16Lo(_) => todo!(),
-
         // Block 0.
         Asm::Nop => {}
         Asm::Ld_R16_Imm16 { dst } => {
-            ld_r16_imm16(sys, dst, imm16);
+            ld_r16_imm16(sys, dst);
         }
         Asm::Ld_R16MemP_A { dst } => {
             let data = sys.regs.get_8(CpuReg8::A);
@@ -64,7 +29,7 @@ pub fn execute_next_instr(sys: &mut Sys) {
             sys.regs.set_8(CpuReg8::A, data);
         }
         Asm::Ld_Imm16P_Sp => {
-            ld_imm16_sp(sys, imm16);
+            ld_imm16_sp(sys);
         }
         Asm::Inc_R16 { operand } => {
             inc_dec_r16(sys, operand, 1);
@@ -82,13 +47,13 @@ pub fn execute_next_instr(sys: &mut Sys) {
             dec_r8(sys, operand);
         }
         Asm::Ld_R8_Imm8 { dst } => {
-            ld_r8_imm8(sys, dst, imm8);
+            ld_r8_imm8(sys, dst);
         }
         Asm::Jr_Imm8 => {
-            jr_imm8(sys, imm8);
+            jr_imm8(sys);
         }
         Asm::Jr_Cond_Imm8 { cond } => {
-            jr_cond_imm8(sys, cond, imm8);
+            jr_cond_imm8(sys, cond);
         }
         Asm::Stop => {}
 
@@ -128,28 +93,28 @@ pub fn execute_next_instr(sys: &mut Sys) {
 
         // Block 3.
         Asm::Add_A_Imm8 => {
-            add_a_imm8(sys, imm8);
+            add_a_imm8(sys);
         }
         Asm::Adc_A_Imm8 => {
-            adc_a_imm8(sys, imm8);
+            adc_a_imm8(sys);
         }
         Asm::Sub_A_Imm8 => {
-            sub_a_imm8(sys, imm8);
+            sub_a_imm8(sys);
         }
         Asm::Sbc_A_Imm8 => {
-            sbc_a_imm8(sys, imm8);
+            sbc_a_imm8(sys);
         }
         Asm::And_A_Imm8 => {
-            and_a_imm8(sys, imm8);
+            and_a_imm8(sys);
         }
         Asm::Xor_A_Imm8 => {
-            xor_a_imm8(sys, imm8);
+            xor_a_imm8(sys);
         }
         Asm::Or_A_Imm8 => {
-            or_a_imm8(sys, imm8);
+            or_a_imm8(sys);
         }
         Asm::Cp_A_Imm8 => {
-            cp_a_imm8(sys, imm8);
+            cp_a_imm8(sys);
         }
 
         Asm::Ret_Cond { cond } => {
@@ -162,19 +127,19 @@ pub fn execute_next_instr(sys: &mut Sys) {
             reti(sys);
         }
         Asm::Jp_Cond_Imm16 { cond } => {
-            jp_cond_imm16(sys, cond, imm16);
+            jp_cond_imm16(sys, cond);
         }
         Asm::Jp_Imm16 => {
-            jp_imm16(sys, imm16);
+            jp_imm16(sys);
         }
         Asm::Jp_Hl => {
             jp_hl(sys);
         }
         Asm::Call_Cond_Imm16 { cond } => {
-            call_cond_imm16(sys, cond, imm16);
+            call_cond_imm16(sys, cond);
         }
         Asm::Call_Imm16 => {
-            call_imm16(sys, imm16);
+            call_imm16(sys);
         }
         Asm::Rst_Tgt3 { tgt3 } => {
             rst_tgt3(sys, tgt3);
@@ -195,6 +160,26 @@ pub fn execute_next_instr(sys: &mut Sys) {
 }
 
 // Helper functions.
+fn take_imm8(sys: &mut Sys) -> u8 {
+    let imm8 = sys.rd_mem(sys.get_pc());
+    //println!("[{:#02x}] {:?}", pc, Asm::Imm8(imm8));
+    sys.inc_pc();
+
+    return imm8;
+}
+
+fn take_imm16(sys: &mut Sys) -> u16 {
+    let lo = sys.rd_mem(sys.get_pc());
+    //println!("[{:#02x}] {:?}", pc, Asm::Imm16Lo(lo));
+    sys.inc_pc();
+    let hi = sys.rd_mem(sys.get_pc());
+    //println!("[{:#02x}] {:?}", pc, Asm::Imm16Hi(hi));
+    sys.inc_pc();
+
+    let imm16 = join_16(hi, lo);
+    return imm16;
+}
+
 fn set_r16memp(sys: &mut Sys, dst: R16Mem, data: u8) {
     let (dstp, inc) = dst.get_reg_inc();
 
@@ -263,8 +248,14 @@ fn pop_16(sys: &mut Sys) -> u16 {
     return join_16(hi, lo);
 }
 
+fn call(sys: &mut Sys, prev_pc: u16, next_pc: u16) {
+    push_16(sys, prev_pc);
+    sys.set_pc(next_pc);
+}
+
 // Block 0 functions.
-fn ld_r16_imm16(sys: &mut Sys, dst: R16, imm16: u16) {
+fn ld_r16_imm16(sys: &mut Sys, dst: R16) {
+    let imm16 = take_imm16(sys);
     let dst = match dst {
         R16::BC => CpuReg16::BC,
         R16::DE => CpuReg16::DE,
@@ -274,7 +265,8 @@ fn ld_r16_imm16(sys: &mut Sys, dst: R16, imm16: u16) {
     sys.regs.set_16(dst, imm16);
 }
 
-fn ld_imm16_sp(sys: &mut Sys, imm16: u16) {
+fn ld_imm16_sp(sys: &mut Sys) {
+    let imm16 = take_imm16(sys);
     let addr = imm16;
     let data = sys.regs.get_16(CpuReg16::SP);
     let (hi, lo) = split_16(data);
@@ -333,11 +325,13 @@ fn dec_r8(sys: &mut Sys, operand: R8) {
     sys.regs.set_flag(CpuFlag::H, h);
 }
 
-fn ld_r8_imm8(sys: &mut Sys, dst: R8, imm8: u8) {
+fn ld_r8_imm8(sys: &mut Sys, dst: R8) {
+    let imm8 = take_imm8(sys);
     set_r8_data(sys, dst, imm8);
 }
 
-fn jr_imm8(sys: &mut Sys, imm8: u8) {
+fn jr_imm8(sys: &mut Sys) {
+    let imm8 = take_imm8(sys);
     let rel: i8 = unsafe { transmute(imm8) };
     let mut pc = sys.get_pc();
 
@@ -346,7 +340,8 @@ fn jr_imm8(sys: &mut Sys, imm8: u8) {
     sys.set_pc(pc);
 }
 
-fn jr_cond_imm8(sys: &mut Sys, cond: Cond, imm8: u8) {
+fn jr_cond_imm8(sys: &mut Sys, cond: Cond) {
+    let imm8 = take_imm8(sys);
     if is_condition_met(sys, cond) {
         let rel: i8 = unsafe { transmute(imm8) };
         let mut pc = sys.get_pc();
@@ -355,6 +350,8 @@ fn jr_cond_imm8(sys: &mut Sys, cond: Cond, imm8: u8) {
 
         sys.set_pc(pc);
     }
+
+    // todo jumping from correct starting addr??
 }
 
 fn stop(sys: &mut Sys) {
@@ -490,7 +487,8 @@ fn cp_a_r8(sys: &mut Sys, operand: R8) {
 }
 
 // Block 3 functions.
-fn add_a_imm8(sys: &mut Sys, imm8: u8) {
+fn add_a_imm8(sys: &mut Sys) {
+    let imm8 = take_imm8(sys);
     let a = sys.regs.get_8(CpuReg8::A);
 
     let a_ = u8::wrapping_add(a, imm8);
@@ -504,7 +502,8 @@ fn add_a_imm8(sys: &mut Sys, imm8: u8) {
     sys.regs.set_flag(CpuFlag::C, c);
 }
 
-fn adc_a_imm8(sys: &mut Sys, imm8: u8) {
+fn adc_a_imm8(sys: &mut Sys) {
+    let imm8 = take_imm8(sys);
     let a = sys.regs.get_8(CpuReg8::A);
     let carry = if sys.regs.get_flag(CpuFlag::C) { 1 } else { 0 };
 
@@ -520,7 +519,8 @@ fn adc_a_imm8(sys: &mut Sys, imm8: u8) {
     sys.regs.set_flag(CpuFlag::C, c);
 }
 
-fn sub_a_imm8(sys: &mut Sys, imm8: u8) {
+fn sub_a_imm8(sys: &mut Sys) {
+    let imm8 = take_imm8(sys);
     let a = sys.regs.get_8(CpuReg8::A);
 
     let a_ = u8::wrapping_sub(a, imm8);
@@ -534,7 +534,8 @@ fn sub_a_imm8(sys: &mut Sys, imm8: u8) {
     sys.regs.set_flag(CpuFlag::C, c);
 }
 
-fn sbc_a_imm8(sys: &mut Sys, imm8: u8) {
+fn sbc_a_imm8(sys: &mut Sys) {
+    let imm8 = take_imm8(sys);
     let a = sys.regs.get_8(CpuReg8::A);
     let carry = if sys.regs.get_flag(CpuFlag::C) { 1 } else { 0 };
 
@@ -550,7 +551,8 @@ fn sbc_a_imm8(sys: &mut Sys, imm8: u8) {
     sys.regs.set_flag(CpuFlag::C, c);
 }
 
-fn and_a_imm8(sys: &mut Sys, imm8: u8) {
+fn and_a_imm8(sys: &mut Sys) {
+    let imm8 = take_imm8(sys);
     let a = sys.regs.get_8(CpuReg8::A);
 
     let a_ = a & imm8;
@@ -562,7 +564,8 @@ fn and_a_imm8(sys: &mut Sys, imm8: u8) {
     sys.regs.set_flag(CpuFlag::C, false);
 }
 
-fn xor_a_imm8(sys: &mut Sys, imm8: u8) {
+fn xor_a_imm8(sys: &mut Sys) {
+    let imm8 = take_imm8(sys);
     let a = sys.regs.get_8(CpuReg8::A);
 
     let a_ = a ^ imm8;
@@ -574,7 +577,8 @@ fn xor_a_imm8(sys: &mut Sys, imm8: u8) {
     sys.regs.set_flag(CpuFlag::C, false);
 }
 
-fn or_a_imm8(sys: &mut Sys, imm8: u8) {
+fn or_a_imm8(sys: &mut Sys) {
+    let imm8 = take_imm8(sys);
     let a = sys.regs.get_8(CpuReg8::A);
 
     let a_ = a | imm8;
@@ -586,7 +590,8 @@ fn or_a_imm8(sys: &mut Sys, imm8: u8) {
     sys.regs.set_flag(CpuFlag::C, false);
 }
 
-fn cp_a_imm8(sys: &mut Sys, imm8: u8) {
+fn cp_a_imm8(sys: &mut Sys) {
+    let imm8 = take_imm8(sys);
     let a = sys.regs.get_8(CpuReg8::A);
 
     let a_ = u8::wrapping_sub(a, imm8);
@@ -619,13 +624,15 @@ fn reti(sys: &mut Sys) {
     todo!("Interrup related instr");
 }
 
-fn jp_cond_imm16(sys: &mut Sys, cond: Cond, imm16: u16) {
+fn jp_cond_imm16(sys: &mut Sys, cond: Cond) {
+    let imm16 = take_imm16(sys);
     if is_condition_met(sys, cond) {
-        jp_imm16(sys, imm16);
+        sys.set_pc(imm16);
     }
 }
 
-fn jp_imm16(sys: &mut Sys, imm16: u16) {
+fn jp_imm16(sys: &mut Sys) {
+    let imm16 = take_imm16(sys);
     sys.set_pc(imm16);
 }
 
@@ -634,17 +641,19 @@ fn jp_hl(sys: &mut Sys) {
     sys.set_pc(hl);
 }
 
-fn call_cond_imm16(sys: &mut Sys, cond: Cond, imm16: u16) {
+fn call_cond_imm16(sys: &mut Sys, cond: Cond) {
+    let imm16 = take_imm16(sys);
     if is_condition_met(sys, cond) {
-        call_imm16(sys, imm16);
+        let pc = sys.get_pc();
+        let imm16 = take_imm16(sys);
+        call(sys, pc, imm16);
     }
 }
 
-fn call_imm16(sys: &mut Sys, imm16: u16) {
+fn call_imm16(sys: &mut Sys) {
     let pc = sys.get_pc();
-    push_16(sys, pc);
-
-    sys.set_pc(imm16);
+    let imm16 = take_imm16(sys);
+    call(sys, pc, imm16);
 }
 
 fn rst_tgt3(sys: &mut Sys, tgt3: u8) {

@@ -8,11 +8,6 @@ use crate::{
 #[derive(Clone, Copy, Debug)]
 /// Interpretation of a byte of instruction code in ROM.
 pub enum Asm {
-    // Immediate values.
-    Imm8(u8),
-    Imm16Hi(u8),
-    Imm16Lo(u8),
-
     // Block 0 instrs.
     Nop,
     Ld_R16_Imm16 { dst: R16 },
@@ -221,40 +216,6 @@ pub enum ImmType {
     Imm8,
     Imm16,
 }
-
-// pub fn interpret(bytes: &[u8], range: Range<usize>) -> Vec<Asm> {
-//     let mut idx = range.start;
-//     let mut asm_list = vec![];
-
-//     while idx < range.end {
-//         let op = bytes[idx];
-//         let asm = interpret_opcode(op);
-//         idx += 1;
-
-//         // todo: Get following imm values.
-//         let imm_type = asm.imm_type();
-//         match imm_type {
-//             ImmType::Imm8 => {
-//                 let imm = bytes[idx];
-//                 asm_list.push(Asm::Imm8(imm));
-//                 idx += 1;
-//             },
-//             ImmType::Imm16 => {
-//                 let lo = bytes[idx];
-//                 asm_list.push(Asm::Imm16Lo(lo));
-//                 idx += 1;
-//                 let hi = bytes[idx];
-//                 asm_list.push(Asm::Imm16Hi(hi));
-//                 idx += 1;
-//             },
-//             _ => {},
-//         }
-
-//         asm_list.push(asm);
-//     }
-
-//     return asm_list;
-// }
 
 pub fn interpret(op: u8) -> Asm {
     if op == 0xCB {
