@@ -16,6 +16,7 @@ mod asm;
 mod cart;
 mod cpu;
 mod data;
+mod debug;
 mod math;
 mod mem_map;
 mod print;
@@ -23,6 +24,7 @@ mod ram;
 mod regs;
 mod sys;
 mod temp_tests;
+mod util;
 
 fn main() {
     println!("*** rust_gb_2 EMU ***");

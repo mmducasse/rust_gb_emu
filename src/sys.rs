@@ -1,5 +1,6 @@
 use crate::{
     cart::Cart,
+    debug::Debug,
     mem_map::{self, Addr, MemSection},
     ram::Ram,
     regs::{CpuReg16, CpuRegs},
@@ -13,6 +14,7 @@ pub struct Sys {
     pub ext_ram: Ram,
 
     pub hard_lock: bool,
+    pub debug: Debug,
 }
 
 impl Sys {
@@ -25,6 +27,7 @@ impl Sys {
             ext_ram: Ram::new(MemSection::ExtRam.size()),
 
             hard_lock: false,
+            debug: Debug::new(),
         }
     }
 

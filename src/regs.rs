@@ -37,7 +37,7 @@ pub enum CpuFlag {
     C = 4,
 }
 
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct CpuRegs {
     regs8: [u8; 8],
 
@@ -111,35 +111,38 @@ impl CpuRegs {
         use CpuReg16::*;
         use CpuReg8::*;
 
-        println!("Registers:");
+        // println!("Registers:");
 
         println!(
-            "  A = {:#02x}, F = {:#02x}, AF = {:#04x}",
+            "  A={:0>2X} F={:0>2X} AF={:0>4X}",
             self.get_8(A),
             self.get_8(F),
             self.get_16(AF)
         );
         println!(
-            "  B = {:#02x}, C = {:#02x}, BC = {:#04x}",
+            "  B={:0>2X} C={:0>2X} BC={:0>4X}",
             self.get_8(B),
             self.get_8(C),
             self.get_16(BC)
         );
         println!(
-            "  D = {:#02x}, E = {:#02x}, DE = {:#04x}",
+            "  D={:0>2X} E={:0>2X} DE={:0>4X}",
             self.get_8(D),
             self.get_8(E),
             self.get_16(DE)
         );
         println!(
-            "  H = {:#02x}, L = {:#02x}, HL = {:#04x}",
+            "  H={:0>2X} L={:0>2X} HL={:0>4X}",
             self.get_8(H),
             self.get_8(L),
             self.get_16(HL)
         );
 
-        println!("  SP = {:#04x}", self.get_16(SP));
-        println!("  PC = {:#04x}", self.get_16(PC));
+        println!(
+            "  SP={:0>4X}   PC={:0>4X}",
+            self.get_16(SP),
+            self.get_16(PC)
+        );
 
         println!();
     }

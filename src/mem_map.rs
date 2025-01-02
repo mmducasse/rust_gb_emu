@@ -1,7 +1,7 @@
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 
-use crate::sys::Sys;
+use crate::{debug::Debug, sys::Sys};
 
 pub type Addr = u16;
 
@@ -64,7 +64,9 @@ impl MemSection {
 }
 
 pub fn read(sys: &mut Sys, addr: Addr) -> u8 {
+    //println!("Addr = {} {:#04x}", addr, addr);
     let (section, addr) = MemSection::from_addr(addr);
+    //println!("Rel Addr ({:?}) = {} {:#04x}", section, addr, addr);
 
     match section {
         MemSection::CartRom => sys.cart.rom[addr as usize],
@@ -72,13 +74,13 @@ pub fn read(sys: &mut Sys, addr: Addr) -> u8 {
         MemSection::ExtRam => sys.ext_ram.rd(addr),
         MemSection::Wram => sys.wram.rd(addr),
         MemSection::EchoRam => {
-            panic!("Attempted to read from Echo RAM");
+            Debug::fail(sys, "Attempted to read from Echo RAM");
         }
         MemSection::Oam => {
             todo!("Read from OAM");
         }
         MemSection::UnusableMemory => {
-            panic!("Attempted to read from unusable memory");
+            Debug::fail(sys, "Attempted to read from unusable memory");
         }
         MemSection::IoRegs => {
             todo!("Read from I/O regs");
@@ -109,13 +111,13 @@ pub fn write(sys: &mut Sys, addr: Addr, data: u8) {
             sys.wram.wr(addr, data);
         }
         MemSection::EchoRam => {
-            panic!("Attempted to write to Echo RAM");
+            Debug::fail(sys, "Attempted to write to Echo RAM");
         }
         MemSection::Oam => {
             todo!("Write to OAM");
         }
         MemSection::UnusableMemory => {
-            panic!("Attempted to write to unusable memory");
+            Debug::fail(sys, "Attempted to write to unusable memory");
         }
         MemSection::IoRegs => {
             todo!("Write to  I/O regs");

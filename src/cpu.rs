@@ -3,6 +3,7 @@ use std::mem::transmute;
 use crate::{
     asm::{interpret, Asm, Cond, ImmType, R16Mem, R16Stk, R16, R8},
     data::{join_16, split_16},
+    debug::Debug,
     math::{add16_ui, add16_uu, add8_ui, bits16, bits8},
     regs::{self, CpuFlag, CpuReg16, CpuReg8},
     sys::Sys,
@@ -12,6 +13,9 @@ pub fn execute_next_instr(sys: &mut Sys) {
     let op = sys.rd_mem(sys.get_pc());
     let asm = interpret(op);
     //println!("[{:#02x}] {:?}", pc, asm);
+
+    Debug::record_curr_instr(sys);
+
     sys.inc_pc();
 
     match asm {
