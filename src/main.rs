@@ -30,7 +30,7 @@ fn main() {
     let mut sys = Sys::new();
     temp_tests::run(&mut sys);
 
-    while !sys.crash {
+    while !sys.hard_lock {
         execute_next_instr(&mut sys);
     }
 }

@@ -12,7 +12,7 @@ pub struct Sys {
     pub vram: Ram,
     pub ext_ram: Ram,
 
-    pub crash: bool,
+    pub hard_lock: bool,
 }
 
 impl Sys {
@@ -24,7 +24,7 @@ impl Sys {
             vram: Ram::new(MemSection::Vram.size()),
             ext_ram: Ram::new(MemSection::ExtRam.size()),
 
-            crash: false,
+            hard_lock: false,
         }
     }
 
@@ -36,11 +36,27 @@ impl Sys {
         mem_map::write(self, addr, data);
     }
 
-    pub fn get_pc(&self) -> u16 {
+    pub fn get_pc(&self) -> Addr {
         return self.regs.get_16(CpuReg16::PC);
     }
 
-    pub fn set_pc(&mut self, data: u16) {
-        self.regs.set_16(CpuReg16::PC, data);
+    pub fn set_pc(&mut self, addr: Addr) {
+        self.regs.set_16(CpuReg16::PC, addr);
+    }
+
+    pub fn get_sp(&self) -> Addr {
+        return self.regs.get_16(CpuReg16::SP);
+    }
+
+    pub fn inc_sp(&mut self) {
+        let mut sp = self.get_sp();
+        sp = u16::wrapping_add(sp, 1);
+        self.regs.set_16(CpuReg16::SP, sp);
+    }
+
+    pub fn dec_sp(&mut self) {
+        let mut sp = self.get_sp();
+        sp = u16::wrapping_sub(sp, 1);
+        self.regs.set_16(CpuReg16::SP, sp);
     }
 }

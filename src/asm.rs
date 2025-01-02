@@ -71,6 +71,9 @@ pub enum Asm {
 
     Pop_R16Stk { reg: R16Stk },
     Push_R16Stk { reg: R16Stk },
+
+    // Misc.
+    HardLock,
 }
 
 impl Asm {
@@ -105,16 +108,16 @@ impl R8 {
 
     pub fn get_reg(self) -> Option<CpuReg8> {
         let reg = match self {
-            R8::B => CpuReg8::B,
-            R8::C => CpuReg8::C,
-            R8::D => CpuReg8::D,
-            R8::E => CpuReg8::E,
-            R8::H => CpuReg8::H,
-            R8::L => CpuReg8::L,
-            R8::HlMem => {
+            Self::B => CpuReg8::B,
+            Self::C => CpuReg8::C,
+            Self::D => CpuReg8::D,
+            Self::E => CpuReg8::E,
+            Self::H => CpuReg8::H,
+            Self::L => CpuReg8::L,
+            Self::HlMem => {
                 return None;
             }
-            R8::A => CpuReg8::A,
+            Self::A => CpuReg8::A,
         };
 
         return Some(reg);
@@ -136,10 +139,10 @@ impl R16 {
 
     pub fn get_reg(self) -> CpuReg16 {
         match self {
-            R16::BC => CpuReg16::BC,
-            R16::DE => CpuReg16::DE,
-            R16::HL => CpuReg16::HL,
-            R16::SP => CpuReg16::SP,
+            Self::BC => CpuReg16::BC,
+            Self::DE => CpuReg16::DE,
+            Self::HL => CpuReg16::HL,
+            Self::SP => CpuReg16::SP,
         }
     }
 }
@@ -155,6 +158,15 @@ pub enum R16Stk {
 impl R16Stk {
     pub fn from_u8(x: u8) -> Self {
         return num::FromPrimitive::from_u8(x).unwrap();
+    }
+
+    pub fn get_reg(self) -> CpuReg16 {
+        match self {
+            Self::BC => CpuReg16::BC,
+            Self::DE => CpuReg16::DE,
+            Self::HL => CpuReg16::HL,
+            Self::AF => CpuReg16::AF,
+        }
     }
 }
 
@@ -174,14 +186,14 @@ impl R16Mem {
     /// Returns the corresponding CPU Reg16 and increment behavior.
     pub fn get_reg_inc(self) -> (CpuReg16, i16) {
         let reg = match self {
-            R16Mem::BC => CpuReg16::BC,
-            R16Mem::DE => CpuReg16::DE,
-            R16Mem::HlInc => CpuReg16::HL,
-            R16Mem::HlDec => CpuReg16::HL,
+            Self::BC => CpuReg16::BC,
+            Self::DE => CpuReg16::DE,
+            Self::HlInc => CpuReg16::HL,
+            Self::HlDec => CpuReg16::HL,
         };
         let inc = match self {
-            R16Mem::HlInc => 1,
-            R16Mem::HlDec => -1,
+            Self::HlInc => 1,
+            Self::HlDec => -1,
             _ => 0,
         };
 
@@ -359,6 +371,13 @@ fn interpret_block_2_opcode(op: u8) -> Asm {
 }
 
 fn interpret_block_3_opcode(op: u8) -> Asm {
+    const INVALID_OPS: &[u8] = &[
+        0xD3, 0xDB, 0xDD, 0xE3, 0xE4, 0xEB, 0xEC, 0xED, 0xF4, 0xFC, 0xFD,
+    ];
+    if INVALID_OPS.contains(&op) {
+        return Asm::HardLock;
+    }
+
     if op == 0xCB {
         panic!();
     }

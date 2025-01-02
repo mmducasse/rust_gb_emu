@@ -48,7 +48,8 @@ pub struct CpuRegs {
 impl CpuRegs {
     pub fn new() -> Self {
         let mut regs = Self::default();
-        regs.pc = 0x100;
+        regs.pc = 0x0100;
+        regs.sp = 0xFFFE;
 
         regs
     }
