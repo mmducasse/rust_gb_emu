@@ -1,7 +1,7 @@
 use crate::{
     cart::Cart,
     debug::Debug,
-    mem_map::{self, Addr, MemSection},
+    mem::{self, Addr, MemSection},
     ram::Ram,
     regs::{CpuReg16, CpuRegs},
 };
@@ -32,11 +32,11 @@ impl Sys {
     }
 
     pub fn rd_mem(&mut self, addr: Addr) -> u8 {
-        mem_map::read(self, addr)
+        mem::read(self, addr)
     }
 
     pub fn wr_mem(&mut self, addr: Addr, data: u8) {
-        mem_map::write(self, addr, data);
+        mem::write(self, addr, data);
     }
 
     pub fn get_pc(&self) -> Addr {
@@ -55,6 +55,10 @@ impl Sys {
 
     pub fn get_sp(&self) -> Addr {
         return self.regs.get_16(CpuReg16::SP);
+    }
+
+    pub fn set_sp(&mut self, addr: Addr) {
+        self.regs.set_16(CpuReg16::SP, addr);
     }
 
     pub fn inc_sp(&mut self) {

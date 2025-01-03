@@ -18,7 +18,7 @@ mod cpu;
 mod data;
 mod debug;
 mod math;
-mod mem_map;
+mod mem;
 mod print;
 mod ram;
 mod regs;
@@ -30,9 +30,15 @@ fn main() {
     println!("*** rust_gb_2 EMU ***");
 
     let mut sys = Sys::new();
-    temp_tests::run(&mut sys);
+    //temp_tests::run(&mut sys);
+
+    // sys.cart
+    //     .load_from_script_file(".\\assets\\files\\script_01.txt");
+    sys.cart
+        .load_from_gb_rom_file(".\\assets\\test_roms\\cpu_instrs\\individual\\03-op sp,hl.gb");
 
     while !sys.hard_lock {
         execute_next_instr(&mut sys);
+        // sys.regs.print();
     }
 }

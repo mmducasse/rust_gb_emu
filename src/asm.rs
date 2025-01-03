@@ -24,7 +24,15 @@ pub enum Asm {
 
     Ld_R8_Imm8 { dst: R8 },
 
-    // todo Rlca etc...
+    Rlca,
+    RRca,
+    Rla,
+    Rra,
+    Daa,
+    Cpl,
+    Scf,
+    Ccf,
+
     Jr_Imm8,
     Jr_Cond_Imm8 { cond: Cond },
 
@@ -67,6 +75,20 @@ pub enum Asm {
     Pop_R16Stk { reg: R16Stk },
     Push_R16Stk { reg: R16Stk },
 
+    Ldh_CP_A,
+    Ldh_Imm8P_A,
+    Ld_Imm16P_A,
+    Ldh_A_CP,
+    Ldh_A_Imm8P,
+    Ld_A_Imm16P,
+
+    Add_Sp_Imm8,
+    Ld_Hl_SpImm8,
+    Ld_Sp_Hl,
+
+    Di,
+    Ei,
+
     // Misc.
     HardLock,
 }
@@ -79,6 +101,29 @@ impl Asm {
             Asm::Ld_R8_Imm8 { .. } => ImmType::Imm8,
             Asm::Jr_Imm8 => ImmType::Imm8,
             Asm::Jr_Cond_Imm8 { .. } => ImmType::Imm8,
+
+            Asm::Add_A_Imm8 => ImmType::Imm8,
+            Asm::Adc_A_Imm8 => ImmType::Imm8,
+            Asm::Sub_A_Imm8 => ImmType::Imm8,
+            Asm::Sbc_A_Imm8 => ImmType::Imm8,
+            Asm::And_A_Imm8 => ImmType::Imm8,
+            Asm::Xor_A_Imm8 => ImmType::Imm8,
+            Asm::Or_A_Imm8 => ImmType::Imm8,
+            Asm::Cp_A_Imm8 => ImmType::Imm8,
+
+            Asm::Jp_Cond_Imm16 { .. } => ImmType::Imm16,
+            Asm::Jp_Imm16 => ImmType::Imm16,
+            Asm::Call_Cond_Imm16 { .. } => ImmType::Imm16,
+            Asm::Call_Imm16 => ImmType::Imm16,
+
+            Asm::Ldh_Imm8P_A => ImmType::Imm8,
+            Asm::Ld_Imm16P_A => ImmType::Imm16,
+            Asm::Ldh_A_Imm8P => ImmType::Imm8,
+            Asm::Ld_A_Imm16P => ImmType::Imm16,
+
+            Asm::Add_Sp_Imm8 => ImmType::Imm8,
+            Asm::Ld_Hl_SpImm8 => ImmType::Imm8,
+
             _ => ImmType::None,
         }
     }
@@ -247,7 +292,7 @@ fn interpret_block_0_opcode(op: u8) -> Asm {
     // JR
     if bits8(&op, 2, 0) == 0b000 {
         if bit8(&op, 5) == 0b1 {
-            let cond = Cond::from_u8(bits8(&op, 5, 4));
+            let cond = Cond::from_u8(bits8(&op, 4, 3));
             return Asm::Jr_Cond_Imm8 { cond };
         } else {
             return Asm::Jr_Imm8;
@@ -256,7 +301,21 @@ fn interpret_block_0_opcode(op: u8) -> Asm {
 
     // RCLA, etc...
     if bits8(&op, 2, 0) == 0b111 {
-        todo!("Implement RCLA, etc...");
+        return match bits8(&op, 7, 3) {
+            0b0000_0 => Asm::Rlca,
+            0b0000_1 => Asm::RRca,
+            0b0001_0 => Asm::Rla,
+            0b0001_1 => Asm::Rra,
+
+            0b0010_0 => Asm::Daa,
+            0b0010_1 => Asm::Cpl,
+            0b0011_0 => Asm::Scf,
+            0b0011_1 => Asm::Ccf,
+
+            _ => {
+                panic!();
+            }
+        };
     }
 
     // LD R8 IMM8
@@ -405,6 +464,47 @@ fn interpret_block_3_opcode(op: u8) -> Asm {
     if bits8(&op, 3, 0) == 0b0101 {
         return Asm::Push_R16Stk { reg };
     }
+
+    // LD Ptr, LDH Ptr, ADD SP, LD SP, EI, DI
+    match op {
+        0b1110_0010 => {
+            return Asm::Ldh_CP_A;
+        }
+        0b1110_0000 => {
+            return Asm::Ldh_Imm8P_A;
+        }
+        0b1110_1010 => {
+            return Asm::Ld_Imm16P_A;
+        }
+        0b1111_0010 => {
+            return Asm::Ldh_A_CP;
+        }
+        0b1111_0000 => {
+            return Asm::Ldh_A_Imm8P;
+        }
+        0b11111010 => {
+            return Asm::Ld_A_Imm16P;
+        }
+
+        0b1110_1000 => {
+            return Asm::Add_Sp_Imm8;
+        }
+        0b1111_1000 => {
+            return Asm::Ld_Hl_SpImm8;
+        }
+        0b1111_1001 => {
+            return Asm::Ld_Sp_Hl;
+        }
+
+        0b1111_0011 => {
+            return Asm::Ei;
+        }
+        0b1111_1011 => {
+            return Asm::Di;
+        }
+
+        _ => {}
+    };
 
     panic!("Unexpected block 3 opcode: {:#02x} ({:#02b})", op, op);
 }

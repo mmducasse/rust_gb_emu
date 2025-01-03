@@ -53,6 +53,14 @@ pub fn add16_uu(a: u16, b: u16) -> u16 {
     u16::wrapping_add(a, b)
 }
 
+pub fn add_u16_i8(u: u16, i: i8) -> u16 {
+    if i >= 0 {
+        return u16::wrapping_add(u, i as u16);
+    } else {
+        return u16::wrapping_sub(u, (-i) as u16);
+    }
+}
+
 #[cfg(test)]
 mod tests {
     // Note this useful idiom: importing names from outer (for mod tests) scope.

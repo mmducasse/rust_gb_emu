@@ -1,4 +1,7 @@
-use std::fs::{self, read_to_string};
+use std::{
+    fs::{self, read_to_string},
+    mem::transmute,
+};
 
 use crate::print::slice_to_hex_string;
 
@@ -9,6 +12,37 @@ pub struct Cart {
 impl Cart {
     pub fn new() -> Self {
         Self { rom: vec![] }
+    }
+
+    pub fn load_from_script_file(&mut self, file_path: &str) {
+        self.rom.append(&mut vec![0; 0x100]);
+
+        let script =
+            fs::read_to_string(file_path).expect(&format!("Unable to read file {}.", file_path));
+
+        let lines = script.split('\n').collect::<Vec<_>>();
+
+        let mut ops = vec![];
+        for line in lines {
+            println!("line {}", line);
+            if line.starts_with("0x") {
+                let hex = u8::from_str_radix(&line[2..=3], 16).unwrap();
+                ops.push(hex);
+            } else {
+                let first = line
+                    .split_ascii_whitespace()
+                    .nth(0)
+                    .unwrap()
+                    .replace(";", "");
+                let decimal = first.parse::<i8>().unwrap();
+                let u: u8 = unsafe { transmute(decimal) };
+                ops.push(u);
+            }
+        }
+
+        self.rom.append(&mut ops);
+
+        self.rom.append(&mut vec![0; 0xFFFF]);
     }
 
     pub fn load_from_gb_rom_file(&mut self, file_path: &str) {

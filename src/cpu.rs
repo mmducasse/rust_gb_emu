@@ -2,17 +2,18 @@ use std::mem::transmute;
 
 use crate::{
     asm::{interpret, Asm, Cond, ImmType, R16Mem, R16Stk, R16, R8},
-    data::{join_16, split_16},
+    data::{join_16, set_bit_u8, split_16},
     debug::Debug,
-    math::{add16_ui, add16_uu, add8_ui, bits16, bits8},
+    math::{add16_ui, add16_uu, add8_ui, add_u16_i8, bit8, bits16, bits8},
     regs::{self, CpuFlag, CpuReg16, CpuReg8},
     sys::Sys,
 };
 
 pub fn execute_next_instr(sys: &mut Sys) {
-    let op = sys.rd_mem(sys.get_pc());
+    let pc = sys.get_pc();
+    let op = sys.rd_mem(pc);
     let asm = interpret(op);
-    //println!("[{:#02x}] {:?}", pc, asm);
+    // println!("[{:#02x}] {:?}", pc, asm);
 
     Debug::record_curr_instr(sys);
 
@@ -53,6 +54,32 @@ pub fn execute_next_instr(sys: &mut Sys) {
         Asm::Ld_R8_Imm8 { dst } => {
             ld_r8_imm8(sys, dst);
         }
+
+        Asm::Rlca => {
+            rlca(sys);
+        }
+        Asm::RRca => {
+            rrca(sys);
+        }
+        Asm::Rla => {
+            rla(sys);
+        }
+        Asm::Rra => {
+            rra(sys);
+        }
+        Asm::Daa => {
+            daa(sys);
+        }
+        Asm::Cpl => {
+            cpl(sys);
+        }
+        Asm::Scf => {
+            scf(sys);
+        }
+        Asm::Ccf => {
+            ccf(sys);
+        }
+
         Asm::Jr_Imm8 => {
             jr_imm8(sys);
         }
@@ -154,6 +181,42 @@ pub fn execute_next_instr(sys: &mut Sys) {
         }
         Asm::Push_R16Stk { reg } => {
             push_r16stk(sys, reg);
+        }
+
+        Asm::Ldh_CP_A => {
+            ldh_cp_a(sys);
+        }
+        Asm::Ldh_Imm8P_A => {
+            ldh_imm8p_a(sys);
+        }
+        Asm::Ld_Imm16P_A => {
+            ld_imm16p_a(sys);
+        }
+        Asm::Ldh_A_CP => {
+            ldh_a_cp(sys);
+        }
+        Asm::Ldh_A_Imm8P => {
+            ldh_a_imm8p(sys);
+        }
+        Asm::Ld_A_Imm16P => {
+            ld_a_imm16p(sys);
+        }
+
+        Asm::Add_Sp_Imm8 => {
+            add_sp_imm8(sys);
+        }
+        Asm::Ld_Hl_SpImm8 => {
+            ld_hl_spimm8(sys);
+        }
+        Asm::Ld_Sp_Hl => {
+            ld_sp_hl(sys);
+        }
+
+        Asm::Di => {
+            di(sys);
+        }
+        Asm::Ei => {
+            ei(sys);
         }
 
         // Misc.
@@ -332,6 +395,93 @@ fn dec_r8(sys: &mut Sys, operand: R8) {
 fn ld_r8_imm8(sys: &mut Sys, dst: R8) {
     let imm8 = take_imm8(sys);
     set_r8_data(sys, dst, imm8);
+}
+
+fn rlca(sys: &mut Sys) {
+    let mut data = sys.regs.get_8(CpuReg8::A);
+    let c = bit8(&data, 7) == 0b1;
+    data = u8::rotate_left(data, 1);
+    sys.regs.set_8(CpuReg8::A, data);
+
+    sys.regs.set_flag(CpuFlag::Z, false);
+    sys.regs.set_flag(CpuFlag::N, false);
+    sys.regs.set_flag(CpuFlag::H, false);
+    sys.regs.set_flag(CpuFlag::C, c);
+}
+
+fn rrca(sys: &mut Sys) {
+    let mut data = sys.regs.get_8(CpuReg8::A);
+    let c = bit8(&data, 0) == 0b1;
+    data = u8::rotate_right(data, 1);
+    sys.regs.set_8(CpuReg8::A, data);
+
+    sys.regs.set_flag(CpuFlag::Z, false);
+    sys.regs.set_flag(CpuFlag::N, false);
+    sys.regs.set_flag(CpuFlag::H, false);
+    sys.regs.set_flag(CpuFlag::C, c);
+}
+
+fn rla(sys: &mut Sys) {
+    let c = if sys.regs.get_flag(CpuFlag::C) {
+        0b1
+    } else {
+        0b0
+    };
+    let mut data = sys.regs.get_8(CpuReg8::A);
+    let c_ = bit8(&data, 7) == 0b1;
+    data = u8::rotate_left(data, 1);
+    set_bit_u8(&mut data, 0, c);
+    sys.regs.set_8(CpuReg8::A, data);
+
+    sys.regs.set_flag(CpuFlag::Z, false);
+    sys.regs.set_flag(CpuFlag::N, false);
+    sys.regs.set_flag(CpuFlag::H, false);
+    sys.regs.set_flag(CpuFlag::C, c_);
+}
+
+fn rra(sys: &mut Sys) {
+    let c = if sys.regs.get_flag(CpuFlag::C) {
+        0b1
+    } else {
+        0b0
+    };
+    let mut data = sys.regs.get_8(CpuReg8::A);
+    let c_ = bit8(&data, 0) == 0b1;
+    data = u8::rotate_right(data, 1);
+    set_bit_u8(&mut data, 7, c);
+    sys.regs.set_8(CpuReg8::A, data);
+
+    sys.regs.set_flag(CpuFlag::Z, false);
+    sys.regs.set_flag(CpuFlag::N, false);
+    sys.regs.set_flag(CpuFlag::H, false);
+    sys.regs.set_flag(CpuFlag::C, c_);
+}
+
+fn daa(sys: &mut Sys) {
+    todo!("todo DAA");
+}
+
+fn cpl(sys: &mut Sys) {
+    let mut data = sys.regs.get_8(CpuReg8::A);
+    data = !data;
+    sys.regs.set_8(CpuReg8::A, data);
+
+    sys.regs.set_flag(CpuFlag::N, true);
+    sys.regs.set_flag(CpuFlag::H, true);
+}
+
+fn scf(sys: &mut Sys) {
+    sys.regs.set_flag(CpuFlag::N, false);
+    sys.regs.set_flag(CpuFlag::H, false);
+    sys.regs.set_flag(CpuFlag::C, true);
+}
+
+fn ccf(sys: &mut Sys) {
+    let c = sys.regs.get_flag(CpuFlag::C);
+
+    sys.regs.set_flag(CpuFlag::N, false);
+    sys.regs.set_flag(CpuFlag::H, false);
+    sys.regs.set_flag(CpuFlag::C, !c);
 }
 
 fn jr_imm8(sys: &mut Sys) {
@@ -678,7 +828,107 @@ fn push_r16stk(sys: &mut Sys, reg: R16Stk) {
     push_16(sys, data);
 }
 
+fn ldh_cp_a(sys: &mut Sys) {
+    let data = sys.regs.get_8(CpuReg8::A);
+    let addr = 0xFF00 + (sys.regs.get_8(CpuReg8::C) as u16);
+
+    sys.wr_mem(addr, data);
+}
+
+fn ldh_imm8p_a(sys: &mut Sys) {
+    let imm8 = take_imm8(sys);
+    let data = sys.regs.get_8(CpuReg8::A);
+    let addr = 0xFF00 + (imm8 as u16);
+
+    sys.wr_mem(addr, data);
+}
+
+fn ld_imm16p_a(sys: &mut Sys) {
+    let imm16 = take_imm16(sys);
+    let data = sys.regs.get_8(CpuReg8::A);
+    let addr = imm16;
+
+    sys.wr_mem(addr, data);
+}
+
+fn ldh_a_cp(sys: &mut Sys) {
+    let addr = 0xFF00 + (sys.regs.get_8(CpuReg8::C) as u16);
+    let data = sys.rd_mem(addr);
+
+    sys.regs.set_8(CpuReg8::A, data);
+}
+
+fn ldh_a_imm8p(sys: &mut Sys) {
+    let imm8 = take_imm8(sys);
+    let addr = 0xFF00 + (imm8 as u16);
+    let data = sys.rd_mem(addr);
+
+    sys.regs.set_8(CpuReg8::A, data);
+}
+
+fn ld_a_imm16p(sys: &mut Sys) {
+    let imm16 = take_imm16(sys);
+    let addr = imm16;
+    let data = sys.rd_mem(addr);
+
+    sys.regs.set_8(CpuReg8::A, data);
+}
+
+fn add_sp_imm8(sys: &mut Sys) {
+    let sp = sys.get_sp();
+    let imm8 = take_imm8(sys);
+    let s_imm8 = unsafe { transmute(imm8) };
+    let sp_ = add_u16_i8(sp, s_imm8);
+    sys.set_sp(sp_);
+
+    let h;
+    let c;
+    if s_imm8 >= 0 {
+        h = bits16(&sp_, 11, 0) < bits16(&sp, 11, 0); // todo correct??
+        c = sp_ < sp;
+    } else {
+        h = bits16(&sp_, 11, 0) > bits16(&sp, 11, 0);
+        c = sp_ > sp;
+    }
+    sys.regs.set_flag(CpuFlag::H, h);
+    sys.regs.set_flag(CpuFlag::C, c);
+}
+
+fn ld_hl_spimm8(sys: &mut Sys) {
+    let sp = sys.get_sp();
+    let imm8 = take_imm8(sys);
+    let s_imm8 = unsafe { transmute(imm8) };
+    let sp_ = add_u16_i8(sp, s_imm8);
+    sys.regs.set_16(CpuReg16::HL, sp_);
+
+    let h;
+    let c;
+    if s_imm8 >= 0 {
+        h = bits16(&sp_, 11, 0) < bits16(&sp, 11, 0); // todo correct??
+        c = sp_ < sp;
+    } else {
+        h = bits16(&sp_, 11, 0) > bits16(&sp, 11, 0);
+        c = sp_ > sp;
+    }
+    sys.regs.set_flag(CpuFlag::H, h);
+    sys.regs.set_flag(CpuFlag::C, c);
+}
+
+fn ld_sp_hl(sys: &mut Sys) {
+    let data = sys.regs.get_16(CpuReg16::HL);
+    sys.set_sp(data);
+}
+
+fn di(sys: &mut Sys) {
+    println!("todo DI");
+}
+
+fn ei(sys: &mut Sys) {
+    println!("todo EI");
+}
+
 // Misc functions.
 fn hard_lock(sys: &mut Sys) {
     sys.hard_lock = true;
+    Debug::fail(sys, "Invalid instr occurred.");
 }
