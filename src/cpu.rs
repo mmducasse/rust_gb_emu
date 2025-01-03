@@ -2,9 +2,10 @@ use std::mem::transmute;
 
 use crate::{
     asm::{interpret, Asm, Cond, ImmType, R16Mem, R16Stk, R16, R8},
-    data::{join_16, set_bit_u8, split_16},
     debug::Debug,
-    math::{add16_ui, add16_uu, add8_ui, add_u16_i8, bit8, bits16, bits8},
+    math::{
+        add16_ui, add16_uu, add8_ui, add_u16_i8, bit8, bits16, bits8, join_16, set_bit8, split_16,
+    },
     regs::{self, CpuFlag, CpuReg16, CpuReg8},
     sys::Sys,
 };
@@ -430,7 +431,7 @@ fn rla(sys: &mut Sys) {
     let mut data = sys.regs.get_8(CpuReg8::A);
     let c_ = bit8(&data, 7) == 0b1;
     data = u8::rotate_left(data, 1);
-    set_bit_u8(&mut data, 0, c);
+    set_bit8(&mut data, 0, c);
     sys.regs.set_8(CpuReg8::A, data);
 
     sys.regs.set_flag(CpuFlag::Z, false);
@@ -448,7 +449,7 @@ fn rra(sys: &mut Sys) {
     let mut data = sys.regs.get_8(CpuReg8::A);
     let c_ = bit8(&data, 0) == 0b1;
     data = u8::rotate_right(data, 1);
-    set_bit_u8(&mut data, 7, c);
+    set_bit8(&mut data, 7, c);
     sys.regs.set_8(CpuReg8::A, data);
 
     sys.regs.set_flag(CpuFlag::Z, false);

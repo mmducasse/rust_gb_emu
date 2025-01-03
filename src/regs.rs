@@ -1,4 +1,6 @@
-use crate::data::{get_bit_u8, join_16, set_bit_u8, split_16};
+use std::mem::transmute;
+
+use crate::math::{bit8, join_16, set_bit8, split_16};
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub enum CpuReg8 {
@@ -98,13 +100,13 @@ impl CpuRegs {
 
     pub fn get_flag(&self, flag: CpuFlag) -> bool {
         let idx = flag as usize;
-        return get_bit_u8(self.get_8(CpuReg8::F), idx) > 0;
+        return bit8(&self.get_8(CpuReg8::F), idx) > 0;
     }
 
     pub fn set_flag(&mut self, flag: CpuFlag, value: bool) {
         let idx = flag as usize;
         let value = if value { 0b1 } else { 0b0 };
-        return set_bit_u8(self.mut_8(CpuReg8::F), idx, value);
+        return set_bit8(self.mut_8(CpuReg8::F), idx, value);
     }
 
     pub fn print(&self) {

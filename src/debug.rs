@@ -2,7 +2,7 @@ use std::mem::transmute;
 
 use crate::{
     asm::{interpret, Asm, ImmType},
-    data::join_16,
+    math::join_16,
     regs::CpuRegs,
     sys::Sys,
     util::ring_buffer::RingBuffer,
