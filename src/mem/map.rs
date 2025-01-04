@@ -50,7 +50,7 @@ impl MemSection {
 
     /// Returns the memory section that the address belongs to, as
     /// well as it's relative address within that section.
-    pub fn from_addr(addr: Addr) -> (Self, Addr) {
+    pub fn from_abs_addr(addr: Addr) -> (Self, Addr) {
         for section in MemSection::iter().rev() {
             let start_addr = section.start_addr();
             if addr >= start_addr {
@@ -65,7 +65,7 @@ impl MemSection {
 
 pub fn read(sys: &Sys, addr: Addr) -> u8 {
     //println!("Addr = {} {:#04x}", addr, addr);
-    let (section, addr) = MemSection::from_addr(addr);
+    let (section, addr) = MemSection::from_abs_addr(addr);
     //println!("Rel Addr ({:?}) = {} {:#04x}", section, addr, addr);
 
     match section {
@@ -76,27 +76,18 @@ pub fn read(sys: &Sys, addr: Addr) -> u8 {
         MemSection::EchoRam => {
             Debug::fail(sys, "Attempted to read from Echo RAM");
         }
-        MemSection::Oam => {
-            todo!("Read from OAM");
-        }
+        MemSection::Oam => sys.oam.rd(addr),
         MemSection::UnusableMemory => {
             Debug::fail(sys, "Attempted to read from unusable memory");
         }
-        MemSection::IoRegs => {
-            todo!("Read from I/O regs");
-        }
-        MemSection::Hram => {
-            // todo Read from HRAM
-            0x00
-        }
-        MemSection::IeReg => {
-            todo!("Read from IE reg");
-        }
+        MemSection::IoRegs => sys.io_regs.rd(addr),
+        MemSection::Hram => sys.hram.rd(addr),
+        MemSection::IeReg => sys.ie_reg,
     }
 }
 
 pub fn write(sys: &mut Sys, addr: Addr, data: u8) {
-    let (section, addr) = MemSection::from_addr(addr);
+    let (section, addr) = MemSection::from_abs_addr(addr);
 
     match section {
         MemSection::CartRom => {
@@ -115,19 +106,19 @@ pub fn write(sys: &mut Sys, addr: Addr, data: u8) {
             Debug::fail(sys, "Attempted to write to Echo RAM");
         }
         MemSection::Oam => {
-            todo!("Write to OAM");
+            sys.oam.wr(addr, data);
         }
         MemSection::UnusableMemory => {
             Debug::fail(sys, "Attempted to write to unusable memory");
         }
         MemSection::IoRegs => {
-            todo!("Write to  I/O regs");
+            sys.io_regs.wr(addr, data);
         }
         MemSection::Hram => {
-            todo!("Write to  HRAM");
+            sys.hram.wr(addr, data);
         }
         MemSection::IeReg => {
-            todo!("Write to  IE reg");
+            sys.ie_reg = data;
         }
     }
 }

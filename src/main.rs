@@ -22,7 +22,7 @@ mod test;
 mod util;
 
 fn main() {
-    println!("*** rust_gb_2 EMU ***");
+    println!("*** RUST GAMEBOY EMU (Matthew Ducasse 2025) ***");
 
     let mut sys = Sys::new();
     //temp_tests::run(&mut sys);
@@ -35,6 +35,6 @@ fn main() {
     sys.cart
         .load(".\\assets\\files\\custom_roms\\ld_r8_r8\\rom.gb");
 
-    sys.debug.enable = true;
+    // sys.debug.enable = true;
     sys.run();
 }

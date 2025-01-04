@@ -17,6 +17,7 @@ pub fn execute_next_instr(sys: &mut Sys) {
     let mut pc = sys.get_pc();
     let mut op = sys.rd_mem(pc);
     let has_cb_prefix;
+
     if op == Instr::CB_PREFIX {
         sys.inc_pc();
         pc = sys.get_pc();

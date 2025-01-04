@@ -1,3 +1,5 @@
+use std::time::Instant;
+
 use crate::{
     cpu::{
         exec::execute_next_instr,
@@ -17,6 +19,11 @@ pub struct Sys {
     pub wram: Ram,
     pub vram: Ram,
     pub ext_ram: Ram,
+    pub oam: Ram,
+    pub io_regs: Ram,
+    pub hram: Ram,
+
+    pub ie_reg: u8,
 
     pub hard_lock: bool,
     pub debug: Debug,
@@ -30,6 +37,11 @@ impl Sys {
             wram: Ram::new(MemSection::Wram.size()),
             vram: Ram::new(MemSection::Vram.size()),
             ext_ram: Ram::new(MemSection::ExtRam.size()),
+            oam: Ram::new(MemSection::Oam.size()),
+            io_regs: Ram::new(MemSection::IoRegs.size()),
+            hram: Ram::new(MemSection::Hram.size()),
+
+            ie_reg: 0,
 
             hard_lock: false,
             debug: Debug::new(),
@@ -38,7 +50,10 @@ impl Sys {
 
     pub fn run(&mut self) {
         while !self.hard_lock {
+            //let start = Instant::now();
             execute_next_instr(self);
+            //println!("elapsed = {} ns", start.elapsed().as_nanos());
+
             if self.debug.nop_count > Debug::EXIT_AFTER_NOP_COUNT {
                 break;
             }

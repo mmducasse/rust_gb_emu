@@ -21,8 +21,6 @@ impl Cart {
             panic!("File extension for file {} wasn't specified.", file_path);
         };
 
-        println!("{:?}", ext);
-
         if ext == OsStr::new("gb") {
             self.load_from_gb_rom_file(file_path);
         } else {
