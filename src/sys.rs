@@ -1,10 +1,14 @@
 use crate::{
-    cart::Cart,
-    cpu::execute_next_instr,
+    cpu::{
+        cpu::execute_next_instr,
+        regs::{CpuReg16, CpuRegs},
+    },
     debug::Debug,
-    mem::{self, Addr, MemSection},
-    ram::Ram,
-    regs::{CpuReg16, CpuRegs},
+    mem::{
+        cart::Cart,
+        mem::{self, Addr, MemSection},
+        ram::Ram,
+    },
 };
 
 pub struct Sys {

@@ -5,7 +5,7 @@
 #![allow(unused_variables)]
 #![allow(static_mut_refs)]
 
-use cpu::execute_next_instr;
+use cpu::cpu::execute_next_instr;
 use debug::Debug;
 use sys::Sys;
 
@@ -13,16 +13,9 @@ extern crate num;
 #[macro_use]
 extern crate num_derive;
 
-mod cart;
 mod cpu;
-mod data;
 mod debug;
-mod instr;
-mod math;
 mod mem;
-mod print;
-mod ram;
-mod regs;
 mod sys;
 mod temp_tests;
 mod test;

@@ -5,7 +5,7 @@ use std::{
     path::Path,
 };
 
-use crate::print::slice_to_hex_string;
+use crate::util::print::slice_to_hex_string;
 
 pub struct Cart {
     pub rom: Vec<u8>,

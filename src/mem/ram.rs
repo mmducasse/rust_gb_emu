@@ -1,4 +1,4 @@
-use crate::mem::Addr;
+use crate::mem::mem::Addr;
 
 pub struct Ram {
     memory: Vec<u8>,

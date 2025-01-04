@@ -1,10 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use crate::{
-        instr::R8,
-        regs::{CpuReg16, CpuReg8, CpuRegs},
-        sys::Sys,
-    };
+    use crate::{cpu::regs::CpuReg8, sys::Sys};
 
     // Note this useful idiom: importing names from outer (for mod tests) scope.
     use super::*;

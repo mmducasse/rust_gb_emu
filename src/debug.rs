@@ -1,11 +1,12 @@
 use std::mem::transmute;
 
 use crate::{
-    instr::{decode, ImmType, Instr},
-    math::join_16,
-    regs::CpuRegs,
+    cpu::{
+        instr::{decode, ImmType, Instr},
+        regs::CpuRegs,
+    },
     sys::Sys,
-    util::ring_buffer::RingBuffer,
+    util::{math::join_16, ring_buffer::RingBuffer},
 };
 
 pub struct Debug {

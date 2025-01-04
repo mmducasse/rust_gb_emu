@@ -1,8 +1,8 @@
 use std::ops::Range;
 
 use crate::{
-    math::{bit8, bits8},
-    regs::{CpuReg16, CpuReg8},
+    cpu::regs::{CpuReg16, CpuReg8},
+    util::math::{bit8, bits8},
 };
 
 #[derive(Clone, Copy, Debug)]
