@@ -1,8 +1,8 @@
 use std::mem::transmute;
 
 use crate::{
-    asm::{interpret, Asm, Cond, ImmType, R16Mem, R16Stk, R16, R8},
     debug::Debug,
+    instr::{decode, Cond, ImmType, Instr, R16Mem, R16Stk, R16, R8},
     math::{
         add16_ui, add16_uu, add8_ui, add_u16_i8, bit8, bits16, bits8, join_16, set_bit8, split_16,
     },
@@ -13,7 +13,7 @@ use crate::{
 pub fn execute_next_instr(sys: &mut Sys) {
     let pc = sys.get_pc();
     let op = sys.rd_mem(pc);
-    let asm = interpret(op);
+    let asm = decode(op);
     // println!("[{:#02x}] {:?}", pc, asm);
 
     Debug::record_curr_instr(sys);
@@ -22,206 +22,206 @@ pub fn execute_next_instr(sys: &mut Sys) {
 
     match asm {
         // Block 0.
-        Asm::Nop => {}
-        Asm::Ld_R16_Imm16 { dst } => {
+        Instr::Nop => {}
+        Instr::Ld_R16_Imm16 { dst } => {
             ld_r16_imm16(sys, dst);
         }
-        Asm::Ld_R16MemP_A { dst } => {
+        Instr::Ld_R16MemP_A { dst } => {
             let data = sys.regs.get_8(CpuReg8::A);
             set_r16memp(sys, dst, data);
         }
-        Asm::Ld_A_R16MemP { src } => {
+        Instr::Ld_A_R16MemP { src } => {
             let data = get_r16memp(sys, src);
             sys.regs.set_8(CpuReg8::A, data);
         }
-        Asm::Ld_Imm16P_Sp => {
+        Instr::Ld_Imm16P_Sp => {
             ld_imm16_sp(sys);
         }
-        Asm::Inc_R16 { operand } => {
+        Instr::Inc_R16 { operand } => {
             inc_dec_r16(sys, operand, 1);
         }
-        Asm::Dec_R16 { operand } => {
+        Instr::Dec_R16 { operand } => {
             inc_dec_r16(sys, operand, -1);
         }
-        Asm::Add_Hl_R16 { operand } => {
+        Instr::Add_Hl_R16 { operand } => {
             add_hl_r16(sys, operand);
         }
-        Asm::Inc_R8 { operand } => {
+        Instr::Inc_R8 { operand } => {
             inc_r8(sys, operand);
         }
-        Asm::Dec_R8 { operand } => {
+        Instr::Dec_R8 { operand } => {
             dec_r8(sys, operand);
         }
-        Asm::Ld_R8_Imm8 { dst } => {
+        Instr::Ld_R8_Imm8 { dst } => {
             ld_r8_imm8(sys, dst);
         }
 
-        Asm::Rlca => {
+        Instr::Rlca => {
             rlca(sys);
         }
-        Asm::RRca => {
+        Instr::RRca => {
             rrca(sys);
         }
-        Asm::Rla => {
+        Instr::Rla => {
             rla(sys);
         }
-        Asm::Rra => {
+        Instr::Rra => {
             rra(sys);
         }
-        Asm::Daa => {
+        Instr::Daa => {
             daa(sys);
         }
-        Asm::Cpl => {
+        Instr::Cpl => {
             cpl(sys);
         }
-        Asm::Scf => {
+        Instr::Scf => {
             scf(sys);
         }
-        Asm::Ccf => {
+        Instr::Ccf => {
             ccf(sys);
         }
 
-        Asm::Jr_Imm8 => {
+        Instr::Jr_Imm8 => {
             jr_imm8(sys);
         }
-        Asm::Jr_Cond_Imm8 { cond } => {
+        Instr::Jr_Cond_Imm8 { cond } => {
             jr_cond_imm8(sys, cond);
         }
-        Asm::Stop => {}
+        Instr::Stop => {}
 
         // Block 1.
-        Asm::Ld_R8_R8 { dst, src } => {
+        Instr::Ld_R8_R8 { dst, src } => {
             ld_r8_r8(sys, dst, src);
         }
-        Asm::Halt => {
+        Instr::Halt => {
             halt(sys);
         }
 
         // Block 2.
-        Asm::Add_A_R8 { operand } => {
+        Instr::Add_A_R8 { operand } => {
             add_a_r8(sys, operand);
         }
-        Asm::Adc_A_R8 { operand } => {
+        Instr::Adc_A_R8 { operand } => {
             adc_a_r8(sys, operand);
         }
-        Asm::Sub_A_R8 { operand } => {
+        Instr::Sub_A_R8 { operand } => {
             sub_a_r8(sys, operand);
         }
-        Asm::Sbc_A_R8 { operand } => {
+        Instr::Sbc_A_R8 { operand } => {
             sbc_a_r8(sys, operand);
         }
-        Asm::And_A_R8 { operand } => {
+        Instr::And_A_R8 { operand } => {
             and_a_r8(sys, operand);
         }
-        Asm::Xor_A_R8 { operand } => {
+        Instr::Xor_A_R8 { operand } => {
             xor_a_r8(sys, operand);
         }
-        Asm::Or_A_R8 { operand } => {
+        Instr::Or_A_R8 { operand } => {
             or_a_r8(sys, operand);
         }
-        Asm::Cp_A_R8 { operand } => {
+        Instr::Cp_A_R8 { operand } => {
             cp_a_r8(sys, operand);
         }
 
         // Block 3.
-        Asm::Add_A_Imm8 => {
+        Instr::Add_A_Imm8 => {
             add_a_imm8(sys);
         }
-        Asm::Adc_A_Imm8 => {
+        Instr::Adc_A_Imm8 => {
             adc_a_imm8(sys);
         }
-        Asm::Sub_A_Imm8 => {
+        Instr::Sub_A_Imm8 => {
             sub_a_imm8(sys);
         }
-        Asm::Sbc_A_Imm8 => {
+        Instr::Sbc_A_Imm8 => {
             sbc_a_imm8(sys);
         }
-        Asm::And_A_Imm8 => {
+        Instr::And_A_Imm8 => {
             and_a_imm8(sys);
         }
-        Asm::Xor_A_Imm8 => {
+        Instr::Xor_A_Imm8 => {
             xor_a_imm8(sys);
         }
-        Asm::Or_A_Imm8 => {
+        Instr::Or_A_Imm8 => {
             or_a_imm8(sys);
         }
-        Asm::Cp_A_Imm8 => {
+        Instr::Cp_A_Imm8 => {
             cp_a_imm8(sys);
         }
 
-        Asm::Ret_Cond { cond } => {
+        Instr::Ret_Cond { cond } => {
             ret_cond(sys, cond);
         }
-        Asm::Ret => {
+        Instr::Ret => {
             ret(sys);
         }
-        Asm::Reti => {
+        Instr::Reti => {
             reti(sys);
         }
-        Asm::Jp_Cond_Imm16 { cond } => {
+        Instr::Jp_Cond_Imm16 { cond } => {
             jp_cond_imm16(sys, cond);
         }
-        Asm::Jp_Imm16 => {
+        Instr::Jp_Imm16 => {
             jp_imm16(sys);
         }
-        Asm::Jp_Hl => {
+        Instr::Jp_Hl => {
             jp_hl(sys);
         }
-        Asm::Call_Cond_Imm16 { cond } => {
+        Instr::Call_Cond_Imm16 { cond } => {
             call_cond_imm16(sys, cond);
         }
-        Asm::Call_Imm16 => {
+        Instr::Call_Imm16 => {
             call_imm16(sys);
         }
-        Asm::Rst_Tgt3 { tgt3 } => {
+        Instr::Rst_Tgt3 { tgt3 } => {
             rst_tgt3(sys, tgt3);
         }
 
-        Asm::Pop_R16Stk { reg } => {
+        Instr::Pop_R16Stk { reg } => {
             pop_r16stk(sys, reg);
         }
-        Asm::Push_R16Stk { reg } => {
+        Instr::Push_R16Stk { reg } => {
             push_r16stk(sys, reg);
         }
 
-        Asm::Ldh_CP_A => {
+        Instr::Ldh_CP_A => {
             ldh_cp_a(sys);
         }
-        Asm::Ldh_Imm8P_A => {
+        Instr::Ldh_Imm8P_A => {
             ldh_imm8p_a(sys);
         }
-        Asm::Ld_Imm16P_A => {
+        Instr::Ld_Imm16P_A => {
             ld_imm16p_a(sys);
         }
-        Asm::Ldh_A_CP => {
+        Instr::Ldh_A_CP => {
             ldh_a_cp(sys);
         }
-        Asm::Ldh_A_Imm8P => {
+        Instr::Ldh_A_Imm8P => {
             ldh_a_imm8p(sys);
         }
-        Asm::Ld_A_Imm16P => {
+        Instr::Ld_A_Imm16P => {
             ld_a_imm16p(sys);
         }
 
-        Asm::Add_Sp_Imm8 => {
+        Instr::Add_Sp_Imm8 => {
             add_sp_imm8(sys);
         }
-        Asm::Ld_Hl_SpImm8 => {
+        Instr::Ld_Hl_SpImm8 => {
             ld_hl_spimm8(sys);
         }
-        Asm::Ld_Sp_Hl => {
+        Instr::Ld_Sp_Hl => {
             ld_sp_hl(sys);
         }
 
-        Asm::Di => {
+        Instr::Di => {
             di(sys);
         }
-        Asm::Ei => {
+        Instr::Ei => {
             ei(sys);
         }
 
         // Misc.
-        Asm::HardLock => {
+        Instr::HardLock => {
             hard_lock(sys);
         }
     }

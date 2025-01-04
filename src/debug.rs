@@ -1,7 +1,7 @@
 use std::mem::transmute;
 
 use crate::{
-    asm::{interpret, Asm, ImmType},
+    instr::{decode, ImmType, Instr},
     math::join_16,
     regs::CpuRegs,
     sys::Sys,
@@ -14,7 +14,7 @@ pub struct Debug {
 
 struct AsmRecord {
     addr: u16,
-    asm: Asm,
+    asm: Instr,
     imm: ImmValue,
     regs: CpuRegs,
 }
@@ -35,7 +35,7 @@ impl Debug {
     pub fn record_curr_instr(sys: &mut Sys) {
         let pc = sys.get_pc();
         let op = sys.rd_mem(pc);
-        let asm = interpret(op);
+        let asm = decode(op);
 
         let imm_value = match asm.imm_type() {
             ImmType::None => ImmValue::None,

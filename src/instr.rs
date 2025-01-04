@@ -6,8 +6,8 @@ use crate::{
 };
 
 #[derive(Clone, Copy, Debug)]
-/// Interpretation of a byte of instruction code in ROM.
-pub enum Asm {
+/// Interpretation of a 1-byte opcode instruction in ROM.
+pub enum Instr {
     // Block 0 instrs.
     Nop,
     Ld_R16_Imm16 { dst: R16 },
@@ -93,36 +93,36 @@ pub enum Asm {
     HardLock,
 }
 
-impl Asm {
+impl Instr {
     pub fn imm_type(&self) -> ImmType {
         match self {
-            Asm::Ld_R16_Imm16 { .. } => ImmType::Imm16,
-            Asm::Ld_Imm16P_Sp => ImmType::Imm16,
-            Asm::Ld_R8_Imm8 { .. } => ImmType::Imm8,
-            Asm::Jr_Imm8 => ImmType::Imm8,
-            Asm::Jr_Cond_Imm8 { .. } => ImmType::Imm8,
+            Instr::Ld_R16_Imm16 { .. } => ImmType::Imm16,
+            Instr::Ld_Imm16P_Sp => ImmType::Imm16,
+            Instr::Ld_R8_Imm8 { .. } => ImmType::Imm8,
+            Instr::Jr_Imm8 => ImmType::Imm8,
+            Instr::Jr_Cond_Imm8 { .. } => ImmType::Imm8,
 
-            Asm::Add_A_Imm8 => ImmType::Imm8,
-            Asm::Adc_A_Imm8 => ImmType::Imm8,
-            Asm::Sub_A_Imm8 => ImmType::Imm8,
-            Asm::Sbc_A_Imm8 => ImmType::Imm8,
-            Asm::And_A_Imm8 => ImmType::Imm8,
-            Asm::Xor_A_Imm8 => ImmType::Imm8,
-            Asm::Or_A_Imm8 => ImmType::Imm8,
-            Asm::Cp_A_Imm8 => ImmType::Imm8,
+            Instr::Add_A_Imm8 => ImmType::Imm8,
+            Instr::Adc_A_Imm8 => ImmType::Imm8,
+            Instr::Sub_A_Imm8 => ImmType::Imm8,
+            Instr::Sbc_A_Imm8 => ImmType::Imm8,
+            Instr::And_A_Imm8 => ImmType::Imm8,
+            Instr::Xor_A_Imm8 => ImmType::Imm8,
+            Instr::Or_A_Imm8 => ImmType::Imm8,
+            Instr::Cp_A_Imm8 => ImmType::Imm8,
 
-            Asm::Jp_Cond_Imm16 { .. } => ImmType::Imm16,
-            Asm::Jp_Imm16 => ImmType::Imm16,
-            Asm::Call_Cond_Imm16 { .. } => ImmType::Imm16,
-            Asm::Call_Imm16 => ImmType::Imm16,
+            Instr::Jp_Cond_Imm16 { .. } => ImmType::Imm16,
+            Instr::Jp_Imm16 => ImmType::Imm16,
+            Instr::Call_Cond_Imm16 { .. } => ImmType::Imm16,
+            Instr::Call_Imm16 => ImmType::Imm16,
 
-            Asm::Ldh_Imm8P_A => ImmType::Imm8,
-            Asm::Ld_Imm16P_A => ImmType::Imm16,
-            Asm::Ldh_A_Imm8P => ImmType::Imm8,
-            Asm::Ld_A_Imm16P => ImmType::Imm16,
+            Instr::Ldh_Imm8P_A => ImmType::Imm8,
+            Instr::Ld_Imm16P_A => ImmType::Imm16,
+            Instr::Ldh_A_Imm8P => ImmType::Imm8,
+            Instr::Ld_A_Imm16P => ImmType::Imm16,
 
-            Asm::Add_Sp_Imm8 => ImmType::Imm8,
-            Asm::Ld_Hl_SpImm8 => ImmType::Imm8,
+            Instr::Add_Sp_Imm8 => ImmType::Imm8,
+            Instr::Ld_Hl_SpImm8 => ImmType::Imm8,
 
             _ => ImmType::None,
         }
@@ -262,7 +262,7 @@ pub enum ImmType {
     Imm16,
 }
 
-pub fn interpret(op: u8) -> Asm {
+pub fn decode(op: u8) -> Instr {
     if op == 0xCB {
         panic!("0xCB opcode");
     }
@@ -270,47 +270,47 @@ pub fn interpret(op: u8) -> Asm {
     let block = (op >> 6) & 0b11;
 
     match block {
-        0b00 => interpret_block_0_opcode(op),
-        0b01 => interpret_block_1_opcode(op),
-        0b10 => interpret_block_2_opcode(op),
-        0b11 => interpret_block_3_opcode(op),
-        _ => Asm::Nop,
+        0b00 => decode_block_0_opcode(op),
+        0b01 => decode_block_1_opcode(op),
+        0b10 => decode_block_2_opcode(op),
+        0b11 => decode_block_3_opcode(op),
+        _ => Instr::Nop,
     }
 }
 
-fn interpret_block_0_opcode(op: u8) -> Asm {
+fn decode_block_0_opcode(op: u8) -> Instr {
     // NOP
     if op == 0x00 {
-        return Asm::Nop;
+        return Instr::Nop;
     }
 
     // STOP
     if op == 0x10 {
-        return Asm::Stop;
+        return Instr::Stop;
     }
 
     // JR
     if bits8(&op, 2, 0) == 0b000 {
         if bit8(&op, 5) == 0b1 {
             let cond = Cond::from_u8(bits8(&op, 4, 3));
-            return Asm::Jr_Cond_Imm8 { cond };
+            return Instr::Jr_Cond_Imm8 { cond };
         } else {
-            return Asm::Jr_Imm8;
+            return Instr::Jr_Imm8;
         }
     }
 
     // RCLA, etc...
     if bits8(&op, 2, 0) == 0b111 {
         return match bits8(&op, 7, 3) {
-            0b0000_0 => Asm::Rlca,
-            0b0000_1 => Asm::RRca,
-            0b0001_0 => Asm::Rla,
-            0b0001_1 => Asm::Rra,
+            0b0000_0 => Instr::Rlca,
+            0b0000_1 => Instr::RRca,
+            0b0001_0 => Instr::Rla,
+            0b0001_1 => Instr::Rra,
 
-            0b0010_0 => Asm::Daa,
-            0b0010_1 => Asm::Cpl,
-            0b0011_0 => Asm::Scf,
-            0b0011_1 => Asm::Ccf,
+            0b0010_0 => Instr::Daa,
+            0b0010_1 => Instr::Cpl,
+            0b0011_0 => Instr::Scf,
+            0b0011_1 => Instr::Ccf,
 
             _ => {
                 panic!();
@@ -321,68 +321,68 @@ fn interpret_block_0_opcode(op: u8) -> Asm {
     // LD R8 IMM8
     if bits8(&op, 2, 0) == 0b110 {
         let dst = R8::from_u8(bits8(&op, 5, 3));
-        return Asm::Ld_R8_Imm8 { dst };
+        return Instr::Ld_R8_Imm8 { dst };
     }
 
     // INC R8, DEC R8
     let operand = R8::from_u8(bits8(&op, 5, 3));
     if bits8(&op, 2, 0) == 0b100 {
-        return Asm::Inc_R8 { operand };
+        return Instr::Inc_R8 { operand };
     } else if bits8(&op, 2, 0) == 0b101 {
-        return Asm::Dec_R8 { operand };
+        return Instr::Dec_R8 { operand };
     }
 
     // INC R16, DEC R16, and ADD HL R16
     let operand = R16::from_u8(bits8(&op, 5, 4));
     if bits8(&op, 3, 0) == 0b0011 {
-        return Asm::Inc_R16 { operand };
+        return Instr::Inc_R16 { operand };
     } else if bits8(&op, 3, 0) == 0b1011 {
-        return Asm::Dec_R16 { operand };
+        return Instr::Dec_R16 { operand };
     } else if bits8(&op, 3, 0) == 0b1001 {
-        return Asm::Add_Hl_R16 { operand };
+        return Instr::Add_Hl_R16 { operand };
     }
 
     // LD R16 IMM16, LD R16MEMP A, LD A R16MEMP, LD IMM16P SP
     if bits8(&op, 3, 0) == 0b0001 {
         let dst = R16::from_u8(bits8(&op, 5, 4));
-        return Asm::Ld_R16_Imm16 { dst };
+        return Instr::Ld_R16_Imm16 { dst };
     } else if bits8(&op, 3, 0) == 0b0010 {
         let dst = R16Mem::from_u8(bits8(&op, 5, 4));
-        return Asm::Ld_R16MemP_A { dst };
+        return Instr::Ld_R16MemP_A { dst };
     } else if bits8(&op, 3, 0) == 0b1010 {
         let src = R16Mem::from_u8(bits8(&op, 5, 4));
-        return Asm::Ld_A_R16MemP { src };
+        return Instr::Ld_A_R16MemP { src };
     } else if bits8(&op, 3, 0) == 0b1000 {
-        return Asm::Ld_Imm16P_Sp;
+        return Instr::Ld_Imm16P_Sp;
     }
 
     panic!("Unexpected block 0 opcode: {:#02x} ({:#02b})", op, op);
 }
 
-fn interpret_block_1_opcode(op: u8) -> Asm {
+fn decode_block_1_opcode(op: u8) -> Instr {
     if op == 0b0111_0110 {
-        return Asm::Halt;
+        return Instr::Halt;
     } else {
         let dst = R8::from_u8(bits8(&op, 5, 3));
         let src = R8::from_u8(bits8(&op, 2, 0));
 
-        return Asm::Ld_R8_R8 { dst, src };
+        return Instr::Ld_R8_R8 { dst, src };
     }
 }
 
-fn interpret_block_2_opcode(op: u8) -> Asm {
+fn decode_block_2_opcode(op: u8) -> Instr {
     let operand = R8::from_u8(bits8(&op, 2, 0));
 
     match bits8(&op, 5, 3) {
-        0b000 => Asm::Add_A_R8 { operand },
-        0b001 => Asm::Adc_A_R8 { operand },
-        0b010 => Asm::Sub_A_R8 { operand },
-        0b011 => Asm::Sbc_A_R8 { operand },
+        0b000 => Instr::Add_A_R8 { operand },
+        0b001 => Instr::Adc_A_R8 { operand },
+        0b010 => Instr::Sub_A_R8 { operand },
+        0b011 => Instr::Sbc_A_R8 { operand },
 
-        0b100 => Asm::And_A_R8 { operand },
-        0b101 => Asm::Xor_A_R8 { operand },
-        0b110 => Asm::Or_A_R8 { operand },
-        0b111 => Asm::Cp_A_R8 { operand },
+        0b100 => Instr::And_A_R8 { operand },
+        0b101 => Instr::Xor_A_R8 { operand },
+        0b110 => Instr::Or_A_R8 { operand },
+        0b111 => Instr::Cp_A_R8 { operand },
 
         _ => {
             panic!()
@@ -390,12 +390,12 @@ fn interpret_block_2_opcode(op: u8) -> Asm {
     }
 }
 
-fn interpret_block_3_opcode(op: u8) -> Asm {
+fn decode_block_3_opcode(op: u8) -> Instr {
     const INVALID_OPS: &[u8] = &[
         0xD3, 0xDB, 0xDD, 0xE3, 0xE4, 0xEB, 0xEC, 0xED, 0xF4, 0xFC, 0xFD,
     ];
     if INVALID_OPS.contains(&op) {
-        return Asm::HardLock;
+        return Instr::HardLock;
     }
 
     if op == 0xCB {
@@ -405,15 +405,15 @@ fn interpret_block_3_opcode(op: u8) -> Asm {
     // ARITH A IMM8
     if bits8(&op, 2, 0) == 0b110 {
         return match bits8(&op, 5, 3) {
-            0b000 => Asm::Add_A_Imm8,
-            0b001 => Asm::Adc_A_Imm8,
-            0b010 => Asm::Sub_A_Imm8,
-            0b011 => Asm::Sbc_A_Imm8,
+            0b000 => Instr::Add_A_Imm8,
+            0b001 => Instr::Adc_A_Imm8,
+            0b010 => Instr::Sub_A_Imm8,
+            0b011 => Instr::Sbc_A_Imm8,
 
-            0b100 => Asm::And_A_Imm8,
-            0b101 => Asm::Xor_A_Imm8,
-            0b110 => Asm::Or_A_Imm8,
-            0b111 => Asm::Cp_A_Imm8,
+            0b100 => Instr::And_A_Imm8,
+            0b101 => Instr::Xor_A_Imm8,
+            0b110 => Instr::Or_A_Imm8,
+            0b111 => Instr::Cp_A_Imm8,
 
             _ => {
                 panic!()
@@ -424,83 +424,83 @@ fn interpret_block_3_opcode(op: u8) -> Asm {
     // RET COND, RET, RETI
     let cond = Cond::from_u8(bits8(&op, 4, 3));
     if bit8(&op, 5) == 0b0 && bits8(&op, 2, 0) == 0b000 {
-        return Asm::Ret_Cond { cond };
+        return Instr::Ret_Cond { cond };
     }
     if bits8(&op, 5, 0) == 0b00_1001 {
-        return Asm::Ret;
+        return Instr::Ret;
     }
     if bits8(&op, 5, 0) == 0b01_1001 {
-        return Asm::Reti;
+        return Instr::Reti;
     }
 
     // JP COND IMM16, JP IMM16, JP HL
     if bit8(&op, 5) == 0b0 && bits8(&op, 2, 0) == 0b010 {
-        return Asm::Jp_Cond_Imm16 { cond };
+        return Instr::Jp_Cond_Imm16 { cond };
     }
     if bits8(&op, 5, 0) == 0b00_0011 {
-        return Asm::Jp_Imm16;
+        return Instr::Jp_Imm16;
     }
     if bits8(&op, 5, 0) == 0b10_1001 {
-        return Asm::Jp_Hl;
+        return Instr::Jp_Hl;
     }
 
     // CALL COND IMM16, CALL IMM16, RST TGT3
     if bit8(&op, 5) == 0b0 && bits8(&op, 2, 0) == 0b110 {
-        return Asm::Call_Cond_Imm16 { cond };
+        return Instr::Call_Cond_Imm16 { cond };
     }
     if bits8(&op, 5, 0) == 0b00_1101 {
-        return Asm::Call_Imm16;
+        return Instr::Call_Imm16;
     }
     if bits8(&op, 2, 0) == 0b111 {
         let tgt3 = bits8(&op, 5, 3);
-        return Asm::Rst_Tgt3 { tgt3 };
+        return Instr::Rst_Tgt3 { tgt3 };
     }
 
     // POP R16STK, PUSH R16STK
     let reg = R16Stk::from_u8(bits8(&op, 5, 4));
     if bits8(&op, 3, 0) == 0b0001 {
-        return Asm::Pop_R16Stk { reg };
+        return Instr::Pop_R16Stk { reg };
     }
     if bits8(&op, 3, 0) == 0b0101 {
-        return Asm::Push_R16Stk { reg };
+        return Instr::Push_R16Stk { reg };
     }
 
     // LD Ptr, LDH Ptr, ADD SP, LD SP, EI, DI
     match op {
         0b1110_0010 => {
-            return Asm::Ldh_CP_A;
+            return Instr::Ldh_CP_A;
         }
         0b1110_0000 => {
-            return Asm::Ldh_Imm8P_A;
+            return Instr::Ldh_Imm8P_A;
         }
         0b1110_1010 => {
-            return Asm::Ld_Imm16P_A;
+            return Instr::Ld_Imm16P_A;
         }
         0b1111_0010 => {
-            return Asm::Ldh_A_CP;
+            return Instr::Ldh_A_CP;
         }
         0b1111_0000 => {
-            return Asm::Ldh_A_Imm8P;
+            return Instr::Ldh_A_Imm8P;
         }
         0b11111010 => {
-            return Asm::Ld_A_Imm16P;
+            return Instr::Ld_A_Imm16P;
         }
 
         0b1110_1000 => {
-            return Asm::Add_Sp_Imm8;
+            return Instr::Add_Sp_Imm8;
         }
         0b1111_1000 => {
-            return Asm::Ld_Hl_SpImm8;
+            return Instr::Ld_Hl_SpImm8;
         }
         0b1111_1001 => {
-            return Asm::Ld_Sp_Hl;
+            return Instr::Ld_Sp_Hl;
         }
 
         0b1111_0011 => {
-            return Asm::Ei;
+            return Instr::Ei;
         }
         0b1111_1011 => {
-            return Asm::Di;
+            return Instr::Di;
         }
 
         _ => {}
