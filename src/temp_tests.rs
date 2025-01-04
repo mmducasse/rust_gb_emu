@@ -1,6 +1,6 @@
 use strum::IntoEnumIterator;
 
-use crate::{mem::mem::MemSection, sys::Sys};
+use crate::{mem::map::MemSection, sys::Sys};
 
 pub fn run(sys: &mut Sys) {
     // Mem sections

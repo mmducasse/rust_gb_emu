@@ -1,12 +1,12 @@
 use crate::{
     cpu::{
-        cpu::execute_next_instr,
+        exec::execute_next_instr,
         regs::{CpuReg16, CpuRegs},
     },
     debug::Debug,
     mem::{
         cart::Cart,
-        mem::{self, Addr, MemSection},
+        map::{self, Addr, MemSection},
         ram::Ram,
     },
 };
@@ -46,7 +46,7 @@ impl Sys {
     }
 
     pub fn rd_mem(&self, addr: Addr) -> u8 {
-        mem::read(self, addr)
+        map::read(self, addr)
     }
 
     pub fn rd_hl_p(&self) -> u8 {
@@ -55,7 +55,7 @@ impl Sys {
     }
 
     pub fn wr_mem(&mut self, addr: Addr, data: u8) {
-        mem::write(self, addr, data);
+        map::write(self, addr, data);
     }
 
     pub fn get_pc(&self) -> Addr {
