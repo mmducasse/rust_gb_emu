@@ -11,9 +11,18 @@ use crate::{
 };
 
 pub fn execute_next_instr(sys: &mut Sys) {
-    let pc = sys.get_pc();
-    let op = sys.rd_mem(pc);
-    let asm = decode(op);
+    let mut pc = sys.get_pc();
+    let mut op = sys.rd_mem(pc);
+    let has_cb_prefix;
+    if op == Instr::CB_PREFIX {
+        sys.inc_pc();
+        pc = sys.get_pc();
+        op = sys.rd_mem(pc);
+        has_cb_prefix = true;
+    } else {
+        has_cb_prefix = false;
+    }
+    let asm = decode(op, has_cb_prefix);
     // println!("[{:#02x}] {:?}", pc, asm);
 
     Debug::record_curr_instr(sys);
@@ -218,6 +227,42 @@ pub fn execute_next_instr(sys: &mut Sys) {
         }
         Instr::Ei => {
             ei(sys);
+        }
+
+        // 0xCB prefix ops.
+        Instr::Rlc_R8 { operand } => {
+            rlc_r8(sys, operand);
+        }
+        Instr::Rrc_R8 { operand } => {
+            rrc_r8(sys, operand);
+        }
+        Instr::Rl_R8 { operand } => {
+            rl_r8(sys, operand);
+        }
+        Instr::Rr_R8 { operand } => {
+            rr_r8(sys, operand);
+        }
+        Instr::Sla_R8 { operand } => {
+            sla_r8(sys, operand);
+        }
+        Instr::Sra_R8 { operand } => {
+            sra_r8(sys, operand);
+        }
+        Instr::Swap_R8 { operand } => {
+            swap_r8(sys, operand);
+        }
+        Instr::Srl_R8 { operand } => {
+            srl_r8(sys, operand);
+        }
+
+        Instr::Bit_B3_R8 { b3, operand } => {
+            bit_b3_r8(sys, b3, operand);
+        }
+        Instr::Res_B3_R8 { b3, operand } => {
+            res_b3_r8(sys, b3, operand);
+        }
+        Instr::Set_B3_R8 { b3, operand } => {
+            set_b3_r8(sys, b3, operand);
         }
 
         // Misc.
@@ -926,6 +971,138 @@ fn di(sys: &mut Sys) {
 
 fn ei(sys: &mut Sys) {
     println!("todo EI");
+}
+
+// 0xCB prefix functions.
+fn rlc_r8(sys: &mut Sys, operand: R8) {
+    let mut data = get_r8_data(sys, operand);
+    let c_ = bit8(&data, 7);
+
+    data = u8::rotate_left(data, 1);
+    set_r8_data(sys, operand, data);
+
+    sys.regs.set_flag(CpuFlag::Z, data == 0);
+    sys.regs.set_flag(CpuFlag::N, false);
+    sys.regs.set_flag(CpuFlag::H, false);
+    sys.regs.set_flag(CpuFlag::C, c_ == 1);
+}
+
+fn rrc_r8(sys: &mut Sys, operand: R8) {
+    let mut data = get_r8_data(sys, operand);
+    let c_ = bit8(&data, 0);
+
+    data = u8::rotate_right(data, 1);
+    set_r8_data(sys, operand, data);
+
+    sys.regs.set_flag(CpuFlag::Z, data == 0);
+    sys.regs.set_flag(CpuFlag::N, false);
+    sys.regs.set_flag(CpuFlag::H, false);
+    sys.regs.set_flag(CpuFlag::C, c_ == 1);
+}
+
+fn rl_r8(sys: &mut Sys, operand: R8) {
+    let mut data = get_r8_data(sys, operand);
+    let c = sys.regs.get_flag(CpuFlag::C).into();
+    let c_ = bit8(&data, 7);
+
+    data = u8::rotate_left(data, 1);
+    set_bit8(&mut data, 0, c);
+    set_r8_data(sys, operand, data);
+
+    sys.regs.set_flag(CpuFlag::Z, data == 0);
+    sys.regs.set_flag(CpuFlag::N, false);
+    sys.regs.set_flag(CpuFlag::H, false);
+    sys.regs.set_flag(CpuFlag::C, c_ == 1);
+}
+
+fn rr_r8(sys: &mut Sys, operand: R8) {
+    let mut data = get_r8_data(sys, operand);
+    let c = sys.regs.get_flag(CpuFlag::C).into();
+    let c_ = bit8(&data, 0);
+
+    data = u8::rotate_right(data, 1);
+    set_bit8(&mut data, 7, c);
+    set_r8_data(sys, operand, data);
+
+    sys.regs.set_flag(CpuFlag::Z, data == 0);
+    sys.regs.set_flag(CpuFlag::N, false);
+    sys.regs.set_flag(CpuFlag::H, false);
+    sys.regs.set_flag(CpuFlag::C, c_ == 1);
+}
+
+fn sla_r8(sys: &mut Sys, operand: R8) {
+    let mut data = get_r8_data(sys, operand);
+    let c_ = bit8(&data, 7);
+
+    data = u8::wrapping_shl(data, 1); // todo correct??
+    set_r8_data(sys, operand, data);
+
+    sys.regs.set_flag(CpuFlag::Z, data == 0);
+    sys.regs.set_flag(CpuFlag::N, false);
+    sys.regs.set_flag(CpuFlag::H, false);
+    sys.regs.set_flag(CpuFlag::C, c_ == 1);
+}
+
+fn sra_r8(sys: &mut Sys, operand: R8) {
+    let mut data = get_r8_data(sys, operand);
+    let data7 = bit8(&data, 7);
+    let c_ = bit8(&data, 0);
+
+    data = u8::wrapping_shr(data, 1); // todo correct??
+    set_bit8(&mut data, 7, data7);
+    set_r8_data(sys, operand, data);
+
+    sys.regs.set_flag(CpuFlag::Z, data == 0);
+    sys.regs.set_flag(CpuFlag::N, false);
+    sys.regs.set_flag(CpuFlag::H, false);
+    sys.regs.set_flag(CpuFlag::C, c_ == 1);
+}
+
+fn swap_r8(sys: &mut Sys, operand: R8) {
+    let mut data = get_r8_data(sys, operand);
+
+    data = u8::rotate_left(data, 4);
+
+    set_r8_data(sys, operand, data);
+
+    sys.regs.set_flag(CpuFlag::Z, data == 0);
+    sys.regs.set_flag(CpuFlag::N, false);
+    sys.regs.set_flag(CpuFlag::H, false);
+    sys.regs.set_flag(CpuFlag::C, false);
+}
+
+fn srl_r8(sys: &mut Sys, operand: R8) {
+    let mut data = get_r8_data(sys, operand);
+    let c_ = bit8(&data, 0);
+
+    data = u8::wrapping_shr(data, 1); // todo correct??
+    set_r8_data(sys, operand, data);
+
+    sys.regs.set_flag(CpuFlag::Z, data == 0);
+    sys.regs.set_flag(CpuFlag::N, false);
+    sys.regs.set_flag(CpuFlag::H, false);
+    sys.regs.set_flag(CpuFlag::C, c_ == 1);
+}
+
+fn bit_b3_r8(sys: &mut Sys, b3: u8, operand: R8) {
+    let data = get_r8_data(sys, operand);
+    let bit = bit8(&data, b3);
+
+    sys.regs.set_flag(CpuFlag::Z, bit == 0);
+    sys.regs.set_flag(CpuFlag::N, false);
+    sys.regs.set_flag(CpuFlag::H, true);
+}
+
+fn res_b3_r8(sys: &mut Sys, b3: u8, operand: R8) {
+    let mut data = get_r8_data(sys, operand);
+    set_bit8(&mut data, b3, 0);
+    set_r8_data(sys, operand, data);
+}
+
+fn set_b3_r8(sys: &mut Sys, b3: u8, operand: R8) {
+    let mut data = get_r8_data(sys, operand);
+    set_bit8(&mut data, b3, 1);
+    set_r8_data(sys, operand, data);
 }
 
 // Misc functions.

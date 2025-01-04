@@ -99,12 +99,12 @@ impl CpuRegs {
     }
 
     pub fn get_flag(&self, flag: CpuFlag) -> bool {
-        let idx = flag as usize;
+        let idx = flag as u8;
         return bit8(&self.get_8(CpuReg8::F), idx) > 0;
     }
 
     pub fn set_flag(&mut self, flag: CpuFlag, value: bool) {
-        let idx = flag as usize;
+        let idx = flag as u8;
         let value = if value { 0b1 } else { 0b0 };
         return set_bit8(self.mut_8(CpuReg8::F), idx, value);
     }

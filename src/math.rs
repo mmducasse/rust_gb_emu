@@ -1,4 +1,4 @@
-pub fn bit8(op: &u8, idx: usize) -> u8 {
+pub fn bit8(op: &u8, idx: u8) -> u8 {
     (op >> idx) & 0b1
 }
 
@@ -13,7 +13,7 @@ pub fn bits8(op: &u8, hi: usize, lo: usize) -> u8 {
     return (op >> lo) & mask;
 }
 
-pub fn set_bit8(data: &mut u8, idx: usize, value: u8) {
+pub fn set_bit8(data: &mut u8, idx: u8, value: u8) {
     let mask = 0x1 << idx;
 
     if (value & 0x1) > 0 {

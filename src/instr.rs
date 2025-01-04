@@ -89,11 +89,27 @@ pub enum Instr {
     Di,
     Ei,
 
+    // 0xCB prefix instrs.
+    Rlc_R8 { operand: R8 },
+    Rrc_R8 { operand: R8 },
+    Rl_R8 { operand: R8 },
+    Rr_R8 { operand: R8 },
+    Sla_R8 { operand: R8 },
+    Sra_R8 { operand: R8 },
+    Swap_R8 { operand: R8 },
+    Srl_R8 { operand: R8 },
+
+    Bit_B3_R8 { b3: u8, operand: R8 },
+    Res_B3_R8 { b3: u8, operand: R8 },
+    Set_B3_R8 { b3: u8, operand: R8 },
+
     // Misc.
     HardLock,
 }
 
 impl Instr {
+    pub const CB_PREFIX: u8 = 0xCB;
+
     pub fn imm_type(&self) -> ImmType {
         match self {
             Instr::Ld_R16_Imm16 { .. } => ImmType::Imm16,
@@ -262,20 +278,21 @@ pub enum ImmType {
     Imm16,
 }
 
-pub fn decode(op: u8) -> Instr {
-    if op == 0xCB {
-        panic!("0xCB opcode");
+pub fn decode(op: u8, has_cb_prefix: bool) -> Instr {
+    if has_cb_prefix {
+        return decode_cp_prefix_opcode(op);
     }
 
-    let block = (op >> 6) & 0b11;
-
-    match block {
+    let block = bits8(&op, 7, 6);
+    return match block {
         0b00 => decode_block_0_opcode(op),
         0b01 => decode_block_1_opcode(op),
         0b10 => decode_block_2_opcode(op),
         0b11 => decode_block_3_opcode(op),
-        _ => Instr::Nop,
-    }
+        _ => {
+            panic!();
+        }
+    };
 }
 
 fn decode_block_0_opcode(op: u8) -> Instr {
@@ -507,4 +524,37 @@ fn decode_block_3_opcode(op: u8) -> Instr {
     };
 
     panic!("Unexpected block 3 opcode: {:#02x} ({:#02b})", op, op);
+}
+
+fn decode_cp_prefix_opcode(op: u8) -> Instr {
+    let operand = R8::from_u8(bits8(&op, 2, 0));
+
+    if bits8(&op, 7, 6) == 0b00 {
+        return match bits8(&op, 5, 3) {
+            0b000 => Instr::Rlc_R8 { operand },
+            0b001 => Instr::Rrc_R8 { operand },
+            0b010 => Instr::Rl_R8 { operand },
+            0b011 => Instr::Rr_R8 { operand },
+
+            0b100 => Instr::Sla_R8 { operand },
+            0b101 => Instr::Sra_R8 { operand },
+            0b110 => Instr::Swap_R8 { operand },
+            0b111 => Instr::Srl_R8 { operand },
+
+            _ => {
+                panic!();
+            }
+        };
+    }
+
+    let b3 = bits8(&op, 5, 3);
+    return match bits8(&op, 7, 6) {
+        0b01 => Instr::Bit_B3_R8 { b3, operand },
+        0b10 => Instr::Res_B3_R8 { b3, operand },
+        0b11 => Instr::Set_B3_R8 { b3, operand },
+
+        _ => {
+            panic!();
+        }
+    };
 }

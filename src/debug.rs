@@ -33,9 +33,16 @@ impl Debug {
     }
 
     pub fn record_curr_instr(sys: &mut Sys) {
-        let pc = sys.get_pc();
-        let op = sys.rd_mem(pc);
-        let asm = decode(op);
+        let mut pc = sys.get_pc();
+        let mut op = sys.rd_mem(pc);
+        let mut has_cb_prefix = false;
+        if op == Instr::CB_PREFIX {
+            sys.inc_pc();
+            pc = sys.get_pc();
+            op = sys.rd_mem(pc);
+            has_cb_prefix = true;
+        }
+        let asm = decode(op, has_cb_prefix);
 
         let imm_value = match asm.imm_type() {
             ImmType::None => ImmValue::None,
