@@ -1,5 +1,6 @@
 use crate::{
     cart::Cart,
+    cpu::execute_next_instr,
     debug::Debug,
     mem::{self, Addr, MemSection},
     ram::Ram,
@@ -31,8 +32,22 @@ impl Sys {
         }
     }
 
+    pub fn run(&mut self) {
+        while !self.hard_lock {
+            execute_next_instr(self);
+            if self.debug.nop_count > Debug::EXIT_AFTER_NOP_COUNT {
+                break;
+            }
+        }
+    }
+
     pub fn rd_mem(&self, addr: Addr) -> u8 {
         mem::read(self, addr)
+    }
+
+    pub fn rd_hl_p(&self) -> u8 {
+        let addr = self.regs.get_16(CpuReg16::HL);
+        self.rd_mem(addr)
     }
 
     pub fn wr_mem(&mut self, addr: Addr, data: u8) {

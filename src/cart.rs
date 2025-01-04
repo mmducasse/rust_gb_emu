@@ -1,6 +1,8 @@
 use std::{
+    ffi::OsStr,
     fs::{self, read_to_string},
     mem::transmute,
+    path::Path,
 };
 
 use crate::print::slice_to_hex_string;
@@ -12,6 +14,20 @@ pub struct Cart {
 impl Cart {
     pub fn new() -> Self {
         Self { rom: vec![] }
+    }
+
+    pub fn load(&mut self, file_path: &str) {
+        let Some(ext) = Path::new(file_path).extension() else {
+            panic!("File extension for file {} wasn't specified.", file_path);
+        };
+
+        println!("{:?}", ext);
+
+        if ext == OsStr::new("gb") {
+            self.load_from_gb_rom_file(file_path);
+        } else {
+            todo!()
+        }
     }
 
     pub fn load_from_script_file(&mut self, file_path: &str) {

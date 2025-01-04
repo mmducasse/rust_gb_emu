@@ -42,7 +42,7 @@ pub enum CpuFlag {
     C = 4,
 }
 
-#[derive(Default, Clone)]
+#[derive(Default, Clone, PartialEq, Eq, Debug)]
 pub struct CpuRegs {
     regs8: [u8; 8],
 

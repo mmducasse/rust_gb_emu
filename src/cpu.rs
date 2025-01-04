@@ -24,7 +24,9 @@ pub fn execute_next_instr(sys: &mut Sys) {
     }
     let instr = decode(op, has_cb_prefix);
 
-    println!("[{:#02x}] {:?}", pc, instr);
+    if sys.debug.enable {
+        println!("[{:#02x}] {:?}", pc, instr);
+    }
 
     Debug::record_curr_instr(sys);
 

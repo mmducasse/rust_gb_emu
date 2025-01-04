@@ -25,6 +25,7 @@ mod ram;
 mod regs;
 mod sys;
 mod temp_tests;
+mod test;
 mod util;
 
 fn main() {
@@ -39,15 +40,8 @@ fn main() {
     //     ".\\assets\\imported_test_roms\\cpu_instrs\\individual\\03-op sp,hl.gb",
     // );
     sys.cart
-        .load_from_gb_rom_file(".\\assets\\files\\custom_roms\\ld_r8_r8\\rom.gb");
+        .load(".\\assets\\files\\custom_roms\\ld_r8_r8\\rom.gb");
 
     sys.debug.enable = true;
-
-    while !sys.hard_lock {
-        execute_next_instr(&mut sys);
-        if sys.debug.nop_count > Debug::EXIT_AFTER_NOP_COUNT {
-            break;
-        }
-        //sys.regs.print();
-    }
+    sys.run();
 }
