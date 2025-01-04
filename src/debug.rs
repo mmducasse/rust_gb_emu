@@ -9,12 +9,14 @@ use crate::{
 };
 
 pub struct Debug {
-    asm_ring_buffer: RingBuffer<AsmRecord>,
+    pub enable: bool,
+    pub nop_count: u32,
+    instr_ring_buffer: RingBuffer<InstrRecord>,
 }
 
-struct AsmRecord {
+struct InstrRecord {
     addr: u16,
-    asm: Instr,
+    instr: Instr,
     imm: ImmValue,
     regs: CpuRegs,
 }
@@ -26,9 +28,13 @@ enum ImmValue {
 }
 
 impl Debug {
+    pub const EXIT_AFTER_NOP_COUNT: u32 = 8;
+
     pub fn new() -> Self {
         Self {
-            asm_ring_buffer: RingBuffer::new(10),
+            enable: false,
+            nop_count: 0,
+            instr_ring_buffer: RingBuffer::new(10),
         }
     }
 
@@ -42,9 +48,17 @@ impl Debug {
             op = sys.rd_mem(pc);
             has_cb_prefix = true;
         }
-        let asm = decode(op, has_cb_prefix);
+        let instr = decode(op, has_cb_prefix);
 
-        let imm_value = match asm.imm_type() {
+        if let Instr::Nop = instr {
+            // Don't record NOPs.
+            sys.debug.nop_count += 1;
+            return;
+        } else {
+            sys.debug.nop_count = 0;
+        }
+
+        let imm_value = match instr.imm_type() {
             ImmType::None => ImmValue::None,
             ImmType::Imm8 => {
                 let imm8 = sys.rd_mem(pc + 1);
@@ -58,29 +72,32 @@ impl Debug {
             }
         };
 
-        let record = AsmRecord {
+        let record = InstrRecord {
             addr: pc,
-            asm,
+            instr,
             imm: imm_value,
             regs: sys.regs.clone(),
         };
 
-        sys.debug.asm_ring_buffer.add(record);
+        sys.debug.instr_ring_buffer.add(record);
     }
 
     pub fn fail(sys: &Sys, msg: impl Into<String>) -> ! {
         println!("FAILURE: {}\n\n", msg.into());
 
-        // Print ASM record
-        println!("last {} instrs executed:", sys.debug.asm_ring_buffer.len());
-        for AsmRecord {
+        // Print Instr record
+        println!(
+            "last {} instrs executed:",
+            sys.debug.instr_ring_buffer.len()
+        );
+        for InstrRecord {
             addr,
-            asm,
+            instr,
             imm,
             regs,
-        } in sys.debug.asm_ring_buffer.iter()
+        } in sys.debug.instr_ring_buffer.iter()
         {
-            println!("  [${:0>4X}] {:?}", addr, asm);
+            println!("  [${:0>4X}] {:?}", addr, instr);
             unsafe {
                 match imm {
                     ImmValue::None => {}

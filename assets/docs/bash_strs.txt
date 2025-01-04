@@ -1,0 +1,3 @@
+/mnt/c/Users/matth/Documents/Code/Rust/Emulators/rust_gb_2/assets/files/custom_roms
+rgbasm -o rom_01.o rom_01.asm
+rgblink -d -o rom_01.gb rom_01.o

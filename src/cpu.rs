@@ -22,14 +22,15 @@ pub fn execute_next_instr(sys: &mut Sys) {
     } else {
         has_cb_prefix = false;
     }
-    let asm = decode(op, has_cb_prefix);
-    // println!("[{:#02x}] {:?}", pc, asm);
+    let instr = decode(op, has_cb_prefix);
+
+    // println!("[{:#02x}] {:?}", pc, instr);
 
     Debug::record_curr_instr(sys);
 
     sys.inc_pc();
 
-    match asm {
+    match instr {
         // Block 0.
         Instr::Nop => {}
         Instr::Ld_R16_Imm16 { dst } => {
@@ -270,12 +271,27 @@ pub fn execute_next_instr(sys: &mut Sys) {
             hard_lock(sys);
         }
     }
+
+    print_if_ld_a_a(sys, instr);
 }
 
 // Helper functions.
+fn print_if_ld_a_a(sys: &mut Sys, instr: Instr) {
+    if sys.debug.enable
+        && matches!(
+            instr,
+            Instr::Ld_R8_R8 {
+                dst: R8::A,
+                src: R8::A
+            }
+        )
+    {
+        sys.regs.print();
+    }
+}
+
 fn take_imm8(sys: &mut Sys) -> u8 {
     let imm8 = sys.rd_mem(sys.get_pc());
-    //println!("[{:#02x}] {:?}", pc, Asm::Imm8(imm8));
     sys.inc_pc();
 
     return imm8;
@@ -283,10 +299,8 @@ fn take_imm8(sys: &mut Sys) -> u8 {
 
 fn take_imm16(sys: &mut Sys) -> u16 {
     let lo = sys.rd_mem(sys.get_pc());
-    //println!("[{:#02x}] {:?}", pc, Asm::Imm16Lo(lo));
     sys.inc_pc();
     let hi = sys.rd_mem(sys.get_pc());
-    //println!("[{:#02x}] {:?}", pc, Asm::Imm16Hi(hi));
     sys.inc_pc();
 
     let imm16 = join_16(hi, lo);

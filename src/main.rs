@@ -6,6 +6,7 @@
 #![allow(static_mut_refs)]
 
 use cpu::execute_next_instr;
+use debug::Debug;
 use sys::Sys;
 
 extern crate num;
@@ -32,13 +33,21 @@ fn main() {
     let mut sys = Sys::new();
     //temp_tests::run(&mut sys);
 
-    sys.cart
-        .load_from_script_file(".\\assets\\files\\script_01.txt");
     // sys.cart
-    //     .load_from_gb_rom_file(".\\assets\\test_roms\\cpu_instrs\\individual\\03-op sp,hl.gb");
+    //     .load_from_script_file(".\\assets\\files\\script_01.txt");
+    // sys.cart.load_from_gb_rom_file(
+    //     ".\\assets\\imported_test_roms\\cpu_instrs\\individual\\03-op sp,hl.gb",
+    // );
+    sys.cart
+        .load_from_gb_rom_file(".\\assets\\files\\custom_roms\\rom_01.gb");
+
+    sys.debug.enable = true;
 
     while !sys.hard_lock {
         execute_next_instr(&mut sys);
-        // sys.regs.print();
+        if sys.debug.nop_count > Debug::EXIT_AFTER_NOP_COUNT {
+            break;
+        }
+        //sys.regs.print();
     }
 }

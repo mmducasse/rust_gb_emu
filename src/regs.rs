@@ -146,6 +146,12 @@ impl CpuRegs {
             self.get_16(PC)
         );
 
+        let z: u8 = self.get_flag(CpuFlag::Z).into();
+        let n: u8 = self.get_flag(CpuFlag::N).into();
+        let h: u8 = self.get_flag(CpuFlag::H).into();
+        let c: u8 = self.get_flag(CpuFlag::C).into();
+        println!("  Z={} N={} H={} C={}", z, n, h, c);
+
         println!();
     }
 }
