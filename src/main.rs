@@ -39,7 +39,7 @@ fn main() {
     //     ".\\assets\\imported_test_roms\\cpu_instrs\\individual\\03-op sp,hl.gb",
     // );
     sys.cart
-        .load_from_gb_rom_file(".\\assets\\files\\custom_roms\\rom_01.gb");
+        .load_from_gb_rom_file(".\\assets\\files\\custom_roms\\ld_r8_r8\\rom.gb");
 
     sys.debug.enable = true;
 

@@ -6,7 +6,7 @@ use crate::{
     math::{
         add16_ui, add16_uu, add8_ui, add_u16_i8, bit8, bits16, bits8, join_16, set_bit8, split_16,
     },
-    regs::{self, CpuFlag, CpuReg16, CpuReg8},
+    regs::{self, CpuFlag, CpuReg16, CpuReg8, CpuRegs},
     sys::Sys,
 };
 
@@ -24,7 +24,7 @@ pub fn execute_next_instr(sys: &mut Sys) {
     }
     let instr = decode(op, has_cb_prefix);
 
-    // println!("[{:#02x}] {:?}", pc, instr);
+    println!("[{:#02x}] {:?}", pc, instr);
 
     Debug::record_curr_instr(sys);
 
@@ -287,6 +287,7 @@ fn print_if_ld_a_a(sys: &mut Sys, instr: Instr) {
         )
     {
         sys.regs.print();
+        CpuRegs::print_key_addrs(sys);
     }
 }
 

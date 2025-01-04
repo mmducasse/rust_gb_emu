@@ -31,7 +31,7 @@ impl Sys {
         }
     }
 
-    pub fn rd_mem(&mut self, addr: Addr) -> u8 {
+    pub fn rd_mem(&self, addr: Addr) -> u8 {
         mem::read(self, addr)
     }
 

@@ -63,7 +63,7 @@ impl MemSection {
     }
 }
 
-pub fn read(sys: &mut Sys, addr: Addr) -> u8 {
+pub fn read(sys: &Sys, addr: Addr) -> u8 {
     //println!("Addr = {} {:#04x}", addr, addr);
     let (section, addr) = MemSection::from_addr(addr);
     //println!("Rel Addr ({:?}) = {} {:#04x}", section, addr, addr);
@@ -86,7 +86,8 @@ pub fn read(sys: &mut Sys, addr: Addr) -> u8 {
             todo!("Read from I/O regs");
         }
         MemSection::Hram => {
-            todo!("Read from HRAM");
+            // todo Read from HRAM
+            0x00
         }
         MemSection::IeReg => {
             todo!("Read from IE reg");
