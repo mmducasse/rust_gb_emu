@@ -17,11 +17,14 @@ impl Cart {
     }
 
     pub fn load(&mut self, file_path: &str) {
-        let Some(ext) = Path::new(file_path).extension() else {
+        let path = Path::new(file_path);
+        let Some(ext) = path.extension() else {
             panic!("File extension for file {} wasn't specified.", file_path);
         };
 
         if ext == OsStr::new("gb") {
+            let s = path.file_name().unwrap().to_str().unwrap();
+            println!("loaded rom: {}", s);
             self.load_from_gb_rom_file(file_path);
         } else {
             todo!()
