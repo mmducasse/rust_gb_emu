@@ -82,7 +82,7 @@ pub fn read(sys: &Sys, addr: Addr) -> u8 {
         }
         MemSection::IoRegs => sys.io_regs.rd(addr),
         MemSection::Hram => sys.hram.rd(addr),
-        MemSection::IeReg => sys.ie_reg,
+        MemSection::IeReg => sys.ie_reg.rd(addr),
     }
 }
 
@@ -118,7 +118,7 @@ pub fn write(sys: &mut Sys, addr: Addr, data: u8) {
             sys.hram.wr(addr, data);
         }
         MemSection::IeReg => {
-            sys.ie_reg = data;
+            sys.ie_reg.wr(addr, data);
         }
     }
 }

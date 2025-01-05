@@ -576,7 +576,8 @@ fn jr_cond_imm8(sys: &mut Sys, cond: Cond) {
 }
 
 fn stop(sys: &mut Sys) {
-    sys.hard_lock = true; // todo incorrect
+    sys.cpu_enable = false;
+    sys.lcd_enable = false;
 }
 
 // Block 1 functions.
@@ -586,7 +587,10 @@ fn ld_r8_r8(sys: &mut Sys, dst: R8, src: R8) {
 }
 
 fn halt(sys: &mut Sys) {
-    sys.hard_lock = true; // todo incorrect
+    if sys.interrupt_master_enable {
+        sys.cpu_enable = false;
+    }
+    // todo is there more to do here?
 }
 
 // Block 2 functions.
@@ -832,17 +836,15 @@ fn ret_cond(sys: &mut Sys, cond: Cond) {
 }
 
 fn ret(sys: &mut Sys) {
-    let lo = sys.rd_mem(sys.get_sp());
-    sys.inc_sp();
-    let hi = sys.rd_mem(sys.get_sp());
-    sys.inc_sp();
-
-    let pc = join_16(hi, lo);
-    sys.set_pc(pc);
+    let addr = pop_16(sys);
+    sys.set_pc(addr);
 }
 
 fn reti(sys: &mut Sys) {
-    todo!("Interrup related instr");
+    let addr = pop_16(sys);
+    sys.set_pc(addr);
+
+    sys.interrupt_master_enable = true;
 }
 
 fn jp_cond_imm16(sys: &mut Sys, cond: Cond) {
@@ -987,11 +989,11 @@ fn ld_sp_hl(sys: &mut Sys) {
 }
 
 fn di(sys: &mut Sys) {
-    println!("todo DI");
+    sys.interrupt_master_enable = false;
 }
 
 fn ei(sys: &mut Sys) {
-    println!("todo EI");
+    sys.interrupt_master_enable = true;
 }
 
 // 0xCB prefix functions.

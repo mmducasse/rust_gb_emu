@@ -12,6 +12,7 @@ use crate::{
         map::{self, Addr, MemSection},
         ram::Ram,
     },
+    util::math::{bit8, set_bit8},
 };
 
 pub struct Sys {
@@ -23,8 +24,11 @@ pub struct Sys {
     pub oam: Ram,
     pub io_regs: Ram,
     pub hram: Ram,
-    pub ie_reg: u8,
+    pub ie_reg: Ram,
 
+    pub cpu_enable: bool,
+    pub lcd_enable: bool,
+    pub interrupt_master_enable: bool,
     pub timer_data: TimerData,
 
     pub hard_lock: bool,
@@ -42,8 +46,11 @@ impl Sys {
             oam: Ram::new(MemSection::Oam.size()),
             io_regs: Ram::new(MemSection::IoRegs.size()),
             hram: Ram::new(MemSection::Hram.size()),
-            ie_reg: 0,
+            ie_reg: Ram::new(MemSection::IeReg.size()),
 
+            cpu_enable: true,
+            lcd_enable: true,
+            interrupt_master_enable: true,
             timer_data: TimerData::new(),
 
             hard_lock: false,
@@ -73,6 +80,11 @@ impl Sys {
         map::read(self, addr)
     }
 
+    pub fn rd_mem_bit(&self, addr: Addr, idx: u8) -> u8 {
+        let data = self.rd_mem(addr);
+        return bit8(&data, idx);
+    }
+
     pub fn rd_hl_p(&self) -> u8 {
         let addr = self.regs.get_16(CpuReg16::HL);
         self.rd_mem(addr)
@@ -80,6 +92,12 @@ impl Sys {
 
     pub fn wr_mem(&mut self, addr: Addr, data: u8) {
         map::write(self, addr, data);
+    }
+
+    pub fn wr_mem_bit(&mut self, addr: Addr, idx: u8, value: u8) {
+        let mut data = self.rd_mem(addr);
+        set_bit8(&mut data, idx, value);
+        self.wr_mem(addr, data);
     }
 
     pub fn get_pc(&self) -> Addr {
