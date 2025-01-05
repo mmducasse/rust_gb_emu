@@ -1,5 +1,6 @@
 use std::{
     collections::{HashMap, HashSet},
+    fmt::format,
     mem::transmute,
 };
 
@@ -18,6 +19,7 @@ pub struct Debug {
     pub total_instrs_executed: u64,
     instr_ring_buffer: RingBuffer<InstrRecord>,
     used_instrs: HashMap<Instr, u64>,
+    used_instr_variants: HashMap<String, u64>,
 }
 
 struct InstrRecord {
@@ -43,6 +45,7 @@ impl Debug {
             total_instrs_executed: 0,
             instr_ring_buffer: RingBuffer::new(10),
             used_instrs: HashMap::new(),
+            used_instr_variants: HashMap::new(),
         }
     }
 
@@ -93,11 +96,19 @@ impl Debug {
         };
 
         sys.debug.instr_ring_buffer.add(record);
+
         if sys.debug.used_instrs.get(&instr).is_none() {
             sys.debug.used_instrs.insert(instr, 0);
         }
         let count = sys.debug.used_instrs.get(&instr).unwrap();
         sys.debug.used_instrs.insert(instr, count + 1);
+
+        let variant_str = format!("{:?}", instr).split("{").collect::<Vec<_>>()[0].to_owned();
+        if sys.debug.used_instr_variants.get(&variant_str).is_none() {
+            sys.debug.used_instr_variants.insert(variant_str.clone(), 0);
+        }
+        let count = sys.debug.used_instr_variants.get(&variant_str).unwrap();
+        sys.debug.used_instr_variants.insert(variant_str, count + 1);
     }
 
     pub fn fail(sys: &Sys, msg: impl Into<String>) -> ! {
@@ -140,15 +151,25 @@ impl Debug {
             sys.debug.total_instrs_executed
         );
 
-        // // System state.
-        // println!("\nFinal state:");
-        // sys.regs.print();
-
         // Print all used instructions and counts.
-        println!("  unique instrs executed: {}", sys.debug.used_instrs.len());
+        println!(
+            "\n  unique instrs executed: {}",
+            sys.debug.used_instrs.len()
+        );
         for (instr, count) in &sys.debug.used_instrs {
             println!("    {:?}: {}", instr, count);
         }
+        println!(
+            "\n  unique instr variants executed: {}",
+            sys.debug.used_instr_variants.len()
+        );
+        for (variant_str, count) in &sys.debug.used_instr_variants {
+            println!("    {}: {}", variant_str, count);
+        }
+
+        // System state.
+        println!("\nFinal state:");
+        sys.regs.print();
 
         println!();
         panic!("");
