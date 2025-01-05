@@ -1,10 +1,7 @@
-use std::time::{Duration, Instant};
+use std::time::Duration;
 
 use crate::{
-    mem::{
-        io_regs::{DIV_ADDR, TAC_ADDR, TIMA_ADDR, TMA_ADDR},
-        map::Addr,
-    },
+    mem::io_regs::{DIV_ADDR, TAC_ADDR, TIMA_ADDR, TMA_ADDR},
     sys::Sys,
     util::math::{bit8, bits8},
 };
@@ -56,7 +53,7 @@ pub fn update_timer_regs(sys: &mut Sys, elapsed: Duration) {
     sys.wr_mem(DIV_ADDR, div_);
 
     let tac = sys.rd_mem(TAC_ADDR);
-    let enable = bit8(&tac, 2);
+    let enable = bit8(&tac, 2); // todo unused
     let clock_sel = bits8(&tac, 1, 0);
     let tima_clk_period = match clock_sel {
         0 => TAC_CLK_SEL_0_CLK_PERIOD,

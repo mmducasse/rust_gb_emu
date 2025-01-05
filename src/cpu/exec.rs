@@ -4,7 +4,7 @@ use crate::{
     debug::Debug,
     sys::Sys,
     util::math::{
-        add16_ui, add16_uu, add8_ui, add_u16_i8, bit8, bits16, bits8, join_16, set_bit8, split_16,
+        add16_ui, add16_uu, add_u16_i8, bit8, bits16, bits8, join_16, set_bit8, split_16,
     },
 };
 
@@ -868,7 +868,6 @@ fn call_cond_imm16(sys: &mut Sys, cond: Cond) {
     let imm16 = take_imm16(sys);
     if is_condition_met(sys, cond) {
         let pc = sys.get_pc();
-        let imm16 = take_imm16(sys);
         call(sys, pc, imm16);
     }
 }

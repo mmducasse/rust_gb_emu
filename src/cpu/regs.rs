@@ -1,5 +1,3 @@
-use std::mem::transmute;
-
 use crate::{
     sys::Sys,
     util::math::{bit8, join_16, set_bit8, split_16},

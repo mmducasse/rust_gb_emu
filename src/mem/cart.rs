@@ -1,6 +1,6 @@
 use std::{
     ffi::OsStr,
-    fs::{self, read_to_string},
+    fs::{self},
     mem::transmute,
     path::Path,
 };

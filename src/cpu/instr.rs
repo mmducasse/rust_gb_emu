@@ -1,5 +1,3 @@
-use std::ops::Range;
-
 use crate::{
     cpu::regs::{CpuReg16, CpuReg8},
     util::math::{bit8, bits8},
@@ -289,9 +287,7 @@ pub fn decode(op: u8, has_cb_prefix: bool) -> Instr {
         0b01 => decode_block_1_opcode(op),
         0b10 => decode_block_2_opcode(op),
         0b11 => decode_block_3_opcode(op),
-        _ => {
-            panic!();
-        }
+        _ => unreachable!(),
     };
 }
 
@@ -329,9 +325,7 @@ fn decode_block_0_opcode(op: u8) -> Instr {
             0b0011_0 => Instr::Scf,
             0b0011_1 => Instr::Ccf,
 
-            _ => {
-                panic!();
-            }
+            _ => unreachable!(),
         };
     }
 
@@ -401,9 +395,7 @@ fn decode_block_2_opcode(op: u8) -> Instr {
         0b110 => Instr::Or_A_R8 { operand },
         0b111 => Instr::Cp_A_R8 { operand },
 
-        _ => {
-            panic!()
-        }
+        _ => unreachable!(),
     }
 }
 
@@ -416,7 +408,7 @@ fn decode_block_3_opcode(op: u8) -> Instr {
     }
 
     if op == 0xCB {
-        panic!();
+        unreachable!();
     }
 
     // ARITH A IMM8
@@ -432,9 +424,7 @@ fn decode_block_3_opcode(op: u8) -> Instr {
             0b110 => Instr::Or_A_Imm8,
             0b111 => Instr::Cp_A_Imm8,
 
-            _ => {
-                panic!()
-            }
+            _ => unreachable!(),
         };
     }
 
@@ -541,9 +531,7 @@ fn decode_cp_prefix_opcode(op: u8) -> Instr {
             0b110 => Instr::Swap_R8 { operand },
             0b111 => Instr::Srl_R8 { operand },
 
-            _ => {
-                panic!();
-            }
+            _ => unreachable!(),
         };
     }
 
@@ -553,8 +541,6 @@ fn decode_cp_prefix_opcode(op: u8) -> Instr {
         0b10 => Instr::Res_B3_R8 { b3, operand },
         0b11 => Instr::Set_B3_R8 { b3, operand },
 
-        _ => {
-            panic!();
-        }
+        _ => unreachable!(),
     };
 }

@@ -5,8 +5,6 @@
 #![allow(unused_variables)]
 #![allow(static_mut_refs)]
 
-use cpu::exec::execute_next_instr;
-use debug::Debug;
 use sys::Sys;
 
 extern crate num;

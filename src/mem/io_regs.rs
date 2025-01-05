@@ -1,5 +1,3 @@
-use crate::util::math::{bit8, set_bit8};
-
 use super::{
     map::{Addr, MemSection},
     ram::Ram,

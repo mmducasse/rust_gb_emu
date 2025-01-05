@@ -2,9 +2,6 @@
 mod tests {
     use crate::{cpu::regs::CpuReg8, sys::Sys};
 
-    // Note this useful idiom: importing names from outer (for mod tests) scope.
-    use super::*;
-
     #[test]
     fn test_ld() {
         let mut sys = Sys::new();
