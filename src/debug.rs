@@ -12,6 +12,7 @@ use crate::{
 pub struct Debug {
     pub enable: bool,
     pub nop_count: u32,
+    pub total_instrs_executed: u64,
     instr_ring_buffer: RingBuffer<InstrRecord>,
 }
 
@@ -35,11 +36,14 @@ impl Debug {
         Self {
             enable: false,
             nop_count: 0,
+            total_instrs_executed: 0,
             instr_ring_buffer: RingBuffer::new(10),
         }
     }
 
     pub fn record_curr_instr(sys: &mut Sys) {
+        sys.debug.total_instrs_executed += 1;
+
         let mut pc = sys.get_pc();
         let mut op = sys.rd_mem(pc);
         let mut has_cb_prefix = false;
@@ -49,7 +53,10 @@ impl Debug {
             op = sys.rd_mem(pc);
             has_cb_prefix = true;
         }
-        let instr = decode(op, has_cb_prefix);
+        let instr = match decode(op, has_cb_prefix) {
+            Ok(instr) => instr,
+            Err(msg) => Debug::fail(sys, msg),
+        };
 
         if let Instr::Nop = instr {
             // Don't record NOPs.
@@ -84,8 +91,6 @@ impl Debug {
     }
 
     pub fn fail(sys: &Sys, msg: impl Into<String>) -> ! {
-        println!("FAILURE: {}\n\n", msg.into());
-
         // Print Instr record
         println!(
             "last {} instrs executed:",
@@ -119,10 +124,17 @@ impl Debug {
             regs.print();
         }
 
+        println!("FAILURE: {}\n", msg.into());
+        println!(
+            "  total instrs executed: {}",
+            sys.debug.total_instrs_executed
+        );
+
         // // System state.
         // println!("\nFinal state:");
         // sys.regs.print();
 
+        println!();
         panic!("");
     }
 }

@@ -3,6 +3,7 @@ use std::time::Instant;
 use crate::{
     cpu::{
         exec::execute_next_instr,
+        interrupt::try_handle_interrupts,
         regs::{CpuReg16, CpuRegs},
         timer::{update_timer_regs, TimerData},
     },
@@ -66,13 +67,22 @@ impl Sys {
 
             let elapsed = now - prev;
             update_timer_regs(self, elapsed);
+            try_handle_interrupts(self);
             execute_next_instr(self);
 
             if self.debug.nop_count > Debug::EXIT_AFTER_NOP_COUNT {
                 break;
             }
 
+            self.test_code();
+
             prev = now;
+        }
+    }
+
+    fn test_code(&mut self) {
+        if self.debug.total_instrs_executed > 100 {
+            self.hard_lock = true;
         }
     }
 

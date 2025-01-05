@@ -23,16 +23,11 @@ fn main() {
     println!("*** RUST GAMEBOY EMU (Matthew Ducasse 2025) ***");
 
     let mut sys = Sys::new();
-    //temp_tests::run(&mut sys);
+    // temp_tests::run(&mut sys);
 
-    // sys.cart
-    //     .load_from_script_file(".\\assets\\files\\script_01.txt");
-    // sys.cart.load_from_gb_rom_file(
-    //     ".\\assets\\imported_test_roms\\cpu_instrs\\individual\\03-op sp,hl.gb",
-    // );
-    sys.cart
-        .load(".\\assets\\files\\custom_roms\\ld_r8_r8\\rom.gb");
+    //sys.cart.load(".\\assets\\files\\custom_roms\\ld_r8_r8\\rom.gb");
+    sys.cart.load(".\\assets\\real_gb_roms\\tetris.gb");
 
-    // sys.debug.enable = true;
+    sys.debug.enable = true;
     sys.run();
 }

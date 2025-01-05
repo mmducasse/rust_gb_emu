@@ -81,5 +81,5 @@ pub fn update_timer_regs(sys: &mut Sys, elapsed: Duration) {
         sys.wr_mem(TIMA_ADDR, tima_);
     }
 
-    println!("DIV={}  TIMA={}", div_, tima_);
+    // println!("DIV={}  TIMA={}", div_, tima_);
 }

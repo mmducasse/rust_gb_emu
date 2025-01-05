@@ -276,54 +276,56 @@ pub enum ImmType {
     Imm16,
 }
 
-pub fn decode(op: u8, has_cb_prefix: bool) -> Instr {
+pub type DecodeResult = Result<Instr, String>;
+
+pub fn decode(op: u8, has_cb_prefix: bool) -> DecodeResult {
     if has_cb_prefix {
-        return decode_cp_prefix_opcode(op);
+        return Ok(decode_cp_prefix_opcode(op));
     }
 
     let block = bits8(&op, 7, 6);
     return match block {
         0b00 => decode_block_0_opcode(op),
-        0b01 => decode_block_1_opcode(op),
-        0b10 => decode_block_2_opcode(op),
+        0b01 => Ok(decode_block_1_opcode(op)),
+        0b10 => Ok(decode_block_2_opcode(op)),
         0b11 => decode_block_3_opcode(op),
         _ => unreachable!(),
     };
 }
 
-fn decode_block_0_opcode(op: u8) -> Instr {
+fn decode_block_0_opcode(op: u8) -> DecodeResult {
     // NOP
     if op == 0x00 {
-        return Instr::Nop;
+        return Ok(Instr::Nop);
     }
 
     // STOP
     if op == 0x10 {
-        return Instr::Stop;
+        return Ok(Instr::Stop);
     }
 
     // JR
     if bits8(&op, 2, 0) == 0b000 {
         if bit8(&op, 5) == 0b1 {
             let cond = Cond::from_u8(bits8(&op, 4, 3));
-            return Instr::Jr_Cond_Imm8 { cond };
+            return Ok(Instr::Jr_Cond_Imm8 { cond });
         } else {
-            return Instr::Jr_Imm8;
+            return Ok(Instr::Jr_Imm8);
         }
     }
 
     // RCLA, etc...
     if bits8(&op, 2, 0) == 0b111 {
         return match bits8(&op, 7, 3) {
-            0b0000_0 => Instr::Rlca,
-            0b0000_1 => Instr::RRca,
-            0b0001_0 => Instr::Rla,
-            0b0001_1 => Instr::Rra,
+            0b0000_0 => Ok(Instr::Rlca),
+            0b0000_1 => Ok(Instr::RRca),
+            0b0001_0 => Ok(Instr::Rla),
+            0b0001_1 => Ok(Instr::Rra),
 
-            0b0010_0 => Instr::Daa,
-            0b0010_1 => Instr::Cpl,
-            0b0011_0 => Instr::Scf,
-            0b0011_1 => Instr::Ccf,
+            0b0010_0 => Ok(Instr::Daa),
+            0b0010_1 => Ok(Instr::Cpl),
+            0b0011_0 => Ok(Instr::Scf),
+            0b0011_1 => Ok(Instr::Ccf),
 
             _ => unreachable!(),
         };
@@ -332,42 +334,45 @@ fn decode_block_0_opcode(op: u8) -> Instr {
     // LD R8 IMM8
     if bits8(&op, 2, 0) == 0b110 {
         let dst = R8::from_u8(bits8(&op, 5, 3));
-        return Instr::Ld_R8_Imm8 { dst };
+        return Ok(Instr::Ld_R8_Imm8 { dst });
     }
 
     // INC R8, DEC R8
     let operand = R8::from_u8(bits8(&op, 5, 3));
     if bits8(&op, 2, 0) == 0b100 {
-        return Instr::Inc_R8 { operand };
+        return Ok(Instr::Inc_R8 { operand });
     } else if bits8(&op, 2, 0) == 0b101 {
-        return Instr::Dec_R8 { operand };
+        return Ok(Instr::Dec_R8 { operand });
     }
 
     // INC R16, DEC R16, and ADD HL R16
     let operand = R16::from_u8(bits8(&op, 5, 4));
     if bits8(&op, 3, 0) == 0b0011 {
-        return Instr::Inc_R16 { operand };
+        return Ok(Instr::Inc_R16 { operand });
     } else if bits8(&op, 3, 0) == 0b1011 {
-        return Instr::Dec_R16 { operand };
+        return Ok(Instr::Dec_R16 { operand });
     } else if bits8(&op, 3, 0) == 0b1001 {
-        return Instr::Add_Hl_R16 { operand };
+        return Ok(Instr::Add_Hl_R16 { operand });
     }
 
     // LD R16 IMM16, LD R16MEMP A, LD A R16MEMP, LD IMM16P SP
     if bits8(&op, 3, 0) == 0b0001 {
         let dst = R16::from_u8(bits8(&op, 5, 4));
-        return Instr::Ld_R16_Imm16 { dst };
+        return Ok(Instr::Ld_R16_Imm16 { dst });
     } else if bits8(&op, 3, 0) == 0b0010 {
         let dst = R16Mem::from_u8(bits8(&op, 5, 4));
-        return Instr::Ld_R16MemP_A { dst };
+        return Ok(Instr::Ld_R16MemP_A { dst });
     } else if bits8(&op, 3, 0) == 0b1010 {
         let src = R16Mem::from_u8(bits8(&op, 5, 4));
-        return Instr::Ld_A_R16MemP { src };
+        return Ok(Instr::Ld_A_R16MemP { src });
     } else if bits8(&op, 3, 0) == 0b1000 {
-        return Instr::Ld_Imm16P_Sp;
+        return Ok(Instr::Ld_Imm16P_Sp);
     }
 
-    panic!("Unexpected block 0 opcode: {:#02x} ({:#02b})", op, op);
+    return Err(format!(
+        "Unexpected block 0 opcode: {:#02x} ({:#02b})",
+        op, op
+    ));
 }
 
 fn decode_block_1_opcode(op: u8) -> Instr {
@@ -399,12 +404,12 @@ fn decode_block_2_opcode(op: u8) -> Instr {
     }
 }
 
-fn decode_block_3_opcode(op: u8) -> Instr {
+fn decode_block_3_opcode(op: u8) -> DecodeResult {
     const INVALID_OPS: &[u8] = &[
         0xD3, 0xDB, 0xDD, 0xE3, 0xE4, 0xEB, 0xEC, 0xED, 0xF4, 0xFC, 0xFD,
     ];
     if INVALID_OPS.contains(&op) {
-        return Instr::HardLock;
+        return Ok(Instr::HardLock);
     }
 
     if op == 0xCB {
@@ -414,15 +419,15 @@ fn decode_block_3_opcode(op: u8) -> Instr {
     // ARITH A IMM8
     if bits8(&op, 2, 0) == 0b110 {
         return match bits8(&op, 5, 3) {
-            0b000 => Instr::Add_A_Imm8,
-            0b001 => Instr::Adc_A_Imm8,
-            0b010 => Instr::Sub_A_Imm8,
-            0b011 => Instr::Sbc_A_Imm8,
+            0b000 => Ok(Instr::Add_A_Imm8),
+            0b001 => Ok(Instr::Adc_A_Imm8),
+            0b010 => Ok(Instr::Sub_A_Imm8),
+            0b011 => Ok(Instr::Sbc_A_Imm8),
 
-            0b100 => Instr::And_A_Imm8,
-            0b101 => Instr::Xor_A_Imm8,
-            0b110 => Instr::Or_A_Imm8,
-            0b111 => Instr::Cp_A_Imm8,
+            0b100 => Ok(Instr::And_A_Imm8),
+            0b101 => Ok(Instr::Xor_A_Imm8),
+            0b110 => Ok(Instr::Or_A_Imm8),
+            0b111 => Ok(Instr::Cp_A_Imm8),
 
             _ => unreachable!(),
         };
@@ -431,89 +436,92 @@ fn decode_block_3_opcode(op: u8) -> Instr {
     // RET COND, RET, RETI
     let cond = Cond::from_u8(bits8(&op, 4, 3));
     if bit8(&op, 5) == 0b0 && bits8(&op, 2, 0) == 0b000 {
-        return Instr::Ret_Cond { cond };
+        return Ok(Instr::Ret_Cond { cond });
     }
     if bits8(&op, 5, 0) == 0b00_1001 {
-        return Instr::Ret;
+        return Ok(Instr::Ret);
     }
     if bits8(&op, 5, 0) == 0b01_1001 {
-        return Instr::Reti;
+        return Ok(Instr::Reti);
     }
 
     // JP COND IMM16, JP IMM16, JP HL
     if bit8(&op, 5) == 0b0 && bits8(&op, 2, 0) == 0b010 {
-        return Instr::Jp_Cond_Imm16 { cond };
+        return Ok(Instr::Jp_Cond_Imm16 { cond });
     }
     if bits8(&op, 5, 0) == 0b00_0011 {
-        return Instr::Jp_Imm16;
+        return Ok(Instr::Jp_Imm16);
     }
     if bits8(&op, 5, 0) == 0b10_1001 {
-        return Instr::Jp_Hl;
+        return Ok(Instr::Jp_Hl);
     }
 
     // CALL COND IMM16, CALL IMM16, RST TGT3
     if bit8(&op, 5) == 0b0 && bits8(&op, 2, 0) == 0b110 {
-        return Instr::Call_Cond_Imm16 { cond };
+        return Ok(Instr::Call_Cond_Imm16 { cond });
     }
     if bits8(&op, 5, 0) == 0b00_1101 {
-        return Instr::Call_Imm16;
+        return Ok(Instr::Call_Imm16);
     }
     if bits8(&op, 2, 0) == 0b111 {
         let tgt3 = bits8(&op, 5, 3);
-        return Instr::Rst_Tgt3 { tgt3 };
+        return Ok(Instr::Rst_Tgt3 { tgt3 });
     }
 
     // POP R16STK, PUSH R16STK
     let reg = R16Stk::from_u8(bits8(&op, 5, 4));
     if bits8(&op, 3, 0) == 0b0001 {
-        return Instr::Pop_R16Stk { reg };
+        return Ok(Instr::Pop_R16Stk { reg });
     }
     if bits8(&op, 3, 0) == 0b0101 {
-        return Instr::Push_R16Stk { reg };
+        return Ok(Instr::Push_R16Stk { reg });
     }
 
     // LD Ptr, LDH Ptr, ADD SP, LD SP, EI, DI
     match op {
         0b1110_0010 => {
-            return Instr::Ldh_CP_A;
+            return Ok(Instr::Ldh_CP_A);
         }
         0b1110_0000 => {
-            return Instr::Ldh_Imm8P_A;
+            return Ok(Instr::Ldh_Imm8P_A);
         }
         0b1110_1010 => {
-            return Instr::Ld_Imm16P_A;
+            return Ok(Instr::Ld_Imm16P_A);
         }
         0b1111_0010 => {
-            return Instr::Ldh_A_CP;
+            return Ok(Instr::Ldh_A_CP);
         }
         0b1111_0000 => {
-            return Instr::Ldh_A_Imm8P;
+            return Ok(Instr::Ldh_A_Imm8P);
         }
         0b11111010 => {
-            return Instr::Ld_A_Imm16P;
+            return Ok(Instr::Ld_A_Imm16P);
         }
 
         0b1110_1000 => {
-            return Instr::Add_Sp_Imm8;
+            return Ok(Instr::Add_Sp_Imm8);
         }
         0b1111_1000 => {
-            return Instr::Ld_Hl_SpImm8;
+            return Ok(Instr::Ld_Hl_SpImm8);
         }
         0b1111_1001 => {
-            return Instr::Ld_Sp_Hl;
+            return Ok(Instr::Ld_Sp_Hl);
         }
 
         0b1111_0011 => {
-            return Instr::Ei;
+            return Ok(Instr::Ei);
         }
         0b1111_1011 => {
-            return Instr::Di;
+            return Ok(Instr::Di);
         }
 
         _ => {}
     };
 
-    panic!("Unexpected block 3 opcode: {:#02x} ({:#02b})", op, op);
+    return Err(format!(
+        "Unexpected block 3 opcode: {:#02x} ({:#02b})",
+        op, op
+    ));
 }
 
 fn decode_cp_prefix_opcode(op: u8) -> Instr {

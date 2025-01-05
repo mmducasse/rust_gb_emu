@@ -26,7 +26,10 @@ pub fn execute_next_instr(sys: &mut Sys) {
     } else {
         has_cb_prefix = false;
     }
-    let instr = decode(op, has_cb_prefix);
+    let instr = match decode(op, has_cb_prefix) {
+        Ok(instr) => instr,
+        Err(msg) => Debug::fail(sys, msg),
+    };
 
     if sys.debug.enable {
         println!("[{:#02x}] {:?}", pc, instr);
@@ -301,6 +304,10 @@ fn take_imm8(sys: &mut Sys) -> u8 {
     let imm8 = sys.rd_mem(sys.get_pc());
     sys.inc_pc();
 
+    if sys.debug.enable {
+        println!("  imm8: {:0>2X} ({})", imm8, imm8);
+    }
+
     return imm8;
 }
 
@@ -311,6 +318,11 @@ fn take_imm16(sys: &mut Sys) -> u16 {
     sys.inc_pc();
 
     let imm16 = join_16(hi, lo);
+
+    if sys.debug.enable {
+        println!("  imm16: {:0>4X} ({})", imm16, imm16);
+    }
+
     return imm16;
 }
 
@@ -382,7 +394,7 @@ fn pop_16(sys: &mut Sys) -> u16 {
     return join_16(hi, lo);
 }
 
-fn call(sys: &mut Sys, prev_pc: u16, next_pc: u16) {
+pub fn call(sys: &mut Sys, prev_pc: u16, next_pc: u16) {
     push_16(sys, prev_pc);
     sys.set_pc(next_pc);
 }
@@ -413,14 +425,6 @@ fn inc_dec_r16(sys: &mut Sys, operand: R16, inc: i16) {
     data = add16_ui(data, inc);
     sys.regs.set_16(operand.get_reg(), data);
 }
-
-// fn add_r16(sys: &mut Sys, dst: R16, operand: R16) {
-//     let mut a = sys.regs.get_16(dst.get_reg());
-//     let b = sys.regs.get_16(operand.get_reg());
-
-//     a = add16_uu(a, b);
-//     sys.regs.set_16(dst.get_reg(), a);
-// }
 
 fn add_hl_r16(sys: &mut Sys, operand: R16) {
     let hl = sys.regs.get_16(CpuReg16::HL);
