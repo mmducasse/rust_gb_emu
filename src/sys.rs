@@ -4,6 +4,7 @@ use crate::{
     cpu::{
         exec::execute_next_instr,
         regs::{CpuReg16, CpuRegs},
+        timer::{update_timer_regs, TimerData},
     },
     debug::Debug,
     mem::{
@@ -22,8 +23,9 @@ pub struct Sys {
     pub oam: Ram,
     pub io_regs: Ram,
     pub hram: Ram,
-
     pub ie_reg: u8,
+
+    pub timer_data: TimerData,
 
     pub hard_lock: bool,
     pub debug: Debug,
@@ -40,8 +42,9 @@ impl Sys {
             oam: Ram::new(MemSection::Oam.size()),
             io_regs: Ram::new(MemSection::IoRegs.size()),
             hram: Ram::new(MemSection::Hram.size()),
-
             ie_reg: 0,
+
+            timer_data: TimerData::new(),
 
             hard_lock: false,
             debug: Debug::new(),
@@ -49,14 +52,20 @@ impl Sys {
     }
 
     pub fn run(&mut self) {
+        let mut prev = Instant::now();
         while !self.hard_lock {
-            //let start = Instant::now();
+            let now = Instant::now();
+            // println!("Iter: {:?}", now);
+
+            let elapsed = now - prev;
+            update_timer_regs(self, elapsed);
             execute_next_instr(self);
-            //println!("elapsed = {} ns", start.elapsed().as_nanos());
 
             if self.debug.nop_count > Debug::EXIT_AFTER_NOP_COUNT {
                 break;
             }
+
+            prev = now;
         }
     }
 
