@@ -10,6 +10,7 @@ use crate::{
     debug::Debug,
     mem::{
         cart::Cart,
+        io_regs::{IE_ADDR, IF_ADDR},
         map::{self, Addr, MemSection},
         ram::Ram,
     },
@@ -142,5 +143,12 @@ impl Sys {
         let mut sp = self.get_sp();
         sp = u16::wrapping_sub(sp, 1);
         self.regs.set_16(CpuReg16::SP, sp);
+    }
+
+    pub fn print(&self) {
+        self.regs.print();
+        println!("IME={}", self.interrupt_master_enable);
+        println!("IE={:0>8b}", self.rd_mem(IE_ADDR));
+        println!("IF={:0>8b}", self.rd_mem(IF_ADDR));
     }
 }

@@ -169,7 +169,7 @@ impl Debug {
 
         // System state.
         println!("\nFinal state:");
-        sys.regs.print();
+        sys.print();
 
         println!();
         panic!("");
