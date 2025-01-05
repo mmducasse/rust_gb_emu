@@ -3,7 +3,7 @@ use crate::{
     util::math::{bit8, bits8},
 };
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 /// Interpretation of a 1-byte opcode instruction in ROM.
 pub enum Instr {
     // Block 0 instrs.
@@ -143,7 +143,7 @@ impl Instr {
     }
 }
 
-#[derive(Clone, Copy, FromPrimitive, Debug)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash, FromPrimitive, Debug)]
 pub enum R8 {
     B,
     C,
@@ -178,7 +178,7 @@ impl R8 {
     }
 }
 
-#[derive(Clone, Copy, FromPrimitive, Debug)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash, FromPrimitive, Debug)]
 pub enum R16 {
     BC,
     DE,
@@ -201,7 +201,7 @@ impl R16 {
     }
 }
 
-#[derive(Clone, Copy, FromPrimitive, Debug)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash, FromPrimitive, Debug)]
 pub enum R16Stk {
     BC,
     DE,
@@ -224,7 +224,7 @@ impl R16Stk {
     }
 }
 
-#[derive(Clone, Copy, FromPrimitive, Debug)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash, FromPrimitive, Debug)]
 pub enum R16Mem {
     BC,
     DE,
@@ -255,7 +255,7 @@ impl R16Mem {
     }
 }
 
-#[derive(Clone, Copy, FromPrimitive, Debug)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash, FromPrimitive, Debug)]
 pub enum Cond {
     NZ,
     Z,

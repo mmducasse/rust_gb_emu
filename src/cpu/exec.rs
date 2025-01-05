@@ -31,7 +31,7 @@ pub fn execute_next_instr(sys: &mut Sys) {
         Err(msg) => Debug::fail(sys, msg),
     };
 
-    if sys.debug.enable {
+    if sys.debug.enable_debug_print {
         println!("[{:#02x}] {:?}", pc, instr);
     }
 
@@ -286,7 +286,7 @@ pub fn execute_next_instr(sys: &mut Sys) {
 
 // Helper functions.
 fn print_if_ld_a_a(sys: &mut Sys, instr: Instr) {
-    if sys.debug.enable
+    if sys.debug.enable_debug_print
         && matches!(
             instr,
             Instr::Ld_R8_R8 {
@@ -304,7 +304,7 @@ fn take_imm8(sys: &mut Sys) -> u8 {
     let imm8 = sys.rd_mem(sys.get_pc());
     sys.inc_pc();
 
-    if sys.debug.enable {
+    if sys.debug.enable_debug_print {
         println!("  imm8: {:0>2X} ({})", imm8, imm8);
     }
 
@@ -319,7 +319,7 @@ fn take_imm16(sys: &mut Sys) -> u16 {
 
     let imm16 = join_16(hi, lo);
 
-    if sys.debug.enable {
+    if sys.debug.enable_debug_print {
         println!("  imm16: {:0>4X} ({})", imm16, imm16);
     }
 

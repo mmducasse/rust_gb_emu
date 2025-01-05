@@ -74,7 +74,7 @@ impl Sys {
                 break;
             }
 
-            self.test_code();
+            // self.test_code();
 
             prev = now;
         }
