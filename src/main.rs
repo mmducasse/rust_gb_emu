@@ -17,6 +17,7 @@ mod mem;
 mod sys;
 mod temp_tests;
 mod test;
+mod time;
 mod util;
 
 fn main() {
@@ -27,7 +28,9 @@ fn main() {
 
     //sys.cart.load(".\\assets\\files\\custom_roms\\ld_r8_r8\\rom.gb");
     sys.cart.load(".\\assets\\real_gb_roms\\tetris.gb");
+    sys.cart.load(".\\assets\\real_gb_roms\\Pokemon.gb");
 
     sys.debug.enable_debug_print = false; //true;
+    sys.debug.kill_after_seconds = Some(5.0);
     sys.run();
 }

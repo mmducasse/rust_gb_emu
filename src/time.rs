@@ -38,6 +38,7 @@ pub fn update_timer_regs(sys: &mut Sys, elapsed: Duration) {
     // TMA: determines TIMA reset value after overflow
     // TAC: .2: enable; .1-0: clock select;
 
+    // Update DIV
     let div_time_since_last_tick =
         (sys.timer_data.div_time_since_last_tick + elapsed).as_secs_f64();
     let div_ticks = div_time_since_last_tick / DIV_CLK_PERIOD;
@@ -52,6 +53,7 @@ pub fn update_timer_regs(sys: &mut Sys, elapsed: Duration) {
     }
     sys.wr_mem(DIV_ADDR, div_);
 
+    // Update TIMA
     let tac = sys.rd_mem(TAC_ADDR);
     let enable = bit8(&tac, 2); // todo unused
     let clock_sel = bits8(&tac, 1, 0);
@@ -82,4 +84,9 @@ pub fn update_timer_regs(sys: &mut Sys, elapsed: Duration) {
     }
 
     // println!("DIV={}  TIMA={}", div_, tima_);
+
+    // Other
+    if let Some(kill_after_seconds) = sys.debug.kill_after_seconds.as_mut() {
+        *kill_after_seconds -= elapsed.as_secs_f64();
+    }
 }

@@ -11,7 +11,7 @@ use crate::{
         instr::{decode, ImmType, Instr},
         regs::CpuRegs,
     },
-    mem::map::{print_section, MemSection},
+    mem::map::{get_section_slice, print_section, MemSection},
     sys::Sys,
     util::{math::join_16, ring_buffer::RingBuffer},
 };
@@ -23,6 +23,7 @@ pub struct Debug {
     instr_ring_buffer: RingBuffer<InstrRecord>,
     used_instrs: HashMap<Instr, u64>,
     used_instr_variants: HashMap<String, u64>,
+    pub kill_after_seconds: Option<f64>,
 }
 
 struct InstrRecord {
@@ -49,6 +50,7 @@ impl Debug {
             instr_ring_buffer: RingBuffer::new(10),
             used_instrs: HashMap::new(),
             used_instr_variants: HashMap::new(),
+            kill_after_seconds: None,
         }
     }
 
@@ -174,11 +176,15 @@ impl Debug {
         println!("\nFinal state:");
         sys.print();
 
-        // // Sample of each memory section.
-        // for section in MemSection::iter() {
-        //     println!();
-        //     print_section(sys, section, Some(50));
-        // }
+        // Sample of each memory section.
+        println!("\nMemory section sums:");
+        for section in MemSection::iter() {
+            let mut sum = 0;
+            for data in get_section_slice(sys, section) {
+                sum += *data as u64;
+            }
+            println!("  {:?} data sum: {}", section, sum);
+        }
 
         println!();
         panic!("");

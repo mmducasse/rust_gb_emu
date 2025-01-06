@@ -29,6 +29,8 @@ impl Cart {
         } else {
             todo!()
         }
+
+        self.print_header_info();
     }
 
     pub fn load_from_script_file(&mut self, file_path: &str) {

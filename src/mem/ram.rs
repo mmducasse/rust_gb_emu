@@ -19,7 +19,7 @@ impl Ram {
         self.memory[addr as usize] = data;
     }
 
-    pub fn data(&self) -> &[u8] {
+    pub fn as_slice(&self) -> &[u8] {
         return self.memory.as_slice();
     }
 }

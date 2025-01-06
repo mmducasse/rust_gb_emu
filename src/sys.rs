@@ -5,7 +5,6 @@ use crate::{
         exec::execute_next_instr,
         interrupt::try_handle_interrupts,
         regs::{CpuReg16, CpuRegs},
-        timer::{update_timer_regs, TimerData},
     },
     debug::Debug,
     mem::{
@@ -14,6 +13,7 @@ use crate::{
         map::{self, Addr, MemSection},
         ram::Ram,
     },
+    time::{update_timer_regs, TimerData},
     util::math::{bit8, set_bit8},
 };
 
@@ -73,6 +73,12 @@ impl Sys {
 
             if self.debug.nop_count > Debug::EXIT_AFTER_NOP_COUNT {
                 break;
+            }
+
+            if let Some(kill_after_seconds) = self.debug.kill_after_seconds {
+                if kill_after_seconds < 0.0 {
+                    Debug::fail(self, "Debug kill time elapsed.");
+                }
             }
 
             // self.test_code();
