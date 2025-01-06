@@ -24,10 +24,11 @@ fn main() {
     println!("*** RUST GAMEBOY EMU (Matthew Ducasse 2025) ***");
 
     let mut sys = Sys::new();
+    Sys::initialize(&mut sys);
     // temp_tests::run(&mut sys);
 
     //sys.cart.load(".\\assets\\files\\custom_roms\\ld_r8_r8\\rom.gb");
-    sys.cart.load(".\\assets\\real_gb_roms\\tetris.gb");
+    //sys.cart.load(".\\assets\\real_gb_roms\\tetris.gb");
     sys.cart.load(".\\assets\\real_gb_roms\\Pokemon.gb");
 
     sys.debug.enable_debug_print = false; //true;

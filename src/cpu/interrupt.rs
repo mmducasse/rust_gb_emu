@@ -2,10 +2,7 @@ use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 
 use crate::{
-    mem::{
-        io_regs::{IE_ADDR, IF_ADDR},
-        map::Addr,
-    },
+    mem::{io_regs::IoRegId, map::Addr},
     sys::Sys,
     util::math::bit8,
 };
@@ -44,8 +41,8 @@ pub fn try_handle_interrupts(sys: &mut Sys) {
         return;
     }
 
-    let ie = sys.rd_mem(IE_ADDR);
-    let if_ = sys.rd_mem(IF_ADDR);
+    let ie = sys.rd_mem(IoRegId::Ie.addr());
+    let if_ = sys.rd_mem(IoRegId::If.addr());
     for type_ in InterruptType::iter() {
         let flag_idx = type_.flag_idx();
         let is_int_enabled = bit8(&ie, flag_idx) == 1;
@@ -62,7 +59,7 @@ fn handle_interrupt(sys: &mut Sys, type_: InterruptType) {
     sys.interrupt_master_enable = false;
 
     let flag_idx = type_.flag_idx();
-    sys.wr_mem_bit(IF_ADDR, flag_idx, 0);
+    sys.wr_mem_bit(IoRegId::If.addr(), flag_idx, 0);
 
     // 2 NOP cycles
 

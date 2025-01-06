@@ -4,12 +4,12 @@ use crate::{
     cpu::{
         exec::execute_next_instr,
         interrupt::try_handle_interrupts,
-        regs::{CpuReg16, CpuRegs},
+        regs::{CpuReg16, CpuReg8, CpuRegs},
     },
     debug::Debug,
     mem::{
         cart::Cart,
-        io_regs::{IoRegs, IE_ADDR, IF_ADDR},
+        io_regs::{IoRegId, IoRegs},
         map::{self, Addr, MemSection},
         ram::Ram,
     },
@@ -58,6 +58,49 @@ impl Sys {
             hard_lock: false,
             debug: Debug::new(),
         }
+    }
+
+    pub fn initialize(sys: &mut Self) {
+        // Set CPU registers to defaults.
+        sys.regs.set_8(CpuReg8::A, 0x01);
+        sys.regs.set_8(CpuReg8::F, 0x00);
+        sys.regs.set_8(CpuReg8::B, 0xFF);
+        sys.regs.set_8(CpuReg8::C, 0x13);
+
+        sys.regs.set_8(CpuReg8::D, 0x00);
+        sys.regs.set_8(CpuReg8::E, 0xC1);
+        sys.regs.set_8(CpuReg8::H, 0x84);
+        sys.regs.set_8(CpuReg8::L, 0x03);
+
+        sys.set_pc(0x0100);
+        sys.set_sp(0xFFFE);
+
+        // Set IO registers to defaults.
+        use IoRegId::*;
+        sys.wr_mem(P1.addr(), 0xCF);
+        sys.wr_mem(Sb.addr(), 0x00);
+        sys.wr_mem(Sc.addr(), 0x7E);
+        sys.wr_mem(Div.addr(), 0x18);
+        sys.wr_mem(Tima.addr(), 0x00);
+        sys.wr_mem(Tma.addr(), 0x00);
+        sys.wr_mem(Tac.addr(), 0xF8);
+        sys.wr_mem(If.addr(), 0xE1);
+        sys.wr_mem(Lcdc.addr(), 0x91);
+        sys.wr_mem(Stat.addr(), 0x81);
+        sys.wr_mem(Scy.addr(), 0x00);
+        sys.wr_mem(Scx.addr(), 0x00);
+        sys.wr_mem(Ly.addr(), 0x91);
+        sys.wr_mem(Lyc.addr(), 0x00);
+        sys.wr_mem(Dma.addr(), 0xFF);
+        sys.wr_mem(Bgp.addr(), 0xFC);
+        sys.wr_mem(Obp0.addr(), 0);
+        sys.wr_mem(Obp1.addr(), 0);
+        sys.wr_mem(Wy.addr(), 0x00);
+        sys.wr_mem(Wx.addr(), 0x00);
+
+        // Key1..Svbk are not initialized.
+
+        sys.wr_mem(Ie.addr(), 0x00);
     }
 
     pub fn run(&mut self) {
@@ -154,7 +197,7 @@ impl Sys {
     pub fn print(&self) {
         self.regs.print();
         println!("IME={}", self.interrupt_master_enable);
-        println!("IE={:0>8b}", self.rd_mem(IE_ADDR));
-        println!("IF={:0>8b}", self.rd_mem(IF_ADDR));
+        println!("IE={:0>8b}", self.rd_mem(IoRegId::Ie.addr()));
+        println!("IF={:0>8b}", self.rd_mem(IoRegId::If.addr()));
     }
 }

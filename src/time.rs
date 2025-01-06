@@ -1,7 +1,7 @@
 use std::time::Duration;
 
 use crate::{
-    mem::io_regs::{DIV_ADDR, TAC_ADDR, TIMA_ADDR, TMA_ADDR},
+    mem::io_regs::IoRegId,
     sys::Sys,
     util::math::{bit8, bits8},
 };
@@ -45,16 +45,16 @@ pub fn update_timer_regs(sys: &mut Sys, elapsed: Duration) {
     let div_time_rem = (div_ticks * DIV_CLK_PERIOD) - div_time_since_last_tick;
     sys.timer_data.div_time_since_last_tick = Duration::from_secs_f64(div_time_rem.max(0.0));
 
-    let div = sys.rd_mem(DIV_ADDR);
+    let div = sys.rd_mem(IoRegId::Div.addr());
     let div_ = u8::wrapping_add(div, div_ticks.clamp(0.0, 255.0) as u8);
     if div_ < div {
         // DIV overflow
         println!("DIV overflow");
     }
-    sys.wr_mem(DIV_ADDR, div_);
+    sys.wr_mem(IoRegId::Div.addr(), div_);
 
     // Update TIMA
-    let tac = sys.rd_mem(TAC_ADDR);
+    let tac = sys.rd_mem(IoRegId::Tac.addr());
     let enable = bit8(&tac, 2); // todo unused
     let clock_sel = bits8(&tac, 1, 0);
     let tima_clk_period = match clock_sel {
@@ -71,16 +71,16 @@ pub fn update_timer_regs(sys: &mut Sys, elapsed: Duration) {
     let tima_time_rem = (tima_ticks * tima_clk_period) - tima_time_since_last_tick;
     sys.timer_data.tima_time_since_last_tick = Duration::from_secs_f64(tima_time_rem.max(0.0));
 
-    let tima = sys.rd_mem(TIMA_ADDR);
+    let tima = sys.rd_mem(IoRegId::Tima.addr());
     let tima_ = u8::wrapping_add(tima, tima_ticks.clamp(0.0, 255.0) as u8);
     if tima_ < tima {
         // TIMA overflow
         println!("TIMA overflow");
-        let tma = sys.rd_mem(TMA_ADDR);
-        sys.wr_mem(TIMA_ADDR, tma);
+        let tma = sys.rd_mem(IoRegId::Tma.addr());
+        sys.wr_mem(IoRegId::Div.addr(), tma);
         // todo request Timer Interrupt
     } else {
-        sys.wr_mem(TIMA_ADDR, tima_);
+        sys.wr_mem(IoRegId::Div.addr(), tima_);
     }
 
     // println!("DIV={}  TIMA={}", div_, tima_);

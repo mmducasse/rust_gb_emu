@@ -1,0 +1,5 @@
+
+
+
+TIMING:
+    CPU clocks speed:  4.194304 MHz
