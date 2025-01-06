@@ -18,4 +18,8 @@ impl Ram {
     pub fn wr(&mut self, addr: Addr, data: u8) {
         self.memory[addr as usize] = data;
     }
+
+    pub fn data(&self) -> &[u8] {
+        return self.memory.as_slice();
+    }
 }

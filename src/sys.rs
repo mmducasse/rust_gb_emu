@@ -10,7 +10,7 @@ use crate::{
     debug::Debug,
     mem::{
         cart::Cart,
-        io_regs::{IE_ADDR, IF_ADDR},
+        io_regs::{IoRegs, IE_ADDR, IF_ADDR},
         map::{self, Addr, MemSection},
         ram::Ram,
     },
@@ -24,7 +24,7 @@ pub struct Sys {
     pub vram: Ram,
     pub ext_ram: Ram,
     pub oam: Ram,
-    pub io_regs: Ram,
+    pub io_regs: IoRegs,
     pub hram: Ram,
     pub ie_reg: Ram,
 
@@ -46,7 +46,7 @@ impl Sys {
             vram: Ram::new(MemSection::Vram.size()),
             ext_ram: Ram::new(MemSection::ExtRam.size()),
             oam: Ram::new(MemSection::Oam.size()),
-            io_regs: Ram::new(MemSection::IoRegs.size()),
+            io_regs: IoRegs::new(),
             hram: Ram::new(MemSection::Hram.size()),
             ie_reg: Ram::new(MemSection::IeReg.size()),
 

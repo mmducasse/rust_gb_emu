@@ -4,11 +4,14 @@ use std::{
     mem::transmute,
 };
 
+use strum::IntoEnumIterator;
+
 use crate::{
     cpu::{
         instr::{decode, ImmType, Instr},
         regs::CpuRegs,
     },
+    mem::map::{print_section, MemSection},
     sys::Sys,
     util::{math::join_16, ring_buffer::RingBuffer},
 };
@@ -170,6 +173,12 @@ impl Debug {
         // System state.
         println!("\nFinal state:");
         sys.print();
+
+        // // Sample of each memory section.
+        // for section in MemSection::iter() {
+        //     println!();
+        //     print_section(sys, section, Some(50));
+        // }
 
         println!();
         panic!("");

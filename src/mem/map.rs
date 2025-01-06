@@ -122,3 +122,38 @@ pub fn write(sys: &mut Sys, addr: Addr, data: u8) {
         }
     }
 }
+
+pub fn print_section(sys: &Sys, section: MemSection, limit: Option<usize>) {
+    let ram = match section {
+        MemSection::EchoRam | MemSection::UnusableMemory => {
+            println!("{:?} not modeled by EMU.", section);
+            return;
+        }
+        MemSection::CartRom => {
+            println!("Todo: implement cart printing.");
+            return;
+        }
+        MemSection::Vram => &sys.vram,
+        MemSection::ExtRam => &sys.ext_ram,
+        MemSection::Wram => &sys.wram,
+        MemSection::Oam => &sys.oam,
+        MemSection::IoRegs => &sys.io_regs.ram(),
+        MemSection::Hram => &sys.hram,
+        MemSection::IeReg => &sys.ie_reg,
+    };
+
+    println!("RAM section: {:?}", section);
+    let start = section.start_addr();
+    for (idx, data) in ram.data().iter().enumerate() {
+        let addr = start + (idx as u16);
+        println!("  [{:0>4X}] {:0>2X}", addr, *data);
+
+        if let Some(limit) = limit {
+            if idx >= limit {
+                println!("  ...");
+                break;
+            }
+        }
+    }
+    println!();
+}

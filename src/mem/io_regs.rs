@@ -22,6 +22,10 @@ impl IoRegs {
         }
     }
 
+    pub fn ram(&self) -> &Ram {
+        &self.ram
+    }
+
     pub fn rd(&self, addr: Addr) -> u8 {
         return self.ram.rd(addr);
     }
