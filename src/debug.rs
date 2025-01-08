@@ -117,6 +117,12 @@ impl Debug {
     }
 
     pub fn fail(sys: &Sys, msg: impl Into<String>) -> ! {
+        Self::print_system_state(sys);
+        println!("\nFAILURE: {}\n", msg.into());
+        panic!("");
+    }
+
+    pub fn print_system_state(sys: &Sys) {
         // Print Instr record
         println!(
             "last {} instrs executed:",
@@ -150,7 +156,6 @@ impl Debug {
             regs.print();
         }
 
-        println!("FAILURE: {}\n", msg.into());
         println!(
             "  total instrs executed: {}",
             sys.debug.total_instrs_executed
@@ -187,6 +192,5 @@ impl Debug {
         }
 
         println!();
-        panic!("");
     }
 }

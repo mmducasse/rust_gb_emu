@@ -120,7 +120,8 @@ impl Sys {
 
             if let Some(kill_after_seconds) = self.debug.kill_after_seconds {
                 if kill_after_seconds < 0.0 {
-                    Debug::fail(self, "Debug kill time elapsed.");
+                    //Debug::fail(self, "Debug kill time elapsed.");
+                    return;
                 }
             }
 
