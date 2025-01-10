@@ -13,7 +13,10 @@ use crate::{
         map::{self, Addr, MemSection},
         ram::Ram,
     },
-    time::{update_timer_regs, TimerData},
+    time::{
+        clock::Clock,
+        timers::{update_timer_regs, CPU_FREQ_HZ, DIV_FREQ_HZ, LCD_FREQ_HZ, TAC_CLK_SEL_0_FREQ_HZ},
+    },
     util::math::{bit8, set_bit8},
 };
 
@@ -28,10 +31,14 @@ pub struct Sys {
     pub hram: Ram,
     pub ie_reg: Ram,
 
+    pub cpu_clock: Clock,
+    pub lcd_clock: Clock,
+    pub div_timer_clock: Clock,
+    pub tima_timer_clock: Clock,
+
     pub cpu_enable: bool,
     pub lcd_enable: bool,
     pub interrupt_master_enable: bool,
-    pub timer_data: TimerData,
 
     pub hard_lock: bool,
     pub debug: Debug,
@@ -50,10 +57,14 @@ impl Sys {
             hram: Ram::new(MemSection::Hram.size()),
             ie_reg: Ram::new(MemSection::IeReg.size()),
 
+            cpu_clock: Clock::new("CPU", CPU_FREQ_HZ),
+            lcd_clock: Clock::new("LCD", LCD_FREQ_HZ),
+            div_timer_clock: Clock::new("DIV", DIV_FREQ_HZ),
+            tima_timer_clock: Clock::new("TIMA", TAC_CLK_SEL_0_FREQ_HZ),
+
             cpu_enable: true,
             lcd_enable: true,
             interrupt_master_enable: true,
-            timer_data: TimerData::new(),
 
             hard_lock: false,
             debug: Debug::new(),
@@ -200,5 +211,10 @@ impl Sys {
         println!("IME={}", self.interrupt_master_enable);
         println!("IE={:0>8b}", self.rd_mem(IoRegId::Ie.addr()));
         println!("IF={:0>8b}", self.rd_mem(IoRegId::If.addr()));
+
+        self.cpu_clock.print();
+        self.lcd_clock.print();
+        self.div_timer_clock.print();
+        self.tima_timer_clock.print();
     }
 }
