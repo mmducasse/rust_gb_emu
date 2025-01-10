@@ -59,7 +59,7 @@ impl Ppu {
             let excess_dots = dots_since_mode_start - sys.ppu.curr_mode.typical_duration();
             sys.ppu.dots_since_mode_start = excess_dots;
 
-            let curr_scanline = sys.rd_mem(IoRegId::Ly.addr());
+            let curr_scanline = sys.mem_get(IoRegId::Ly.addr());
 
             match sys.ppu.curr_mode {
                 PpuMode::HBlank => {
@@ -90,10 +90,10 @@ impl Ppu {
         sys.ppu.curr_mode = mode;
 
         // Update the PPU mode indicator bits (1:0)
-        let mut stat = sys.rd_mem(IoRegId::Stat.addr());
+        let mut stat = sys.mem_get(IoRegId::Stat.addr());
         stat &= 0b1111_1100;
         stat |= mode as u8;
-        sys.wr_mem(IoRegId::Stat.addr(), stat);
+        sys.mem_set(IoRegId::Stat.addr(), stat);
 
         // Request an interrupt, if mode request condition is met.
         let mode_req_flag_idx = match mode {
@@ -111,14 +111,14 @@ impl Ppu {
     }
 
     fn set_scanline(sys: &mut Sys, ly: u8) {
-        sys.wr_mem(IoRegId::Ly.addr(), ly);
+        sys.mem_set(IoRegId::Ly.addr(), ly);
 
-        let lyc = sys.rd_mem(IoRegId::Lyc.addr());
+        let lyc = sys.mem_get(IoRegId::Lyc.addr());
 
-        let mut stat = sys.rd_mem(IoRegId::Stat.addr());
+        let mut stat = sys.mem_get(IoRegId::Stat.addr());
         let eq = ly == lyc;
         set_bit8(&mut stat, 2, eq.into());
-        sys.wr_mem(IoRegId::Stat.addr(), stat);
+        sys.mem_set(IoRegId::Stat.addr(), stat);
 
         let is_lyc_req_flag_set = bit8(&stat, 6) == 1;
         if is_lyc_req_flag_set && eq {
@@ -127,7 +127,7 @@ impl Ppu {
     }
 
     pub fn print(sys: &Sys) {
-        let ly = sys.rd_mem(IoRegId::Ly.addr());
+        let ly = sys.mem_get(IoRegId::Ly.addr());
 
         println!("PPU:");
         println!("  curr mode = {:?}", sys.ppu.curr_mode);

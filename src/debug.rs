@@ -58,12 +58,12 @@ impl Debug {
         sys.debug.total_instrs_executed += 1;
 
         let mut pc = sys.get_pc();
-        let mut op = sys.rd_mem(pc);
+        let mut op = sys.mem_get(pc);
         let mut has_cb_prefix = false;
         if op == Instr::CB_PREFIX {
             sys.inc_pc();
             pc = sys.get_pc();
-            op = sys.rd_mem(pc);
+            op = sys.mem_get(pc);
             has_cb_prefix = true;
         }
         let instr = match decode(op, has_cb_prefix) {
@@ -82,12 +82,12 @@ impl Debug {
         let imm_value = match instr.imm_type() {
             ImmType::None => ImmValue::None,
             ImmType::Imm8 => {
-                let imm8 = sys.rd_mem(pc + 1);
+                let imm8 = sys.mem_get(pc + 1);
                 ImmValue::Imm8(imm8)
             }
             ImmType::Imm16 => {
-                let lo = sys.rd_mem(pc + 1);
-                let hi = sys.rd_mem(pc + 2);
+                let lo = sys.mem_get(pc + 1);
+                let hi = sys.mem_get(pc + 2);
                 let imm16 = join_16(hi, lo);
                 ImmValue::Imm16(imm16)
             }

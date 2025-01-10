@@ -15,13 +15,13 @@ use super::{
 
 pub fn execute_next_instr(sys: &mut Sys) {
     let mut pc = sys.get_pc();
-    let mut op = sys.rd_mem(pc);
+    let mut op = sys.mem_get(pc);
     let has_cb_prefix;
 
     if op == Instr::CB_PREFIX {
         sys.inc_pc();
         pc = sys.get_pc();
-        op = sys.rd_mem(pc);
+        op = sys.mem_get(pc);
         has_cb_prefix = true;
     } else {
         has_cb_prefix = false;
@@ -299,7 +299,7 @@ fn print_if_ld_a_a(sys: &mut Sys, instr: Instr) {
 }
 
 fn take_imm8(sys: &mut Sys) -> u8 {
-    let imm8 = sys.rd_mem(sys.get_pc());
+    let imm8 = sys.mem_get(sys.get_pc());
     sys.inc_pc();
 
     if sys.debug.enable_debug_print {
@@ -310,9 +310,9 @@ fn take_imm8(sys: &mut Sys) -> u8 {
 }
 
 fn take_imm16(sys: &mut Sys) -> u16 {
-    let lo = sys.rd_mem(sys.get_pc());
+    let lo = sys.mem_get(sys.get_pc());
     sys.inc_pc();
-    let hi = sys.rd_mem(sys.get_pc());
+    let hi = sys.mem_get(sys.get_pc());
     sys.inc_pc();
 
     let imm16 = join_16(hi, lo);
@@ -329,7 +329,7 @@ fn ld_r16memp_a(sys: &mut Sys, dst: R16Mem) {
     let (dstp, inc) = dst.get_reg_inc();
 
     let addr = sys.regs.get_16(dstp);
-    sys.wr_mem(addr, data);
+    sys.mem_set(addr, data);
     sys.regs.set_16(dstp, add16_ui(addr, inc));
 }
 
@@ -337,7 +337,7 @@ fn ld_a_r16memp(sys: &mut Sys, src: R16Mem) {
     let (srcp, inc) = src.get_reg_inc();
 
     let addr = sys.regs.get_16(srcp);
-    let data = sys.rd_mem(addr);
+    let data = sys.mem_get(addr);
     sys.regs.set_16(srcp, add16_ui(addr, inc));
 
     sys.regs.set_8(CpuReg8::A, data);
@@ -360,7 +360,7 @@ fn get_r8_data(sys: &mut Sys, operand: R8) -> u8 {
         return sys.regs.get_8(reg);
     } else {
         let addr = sys.regs.get_16(CpuReg16::HL);
-        return sys.rd_mem(addr);
+        return sys.mem_get(addr);
     }
 }
 
@@ -369,7 +369,7 @@ fn set_r8_data(sys: &mut Sys, operand: R8, data: u8) {
         sys.regs.set_8(reg, data);
     } else {
         let addr = sys.regs.get_16(CpuReg16::HL);
-        sys.wr_mem(addr, data);
+        sys.mem_set(addr, data);
     }
 }
 
@@ -377,17 +377,17 @@ fn push_16(sys: &mut Sys, data: u16) {
     let (hi, lo) = split_16(data);
 
     sys.dec_sp();
-    sys.wr_mem(sys.get_sp(), hi);
+    sys.mem_set(sys.get_sp(), hi);
 
     sys.dec_sp();
-    sys.wr_mem(sys.get_sp(), lo);
+    sys.mem_set(sys.get_sp(), lo);
 }
 
 fn pop_16(sys: &mut Sys) -> u16 {
-    let lo = sys.rd_mem(sys.get_sp());
+    let lo = sys.mem_get(sys.get_sp());
     sys.inc_sp();
 
-    let hi = sys.rd_mem(sys.get_sp());
+    let hi = sys.mem_get(sys.get_sp());
     sys.inc_sp();
 
     return join_16(hi, lo);
@@ -410,8 +410,8 @@ fn ld_imm16_sp(sys: &mut Sys) {
     let addr = imm16;
     let data = sys.regs.get_16(CpuReg16::SP);
     let (hi, lo) = split_16(data);
-    sys.wr_mem(addr, lo);
-    sys.wr_mem(addr + 1, hi);
+    sys.mem_set(addr, lo);
+    sys.mem_set(addr + 1, hi);
 }
 
 fn inc_dec_r16(sys: &mut Sys, operand: R16, inc: i16) {
@@ -899,7 +899,7 @@ fn ldh_cp_a(sys: &mut Sys) {
     let c_data = sys.regs.get_8(CpuReg8::C);
     let addr = join_16(0xFF, c_data);
 
-    sys.wr_mem(addr, a_data);
+    sys.mem_set(addr, a_data);
 }
 
 fn ldh_imm8p_a(sys: &mut Sys) {
@@ -907,7 +907,7 @@ fn ldh_imm8p_a(sys: &mut Sys) {
     let data = sys.regs.get_8(CpuReg8::A);
     let addr = join_16(0xFF, imm8);
 
-    sys.wr_mem(addr, data);
+    sys.mem_set(addr, data);
 }
 
 fn ld_imm16p_a(sys: &mut Sys) {
@@ -915,13 +915,13 @@ fn ld_imm16p_a(sys: &mut Sys) {
     let data = sys.regs.get_8(CpuReg8::A);
     let addr = imm16;
 
-    sys.wr_mem(addr, data);
+    sys.mem_set(addr, data);
 }
 
 fn ldh_a_cp(sys: &mut Sys) {
     let c_data = sys.regs.get_8(CpuReg8::C);
     let addr = join_16(0xFF, c_data);
-    let data = sys.rd_mem(addr);
+    let data = sys.mem_get(addr);
 
     sys.regs.set_8(CpuReg8::A, data);
 }
@@ -929,7 +929,7 @@ fn ldh_a_cp(sys: &mut Sys) {
 fn ldh_a_imm8p(sys: &mut Sys) {
     let imm8 = take_imm8(sys);
     let addr = join_16(0xFF, imm8);
-    let data = sys.rd_mem(addr);
+    let data = sys.mem_get(addr);
 
     sys.regs.set_8(CpuReg8::A, data);
 }
@@ -937,7 +937,7 @@ fn ldh_a_imm8p(sys: &mut Sys) {
 fn ld_a_imm16p(sys: &mut Sys) {
     let imm16 = take_imm16(sys);
     let addr = imm16;
-    let data = sys.rd_mem(addr);
+    let data = sys.mem_get(addr);
 
     sys.regs.set_8(CpuReg8::A, data);
 }

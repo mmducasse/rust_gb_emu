@@ -16,7 +16,7 @@ mod tests {
 
         assert_eq!(sys.regs.get_8(CpuReg8::H), 5);
         assert_eq!(sys.regs.get_8(CpuReg8::L), 6);
-        assert_eq!(sys.rd_hl_p(), 7);
+        assert_eq!(sys.get_hl_p(), 7);
         assert_eq!(sys.regs.get_8(CpuReg8::A), 8);
     }
 }
