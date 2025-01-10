@@ -13,6 +13,7 @@ use crate::{
         map::{self, Addr, MemSection},
         ram::Ram,
     },
+    ppu::ppu::Ppu,
     time::{
         clock::Clock,
         timers::{update_timer_regs, CPU_FREQ_HZ, DIV_FREQ_HZ, LCD_FREQ_HZ, TAC_CLK_SEL_0_FREQ_HZ},
@@ -31,8 +32,9 @@ pub struct Sys {
     pub hram: Ram,
     pub ie_reg: Ram,
 
+    pub ppu: Ppu,
+
     pub cpu_clock: Clock,
-    pub lcd_clock: Clock,
     pub div_timer_clock: Clock,
     pub tima_timer_clock: Clock,
 
@@ -57,8 +59,9 @@ impl Sys {
             hram: Ram::new(MemSection::Hram.size()),
             ie_reg: Ram::new(MemSection::IeReg.size()),
 
+            ppu: Ppu::new(),
+
             cpu_clock: Clock::new("CPU", CPU_FREQ_HZ),
-            lcd_clock: Clock::new("LCD", LCD_FREQ_HZ),
             div_timer_clock: Clock::new("DIV", DIV_FREQ_HZ),
             tima_timer_clock: Clock::new("TIMA", TAC_CLK_SEL_0_FREQ_HZ),
 
@@ -120,8 +123,10 @@ impl Sys {
             let now = Instant::now();
             // println!("Iter: {:?}", now);
 
-            let elapsed = now - prev;
-            update_timer_regs(self, elapsed);
+            let elapsed_s = (now - prev).as_secs_f64();
+            let dots = self.cpu_clock.update(elapsed_s);
+            update_timer_regs(self, elapsed_s);
+            Ppu::update_ppu(self, dots);
             try_handle_interrupts(self);
             execute_next_instr(self);
 
@@ -212,8 +217,9 @@ impl Sys {
         println!("IE={:0>8b}", self.rd_mem(IoRegId::Ie.addr()));
         println!("IF={:0>8b}", self.rd_mem(IoRegId::If.addr()));
 
+        self.ppu.print();
+
         self.cpu_clock.print();
-        self.lcd_clock.print();
         self.div_timer_clock.print();
         self.tima_timer_clock.print();
     }

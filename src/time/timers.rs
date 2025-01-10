@@ -15,13 +15,11 @@ pub const TAC_CLK_SEL_1_FREQ_HZ: f64 = 268400.0;
 pub const TAC_CLK_SEL_2_FREQ_HZ: f64 = 67110.0;
 pub const TAC_CLK_SEL_3_FREQ_HZ: f64 = 16780.0;
 
-pub fn update_timer_regs(sys: &mut Sys, elapsed: Duration) {
+pub fn update_timer_regs(sys: &mut Sys, elapsed_s: f64) {
     // DIV: incs every 16384 Hz; Writing any sets to 0x00; reset on STOP; doesnt tick until stop mode ends)
     // TIMA: incs at freq specified in TAC; when overflows, it is reset to value in TMA and an interrupt is reqd
     // TMA: determines TIMA reset value after overflow
     // TAC: .2: enable; .1-0: clock select;
-
-    let elapsed_s = elapsed.as_secs_f64();
 
     let div_ticks = sys.div_timer_clock.update(elapsed_s);
 
@@ -63,6 +61,6 @@ pub fn update_timer_regs(sys: &mut Sys, elapsed: Duration) {
 
     // Other
     if let Some(kill_after_seconds) = sys.debug.kill_after_seconds.as_mut() {
-        *kill_after_seconds -= elapsed.as_secs_f64();
+        *kill_after_seconds -= elapsed_s;
     }
 }

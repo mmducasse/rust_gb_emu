@@ -36,6 +36,10 @@ impl InterruptType {
     }
 }
 
+pub fn request_interrupt(sys: &mut Sys, type_: InterruptType) {
+    sys.wr_mem_bit(IoRegId::If.addr(), type_.flag_idx(), 1);
+}
+
 pub fn try_handle_interrupts(sys: &mut Sys) {
     if !sys.interrupt_master_enable {
         return;
