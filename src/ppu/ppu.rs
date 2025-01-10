@@ -1,6 +1,6 @@
 use crate::{
     cpu::interrupt::{request_interrupt, InterruptType},
-    mem::io_regs::IoRegId,
+    mem::io_regs::IoReg,
     sys::Sys,
     util::math::{bit8, set_bit8},
 };
@@ -59,7 +59,7 @@ impl Ppu {
             let excess_dots = dots_since_mode_start - sys.ppu.curr_mode.typical_duration();
             sys.ppu.dots_since_mode_start = excess_dots;
 
-            let curr_scanline = sys.mem_get(IoRegId::Ly);
+            let curr_scanline = sys.mem_get(IoReg::Ly);
 
             match sys.ppu.curr_mode {
                 PpuMode::HBlank => {
@@ -90,7 +90,7 @@ impl Ppu {
         sys.ppu.curr_mode = mode;
 
         // Update the PPU mode indicator bits (1:0)
-        let stat = sys.mem_mut(IoRegId::Stat, |stat| {
+        let stat = sys.mem_mut(IoReg::Stat, |stat| {
             *stat &= 0b1111_1100;
             *stat |= mode as u8;
         });
@@ -111,14 +111,14 @@ impl Ppu {
     }
 
     fn set_scanline(sys: &mut Sys, next: u8) {
-        let ly = sys.mem_mut(IoRegId::Ly, |ly| {
+        let ly = sys.mem_mut(IoReg::Ly, |ly| {
             *ly = next;
         });
 
-        let lyc = sys.mem_get(IoRegId::Lyc);
+        let lyc = sys.mem_get(IoReg::Lyc);
         let eq = ly == lyc;
 
-        let stat = sys.mem_mut(IoRegId::Stat, |stat| {
+        let stat = sys.mem_mut(IoReg::Stat, |stat| {
             set_bit8(stat, 2, eq.into());
         });
 
@@ -129,7 +129,7 @@ impl Ppu {
     }
 
     pub fn print(sys: &Sys) {
-        let ly = sys.mem_get(IoRegId::Ly);
+        let ly = sys.mem_get(IoReg::Ly);
 
         println!("PPU:");
         println!("  curr mode = {:?}", sys.ppu.curr_mode);

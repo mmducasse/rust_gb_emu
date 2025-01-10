@@ -4,7 +4,7 @@ use super::{
 };
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
-pub enum IoRegId {
+pub enum IoReg {
     P1 = 0xFF00,
     Sb = 0xFF01,
     Sc = 0xFF02,
@@ -43,7 +43,7 @@ pub enum IoRegId {
     Ie = 0xFFFF,
 }
 
-impl Into<Addr> for IoRegId {
+impl Into<Addr> for IoReg {
     fn into(self) -> Addr {
         return self as Addr;
     }
@@ -69,9 +69,9 @@ impl IoRegs {
     }
 
     pub fn wr(&mut self, addr: Addr, data: u8) {
-        let div: Addr = IoRegId::Div.into();
+        let div: Addr = IoReg::Div.into();
         if addr == div {
-            self.ram.wr(IoRegId::Div, 0x00);
+            self.ram.wr(IoReg::Div, 0x00);
         } else {
             self.ram.wr(addr, data);
         }

@@ -2,7 +2,7 @@ use std::time::Duration;
 
 use crate::{
     cpu::interrupt::{request_interrupt, InterruptType},
-    mem::io_regs::IoRegId,
+    mem::io_regs::IoReg,
     sys::Sys,
     util::math::{bit8, bits8},
 };
@@ -24,16 +24,16 @@ pub fn update_timer_regs(sys: &mut Sys, elapsed_s: f64) {
 
     let div_ticks = sys.div_timer_clock.update(elapsed_s);
 
-    let div = sys.mem_get(IoRegId::Div);
+    let div = sys.mem_get(IoReg::Div);
     let div_ = u8::wrapping_add(div, div_ticks.clamp(0x00, 0xFF) as u8);
     if div_ < div {
         // DIV overflow
         println!("DIV overflow");
     }
-    sys.mem_set(IoRegId::Div, div_);
+    sys.mem_set(IoReg::Div, div_);
 
     // Update TIMA
-    let tac = sys.mem_get(IoRegId::Tac);
+    let tac = sys.mem_get(IoReg::Tac);
     let enable = bit8(&tac, 2); // todo unused
     let clock_sel = bits8(&tac, 1, 0);
     let tima_clk_freq_hz = match clock_sel {
@@ -48,16 +48,16 @@ pub fn update_timer_regs(sys: &mut Sys, elapsed_s: f64) {
 
     let tima_ticks = sys.tima_timer_clock.update(elapsed_s);
 
-    let tima = sys.mem_get(IoRegId::Tima);
+    let tima = sys.mem_get(IoReg::Tima);
     let tima_ = u8::wrapping_add(tima, tima_ticks.clamp(0x00, 0xFF) as u8);
     if tima_ < tima {
         // TIMA overflow
         println!("TIMA overflow");
-        let tma = sys.mem_get(IoRegId::Tma);
-        sys.mem_set(IoRegId::Div, tma);
+        let tma = sys.mem_get(IoReg::Tma);
+        sys.mem_set(IoReg::Div, tma);
         request_interrupt(sys, InterruptType::Timer);
     } else {
-        sys.mem_set(IoRegId::Div, tima_);
+        sys.mem_set(IoReg::Div, tima_);
     }
 
     // Other

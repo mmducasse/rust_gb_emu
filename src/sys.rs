@@ -9,7 +9,7 @@ use crate::{
     debug::Debug,
     mem::{
         cart::Cart,
-        io_regs::{IoRegId, IoRegs},
+        io_regs::{IoReg, IoRegs},
         map::{self, Addr, MemSection},
         ram::Ram,
     },
@@ -90,7 +90,7 @@ impl Sys {
         sys.set_sp(0xFFFE);
 
         // Set IO registers to defaults.
-        use IoRegId::*;
+        use IoReg::*;
         sys.mem_set(P1, 0xCF);
         sys.mem_set(Sb, 0x00);
         sys.mem_set(Sc, 0x7E);
@@ -227,8 +227,8 @@ impl Sys {
     pub fn print(&self) {
         self.regs.print();
         println!("IME={}", self.interrupt_master_enable);
-        println!("IE={:0>8b}", self.mem_get(IoRegId::Ie));
-        println!("IF={:0>8b}", self.mem_get(IoRegId::If));
+        println!("IE={:0>8b}", self.mem_get(IoReg::Ie));
+        println!("IF={:0>8b}", self.mem_get(IoReg::If));
 
         Ppu::print(self);
 
