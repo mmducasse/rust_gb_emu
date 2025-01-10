@@ -37,7 +37,7 @@ impl InterruptType {
 }
 
 pub fn request_interrupt(sys: &mut Sys, type_: InterruptType) {
-    sys.mem_set_bit(IoRegId::If.addr(), type_.flag_idx(), 1);
+    sys.mem_set_bit(IoRegId::If, type_.flag_idx(), 1);
 }
 
 pub fn try_handle_interrupts(sys: &mut Sys) {
@@ -45,8 +45,8 @@ pub fn try_handle_interrupts(sys: &mut Sys) {
         return;
     }
 
-    let ie = sys.mem_get(IoRegId::Ie.addr());
-    let if_ = sys.mem_get(IoRegId::If.addr());
+    let ie = sys.mem_get(IoRegId::Ie);
+    let if_ = sys.mem_get(IoRegId::If);
     for type_ in InterruptType::iter() {
         let flag_idx = type_.flag_idx();
         let is_int_enabled = bit8(&ie, flag_idx) == 1;
@@ -63,7 +63,7 @@ fn handle_interrupt(sys: &mut Sys, type_: InterruptType) {
     sys.interrupt_master_enable = false;
 
     let flag_idx = type_.flag_idx();
-    sys.mem_set_bit(IoRegId::If.addr(), flag_idx, 0);
+    sys.mem_set_bit(IoRegId::If, flag_idx, 0);
 
     // 2 NOP cycles
 

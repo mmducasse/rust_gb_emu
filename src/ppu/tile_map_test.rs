@@ -43,7 +43,7 @@ pub fn draw_bg_tile_map(sys: &Sys) {
 }
 
 fn draw_tile_from_map(sys: &Sys, pos: IVec2, map_addr: Addr) {
-    let lcdc = sys.mem_get(IoRegId::Lcdc.addr());
+    let lcdc = sys.mem_get(IoRegId::Lcdc);
     let mode_8000 = false; // bit8(&lcdc, 4) == 0;
     let tile_idx = sys.mem_get(map_addr);
     //println!("  [{:0>4X}] => {:0>2X}", map_addr, tile_idx);

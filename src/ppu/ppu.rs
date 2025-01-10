@@ -59,7 +59,7 @@ impl Ppu {
             let excess_dots = dots_since_mode_start - sys.ppu.curr_mode.typical_duration();
             sys.ppu.dots_since_mode_start = excess_dots;
 
-            let curr_scanline = sys.mem_get(IoRegId::Ly.addr());
+            let curr_scanline = sys.mem_get(IoRegId::Ly);
 
             match sys.ppu.curr_mode {
                 PpuMode::HBlank => {
@@ -115,7 +115,7 @@ impl Ppu {
             *ly = next;
         });
 
-        let lyc = sys.mem_get(IoRegId::Lyc.addr());
+        let lyc = sys.mem_get(IoRegId::Lyc);
         let eq = ly == lyc;
 
         let stat = sys.mem_mut(IoRegId::Stat, |stat| {
@@ -129,7 +129,7 @@ impl Ppu {
     }
 
     pub fn print(sys: &Sys) {
-        let ly = sys.mem_get(IoRegId::Ly.addr());
+        let ly = sys.mem_get(IoRegId::Ly);
 
         println!("PPU:");
         println!("  curr mode = {:?}", sys.ppu.curr_mode);

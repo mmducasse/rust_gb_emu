@@ -43,12 +43,6 @@ pub enum IoRegId {
     Ie = 0xFFFF,
 }
 
-impl IoRegId {
-    pub const fn addr(self) -> Addr {
-        return self as Addr;
-    }
-}
-
 impl Into<Addr> for IoRegId {
     fn into(self) -> Addr {
         return self as Addr;
@@ -75,8 +69,9 @@ impl IoRegs {
     }
 
     pub fn wr(&mut self, addr: Addr, data: u8) {
-        if addr == IoRegId::Div.addr() {
-            self.ram.wr(IoRegId::Div.addr(), 0x00);
+        let div: Addr = IoRegId::Div.into();
+        if addr == div {
+            self.ram.wr(IoRegId::Div, 0x00);
         } else {
             self.ram.wr(addr, data);
         }

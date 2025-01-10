@@ -91,30 +91,30 @@ impl Sys {
 
         // Set IO registers to defaults.
         use IoRegId::*;
-        sys.mem_set(P1.addr(), 0xCF);
-        sys.mem_set(Sb.addr(), 0x00);
-        sys.mem_set(Sc.addr(), 0x7E);
-        sys.mem_set(Div.addr(), 0x18);
-        sys.mem_set(Tima.addr(), 0x00);
-        sys.mem_set(Tma.addr(), 0x00);
-        sys.mem_set(Tac.addr(), 0xF8);
-        sys.mem_set(If.addr(), 0xE1);
-        sys.mem_set(Lcdc.addr(), 0x91);
-        sys.mem_set(Stat.addr(), 0x81);
-        sys.mem_set(Scy.addr(), 0x00);
-        sys.mem_set(Scx.addr(), 0x00);
-        sys.mem_set(Ly.addr(), 0x91);
-        sys.mem_set(Lyc.addr(), 0x00);
-        sys.mem_set(Dma.addr(), 0xFF);
-        sys.mem_set(Bgp.addr(), 0xFC);
-        sys.mem_set(Obp0.addr(), 0);
-        sys.mem_set(Obp1.addr(), 0);
-        sys.mem_set(Wy.addr(), 0x00);
-        sys.mem_set(Wx.addr(), 0x00);
+        sys.mem_set(P1, 0xCF);
+        sys.mem_set(Sb, 0x00);
+        sys.mem_set(Sc, 0x7E);
+        sys.mem_set(Div, 0x18);
+        sys.mem_set(Tima, 0x00);
+        sys.mem_set(Tma, 0x00);
+        sys.mem_set(Tac, 0xF8);
+        sys.mem_set(If, 0xE1);
+        sys.mem_set(Lcdc, 0x91);
+        sys.mem_set(Stat, 0x81);
+        sys.mem_set(Scy, 0x00);
+        sys.mem_set(Scx, 0x00);
+        sys.mem_set(Ly, 0x91);
+        sys.mem_set(Lyc, 0x00);
+        sys.mem_set(Dma, 0xFF);
+        sys.mem_set(Bgp, 0xFC);
+        sys.mem_set(Obp0, 0);
+        sys.mem_set(Obp1, 0);
+        sys.mem_set(Wy, 0x00);
+        sys.mem_set(Wx, 0x00);
 
         // Key1..Svbk are not initialized.
 
-        sys.mem_set(Ie.addr(), 0x00);
+        sys.mem_set(Ie, 0x00);
     }
 
     pub fn run(&mut self) {
@@ -153,11 +153,13 @@ impl Sys {
         }
     }
 
-    pub fn mem_get(&self, addr: Addr) -> u8 {
+    pub fn mem_get(&self, addr: impl Into<Addr>) -> u8 {
+        let addr = addr.into();
         map::read(self, addr)
     }
 
-    pub fn mem_get_bit(&self, addr: Addr, idx: u8) -> u8 {
+    pub fn mem_get_bit(&self, addr: impl Into<Addr>, idx: u8) -> u8 {
+        let addr = addr.into();
         let data = self.mem_get(addr);
         return bit8(&data, idx);
     }
@@ -167,11 +169,13 @@ impl Sys {
         self.mem_get(addr)
     }
 
-    pub fn mem_set(&mut self, addr: Addr, data: u8) {
+    pub fn mem_set(&mut self, addr: impl Into<Addr>, data: u8) {
+        let addr = addr.into();
         map::write(self, addr, data);
     }
 
-    pub fn mem_set_bit(&mut self, addr: Addr, idx: u8, value: u8) {
+    pub fn mem_set_bit(&mut self, addr: impl Into<Addr>, idx: u8, value: u8) {
+        let addr = addr.into();
         let mut data = self.mem_get(addr);
         set_bit8(&mut data, idx, value);
         self.mem_set(addr, data);
@@ -223,8 +227,8 @@ impl Sys {
     pub fn print(&self) {
         self.regs.print();
         println!("IME={}", self.interrupt_master_enable);
-        println!("IE={:0>8b}", self.mem_get(IoRegId::Ie.addr()));
-        println!("IF={:0>8b}", self.mem_get(IoRegId::If.addr()));
+        println!("IE={:0>8b}", self.mem_get(IoRegId::Ie));
+        println!("IF={:0>8b}", self.mem_get(IoRegId::If));
 
         Ppu::print(self);
 

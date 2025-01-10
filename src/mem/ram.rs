@@ -11,11 +11,13 @@ impl Ram {
         }
     }
 
-    pub fn rd(&self, addr: Addr) -> u8 {
+    pub fn rd(&self, addr: impl Into<Addr>) -> u8 {
+        let addr: Addr = addr.into();
         return self.memory[addr as usize];
     }
 
-    pub fn wr(&mut self, addr: Addr, data: u8) {
+    pub fn wr(&mut self, addr: impl Into<Addr>, data: u8) {
+        let addr: Addr = addr.into();
         self.memory[addr as usize] = data;
     }
 
