@@ -1,6 +1,8 @@
 use crate::{
     cpu::interrupt::{request_interrupt, InterruptType},
+    mem::io_regs::IoRegId,
     sys::Sys,
+    util::math::{bit8, set_bit8},
 };
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
@@ -34,17 +36,14 @@ impl PpuMode {
 pub struct Ppu {
     curr_mode: PpuMode,
     dots_since_mode_start: u32,
-    curr_scanline: u32,
-
     debug_frames_drawn: u32,
 }
 
 impl Ppu {
     pub fn new() -> Self {
         Self {
-            curr_mode: PpuMode::HBlank,
+            curr_mode: PpuMode::VBlank,
             dots_since_mode_start: 0,
-            curr_scanline: 0,
             debug_frames_drawn: 0,
         }
     }
@@ -60,36 +59,83 @@ impl Ppu {
             let excess_dots = dots_since_mode_start - sys.ppu.curr_mode.typical_duration();
             sys.ppu.dots_since_mode_start = excess_dots;
 
+            let curr_scanline = sys.rd_mem(IoRegId::Ly.addr());
+
             match sys.ppu.curr_mode {
                 PpuMode::HBlank => {
-                    if sys.ppu.curr_scanline == 143 {
+                    Self::set_scanline(sys, curr_scanline + 1);
+                    if curr_scanline == 143 {
+                        Self::enter_mode(sys, PpuMode::VBlank);
                         request_interrupt(sys, InterruptType::VBlank);
-                        sys.ppu.curr_mode = PpuMode::VBlank;
                     } else {
-                        sys.ppu.curr_mode = PpuMode::OamScan;
+                        Self::enter_mode(sys, PpuMode::OamScan);
                     }
-                    sys.ppu.curr_scanline += 1;
                 }
                 PpuMode::VBlank => {
-                    sys.ppu.curr_mode = PpuMode::OamScan;
-                    sys.ppu.curr_scanline = 0;
+                    Self::set_scanline(sys, 0);
+                    Self::enter_mode(sys, PpuMode::OamScan);
                     sys.ppu.debug_frames_drawn += 1;
                 }
                 PpuMode::OamScan => {
-                    sys.ppu.curr_mode = PpuMode::Draw;
+                    Self::enter_mode(sys, PpuMode::Draw);
                 }
                 PpuMode::Draw => {
-                    sys.ppu.curr_mode = PpuMode::HBlank;
+                    Self::enter_mode(sys, PpuMode::HBlank);
                 }
             }
         }
     }
 
-    pub fn print(&self) {
+    fn enter_mode(sys: &mut Sys, mode: PpuMode) {
+        sys.ppu.curr_mode = mode;
+
+        // Update the PPU mode indicator bits (1:0)
+        let mut stat = sys.rd_mem(IoRegId::Stat.addr());
+        stat &= 0b1111_1100;
+        stat |= mode as u8;
+        sys.wr_mem(IoRegId::Stat.addr(), stat);
+
+        // Request an interrupt, if mode request condition is met.
+        let mode_req_flag_idx = match mode {
+            PpuMode::HBlank => 3,
+            PpuMode::VBlank => 4,
+            PpuMode::OamScan => 5,
+            _ => {
+                return;
+            }
+        };
+        let is_req_flag_set = bit8(&stat, mode_req_flag_idx) == 1;
+        if is_req_flag_set {
+            request_interrupt(sys, InterruptType::Stat);
+        }
+    }
+
+    fn set_scanline(sys: &mut Sys, ly: u8) {
+        sys.wr_mem(IoRegId::Ly.addr(), ly);
+
+        let lyc = sys.rd_mem(IoRegId::Lyc.addr());
+
+        let mut stat = sys.rd_mem(IoRegId::Stat.addr());
+        let eq = ly == lyc;
+        set_bit8(&mut stat, 2, eq.into());
+        sys.wr_mem(IoRegId::Stat.addr(), stat);
+
+        let is_lyc_req_flag_set = bit8(&stat, 6) == 1;
+        if is_lyc_req_flag_set && eq {
+            request_interrupt(sys, InterruptType::Stat);
+        }
+    }
+
+    pub fn print(sys: &Sys) {
+        let ly = sys.rd_mem(IoRegId::Ly.addr());
+
         println!("PPU:");
-        println!("  curr mode = {:?}", self.curr_mode);
-        println!("  dots since mode start = {}", self.dots_since_mode_start);
-        println!("  curr scanline = {}", self.curr_scanline);
-        println!("  frames drawn = {}", self.debug_frames_drawn);
+        println!("  curr mode = {:?}", sys.ppu.curr_mode);
+        println!(
+            "  dots since mode start = {}",
+            sys.ppu.dots_since_mode_start
+        );
+        println!("  LY = {}", ly);
+        println!("  frames drawn = {}", sys.ppu.debug_frames_drawn);
     }
 }

@@ -12,7 +12,7 @@ use super::exec::call;
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, EnumIter, Debug)]
 pub enum InterruptType {
     VBlank,
-    Lcd,
+    Stat,
     Timer,
     Serial,
     Joypad,
@@ -22,7 +22,7 @@ impl InterruptType {
     pub fn jump_addr(self) -> Addr {
         return match self {
             InterruptType::VBlank => 0x40,
-            InterruptType::Lcd => 0x48,
+            InterruptType::Stat => 0x48,
             InterruptType::Timer => 0x50,
             InterruptType::Serial => 0x58,
             InterruptType::Joypad => 0x60,

@@ -217,7 +217,7 @@ impl Sys {
         println!("IE={:0>8b}", self.rd_mem(IoRegId::Ie.addr()));
         println!("IF={:0>8b}", self.rd_mem(IoRegId::If.addr()));
 
-        self.ppu.print();
+        Ppu::print(self);
 
         self.cpu_clock.print();
         self.div_timer_clock.print();

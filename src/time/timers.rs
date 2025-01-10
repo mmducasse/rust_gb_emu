@@ -1,6 +1,7 @@
 use std::time::Duration;
 
 use crate::{
+    cpu::interrupt::{request_interrupt, InterruptType},
     mem::io_regs::IoRegId,
     sys::Sys,
     util::math::{bit8, bits8},
@@ -54,7 +55,7 @@ pub fn update_timer_regs(sys: &mut Sys, elapsed_s: f64) {
         println!("TIMA overflow");
         let tma = sys.rd_mem(IoRegId::Tma.addr());
         sys.wr_mem(IoRegId::Div.addr(), tma);
-        // todo request Timer Interrupt
+        request_interrupt(sys, InterruptType::Timer);
     } else {
         sys.wr_mem(IoRegId::Div.addr(), tima_);
     }
