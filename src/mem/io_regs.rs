@@ -49,6 +49,12 @@ impl IoRegId {
     }
 }
 
+impl Into<Addr> for IoRegId {
+    fn into(self) -> Addr {
+        return self as Addr;
+    }
+}
+
 pub struct IoRegs {
     ram: Ram,
 }
