@@ -1,4 +1,4 @@
-use macroquad::color::{Color, BLACK, BLUE, DARKGRAY, LIGHTGRAY, RED, WHITE};
+use macroquad::color::{Color, BLACK, BLUE, DARKGRAY, LIGHTGRAY, RED, WHITE, YELLOW};
 use xf::{
     mq::draw::draw_rect,
     num::{
@@ -37,11 +37,14 @@ pub fn draw_vram_tile_data(sys: &Sys) {
         // }
         i += 1;
 
-        if y < 8 {
-            draw_rect(rect(x * 8, y * 8, 8, 8), RED);
+        let block_color = if y < 8 {
+            RED
         } else if y < 16 {
-            draw_rect(rect(x * 8, y * 8, 8, 8), BLUE);
-        }
+            BLUE
+        } else {
+            YELLOW
+        };
+        draw_rect(rect(x * 8, y * 8, 8, 8), block_color);
 
         draw_tile(bytes, i2(x * 8, y * 8));
     }

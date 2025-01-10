@@ -52,10 +52,11 @@ async fn main() {
     // temp_tests::run(&mut sys);
 
     //sys.cart.load(".\\assets\\files\\custom_roms\\ld_r8_r8\\rom.gb");
-    //sys.cart.load(".\\assets\\real_gb_roms\\tetris.gb");
+    sys.cart.load(".\\assets\\real_gb_roms\\tetris.gb");
     //sys.cart.load(".\\assets\\real_gb_roms\\Pokemon.gb");
-    sys.cart
-        .load(".\\assets\\imported_test_roms\\other\\hello_world\\rom.gb");
+    //sys.cart.load(".\\assets\\real_gb_roms\\Zelda.gb");
+    // sys.cart
+    //     .load(".\\assets\\imported_test_roms\\other\\hello_world\\rom.gb");
 
     sys.debug.enable_debug_print = false; //true;
     sys.debug.kill_after_seconds = Some(1.0);
@@ -64,8 +65,8 @@ async fn main() {
     Debug::print_system_state(&sys);
 
     window.render_pass(|| {
-        //draw_vram_tile_data(&sys);
-        draw_bg_tile_map(&sys);
+        draw_vram_tile_data(&sys);
+        //draw_bg_tile_map(&sys);
     });
     while !is_key_pressed(KeyCode::Escape) {
         window.render_pass(|| {});

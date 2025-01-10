@@ -3,6 +3,8 @@ use xf::num::{
     ivec2::{i2, IVec2},
 };
 
+pub const FAIL_ON_BAD_RW: bool = true;
+
 pub const P1: IVec2 = i2(1, 1);
 pub const P2: IVec2 = i2(2, 2);
 pub const P4: IVec2 = i2(4, 4);
