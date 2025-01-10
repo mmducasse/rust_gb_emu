@@ -11,7 +11,10 @@ use macroquad::{
     input::{is_key_pressed, KeyCode},
     window::next_frame,
 };
-use ppu::test::draw_vram;
+use ppu::{
+    tile_data_test::{self, draw_vram_tile_data},
+    tile_map_test::{self, draw_bg_tile_map},
+};
 use sys::Sys;
 use xf::{
     mq::window::{Window, WindowParams},
@@ -38,7 +41,9 @@ async fn main() {
     println!("*** RUST GAMEBOY EMU (Matthew Ducasse 2025) ***");
 
     let window = Window::new(WindowParams {
-        resolution: SCREEN_SIZE,
+        //resolution: SCREEN_SIZE,
+        //resolution: tile_data_test::SCREEN_SIZE,
+        resolution: tile_map_test::SCREEN_SIZE,
         scale: PIXEL_SCALE,
     });
 
@@ -59,7 +64,8 @@ async fn main() {
     Debug::print_system_state(&sys);
 
     window.render_pass(|| {
-        draw_vram(&sys);
+        //draw_vram_tile_data(&sys);
+        draw_bg_tile_map(&sys);
     });
     while !is_key_pressed(KeyCode::Escape) {
         window.render_pass(|| {});

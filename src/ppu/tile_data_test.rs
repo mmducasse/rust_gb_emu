@@ -1,4 +1,4 @@
-use macroquad::color::{Color, BLACK, DARKGRAY, LIGHTGRAY, WHITE};
+use macroquad::color::{Color, BLACK, BLUE, DARKGRAY, LIGHTGRAY, RED, WHITE};
 use xf::{
     mq::draw::draw_rect,
     num::{
@@ -8,13 +8,16 @@ use xf::{
 };
 
 use crate::{
-    consts::{SCREEN_P16_SIZE, SCREEN_SIZE},
+    consts::P8,
     mem::map::{Addr, MemSection},
     sys::Sys,
     util::{math::bit8, slice::sum_slice},
 };
 
-pub fn draw_vram(sys: &Sys) {
+pub const SCREEN_P8_SIZE: IVec2 = i2(16, 24);
+pub const SCREEN_SIZE: IVec2 = IVec2::mul(SCREEN_P8_SIZE, P8);
+
+pub fn draw_vram_tile_data(sys: &Sys) {
     // let max = SCREEN_SIZE.x;
     // for i in 0..max {
     //     draw_pixel(i2(i, i), 0b01);
@@ -23,16 +26,22 @@ pub fn draw_vram(sys: &Sys) {
     let mut i = 0;
     let range = 0x8000..0x9800;
     for addr in range.clone().step_by(16) {
-        let x = i % (SCREEN_P16_SIZE.x * 2);
-        let y = i / (SCREEN_P16_SIZE.y * 2);
+        let x = i % SCREEN_P8_SIZE.x;
+        let y = i / SCREEN_P8_SIZE.x;
 
         let rel_addr = addr - range.start;
         let bytes = &sys.vram.as_slice()[rel_addr..(rel_addr + 16)];
 
-        if sum_slice(bytes) == 0 {
-            continue;
-        }
+        // if sum_slice(bytes) == 0 {
+        //     continue;
+        // }
         i += 1;
+
+        if y < 8 {
+            draw_rect(rect(x * 8, y * 8, 8, 8), RED);
+        } else if y < 16 {
+            draw_rect(rect(x * 8, y * 8, 8, 8), BLUE);
+        }
 
         draw_tile(bytes, i2(x * 8, y * 8));
     }
@@ -57,9 +66,11 @@ fn draw_tile(bytes: &[u8], org: IVec2) {
         let upper = bit8(&bytes[idx + 1], pos.x as u8);
 
         let color_id = (upper << 1) | lower;
-        println!("color: {}", color_id);
+        // println!("color: {}", color_id);
 
-        draw_pixel(pos + org, color_id);
+        if color_id != 0 {
+            draw_pixel(pos + org, color_id);
+        }
     }
 }
 
@@ -70,10 +81,10 @@ fn draw_pixel(pos: IVec2, color_id: u8) {
 #[inline]
 fn get_color(color_id: u8) -> Color {
     return match color_id {
-        0b00 => WHITE,
-        0b01 => LIGHTGRAY,
-        0b10 => DARKGRAY,
-        0b11 => BLACK,
+        0b11 => WHITE,
+        0b10 => LIGHTGRAY,
+        0b01 => DARKGRAY,
+        0b00 => BLACK,
         _ => unreachable!(),
     };
 }
