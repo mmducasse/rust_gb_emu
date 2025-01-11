@@ -40,36 +40,12 @@ mod util;
 async fn main() {
     println!("*** RUST GAMEBOY EMU (Matthew Ducasse 2025) ***");
 
-    let window = Window::new(WindowParams {
-        //resolution: SCREEN_SIZE,
-        //resolution: tile_data_test::SCREEN_SIZE,
-        resolution: tile_map_test::SCREEN_SIZE,
-        scale: PIXEL_SCALE,
-    });
+    //let path = ".\\assets\\files\\custom_roms\\ld_r8_r8\\rom.gb";
+    //let path = ".\\assets\\real_gb_roms\\tetris.gb";
+    //let path = ".\\assets\\real_gb_roms\\Pokemon.gb";
+    //let path = ".\\assets\\real_gb_roms\\Zelda.gb";
+    let path = ".\\assets\\imported_test_roms\\other\\hello_world\\rom.gb";
 
-    let mut sys = Sys::new();
-    Sys::initialize(&mut sys);
-    // temp_tests::run(&mut sys);
-
-    //sys.cart.load(".\\assets\\files\\custom_roms\\ld_r8_r8\\rom.gb");
-    //sys.cart.load(".\\assets\\real_gb_roms\\tetris.gb");
-    sys.cart.load(".\\assets\\real_gb_roms\\Pokemon.gb");
-    //sys.cart.load(".\\assets\\real_gb_roms\\Zelda.gb");
-    // sys.cart
-    //     .load(".\\assets\\imported_test_roms\\other\\hello_world\\rom.gb");
-
-    sys.debug.enable_debug_print = false; //true;
-    sys.debug.kill_after_seconds = Some(0.5);
-    sys.run();
-
-    Debug::print_system_state(&sys);
-
-    window.render_pass(|| {
-        draw_vram_tile_data(&sys);
-        //draw_bg_tile_map(&sys);
-    });
-    while !is_key_pressed(KeyCode::Escape) {
-        window.render_pass(|| {});
-        next_frame().await;
-    }
+    temp_tests::draw_vram_tile_data_test(path).await;
+    //temp_tests::draw_vram_tile_map_test(path).await;
 }

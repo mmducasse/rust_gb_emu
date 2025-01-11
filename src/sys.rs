@@ -38,6 +38,8 @@ pub struct Sys {
     pub div_timer_clock: Clock,
     pub tima_timer_clock: Clock,
 
+    pub cpu_exec_delay_s: f64,
+
     pub cpu_enable: bool,
     pub lcd_enable: bool,
     pub interrupt_master_enable: bool,
@@ -64,6 +66,8 @@ impl Sys {
             cpu_clock: Clock::new("CPU", CPU_FREQ_HZ),
             div_timer_clock: Clock::new("DIV", DIV_FREQ_HZ),
             tima_timer_clock: Clock::new("TIMA", TAC_CLK_SEL_0_FREQ_HZ),
+
+            cpu_exec_delay_s: 0.0,
 
             cpu_enable: true,
             lcd_enable: true,
@@ -127,8 +131,14 @@ impl Sys {
             let dots = self.cpu_clock.update(elapsed_s);
             update_timer_regs(self, elapsed_s);
             Ppu::update_ppu(self, dots);
-            try_handle_interrupts(self);
-            execute_next_instr(self);
+
+            self.cpu_exec_delay_s -= elapsed_s;
+            if self.cpu_exec_delay_s <= 0.0 {
+                try_handle_interrupts(self);
+                let m_cycles = execute_next_instr(self);
+                let next_delay = ((4 * m_cycles) as f64) * self.cpu_clock.period();
+                self.cpu_exec_delay_s += next_delay;
+            }
 
             if self.debug.nop_count > Debug::EXIT_AFTER_NOP_COUNT {
                 break;

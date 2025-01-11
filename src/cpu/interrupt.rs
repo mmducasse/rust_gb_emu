@@ -60,6 +60,8 @@ pub fn try_handle_interrupts(sys: &mut Sys) {
 }
 
 fn handle_interrupt(sys: &mut Sys, type_: InterruptType) {
+    println!("Handling INT: {:?}", type_);
+
     sys.interrupt_master_enable = false;
 
     let flag_idx = type_.flag_idx();

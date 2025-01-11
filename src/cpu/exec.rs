@@ -13,7 +13,10 @@ use super::{
     regs::{CpuFlag, CpuReg16, CpuReg8, CpuRegs},
 };
 
-pub fn execute_next_instr(sys: &mut Sys) {
+/// Executes the instruction at PC and updates PC.
+/// Returns the number of machine cycles needed to execute
+/// the instruction.
+pub fn execute_next_instr(sys: &mut Sys) -> u32 {
     let mut pc = sys.get_pc();
     let mut op = sys.mem_get(pc);
     let has_cb_prefix;
@@ -280,6 +283,8 @@ pub fn execute_next_instr(sys: &mut Sys) {
     }
 
     print_if_ld_a_a(sys, instr);
+
+    return 2;
 }
 
 // Helper functions.
