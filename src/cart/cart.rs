@@ -5,15 +5,23 @@ use std::{
     path::Path,
 };
 
+use num::FromPrimitive;
+
 use crate::util::string::slice_to_hex_string;
 
+use super::type_::CartType;
+
 pub struct Cart {
+    type_: CartType,
     pub rom: Vec<u8>,
 }
 
 impl Cart {
     pub fn new() -> Self {
-        Self { rom: vec![] }
+        Self {
+            type_: CartType::RomOnly,
+            rom: vec![],
+        }
     }
 
     pub fn load(&mut self, file_path: &str) {
@@ -29,6 +37,9 @@ impl Cart {
         } else {
             todo!()
         }
+
+        let type_ = self.rom[0x0147];
+        self.type_ = CartType::from_u8(type_).unwrap();
 
         self.print_header_info();
     }
@@ -79,6 +90,8 @@ impl Cart {
         if let Ok(title) = std::str::from_utf8(title) {
             println!("  Title: {}", title);
         }
+
+        println!("  Type: {:?}", self.type_);
 
         let (checksum, is_matching) = self.check_header_checksum();
         println!("  Checksum ({:#02x}) Matches: {}", checksum, is_matching);
