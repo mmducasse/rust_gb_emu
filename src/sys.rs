@@ -1,6 +1,7 @@
 use std::time::Instant;
 
 use crate::{
+    cart::cart::Cart,
     cpu::{
         exec::execute_next_instr,
         interrupt::try_handle_interrupts,
@@ -8,7 +9,6 @@ use crate::{
     },
     debug::Debug,
     mem::{
-        cart::Cart,
         io_regs::{IoReg, IoRegs},
         map::{self, Addr, MemSection},
         ram::Ram,

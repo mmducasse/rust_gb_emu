@@ -25,6 +25,7 @@ extern crate num;
 #[macro_use]
 extern crate num_derive;
 
+mod cart;
 mod consts;
 mod cpu;
 mod debug;
