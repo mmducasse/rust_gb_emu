@@ -46,6 +46,6 @@ async fn main() {
     //let path = ".\\assets\\real_gb_roms\\Zelda.gb";
     let path = ".\\assets\\imported_test_roms\\other\\hello_world\\rom.gb";
 
-    temp_tests::draw_vram_tile_data_test(path).await;
-    //temp_tests::draw_vram_tile_map_test(path).await;
+    //temp_tests::draw_vram_tile_data_test(path).await;
+    temp_tests::draw_vram_tile_map_test(path).await;
 }

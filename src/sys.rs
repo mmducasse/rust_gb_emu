@@ -138,6 +138,7 @@ impl Sys {
                 let m_cycles = execute_next_instr(self);
                 let next_delay = ((4 * m_cycles) as f64) * self.cpu_clock.period();
                 self.cpu_exec_delay_s += next_delay;
+                // println!("CPU exec {}", self.cpu_exec_delay_s);
             }
 
             if self.debug.nop_count > Debug::EXIT_AFTER_NOP_COUNT {
