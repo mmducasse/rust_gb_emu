@@ -69,7 +69,7 @@ pub fn read(sys: &Sys, addr: Addr) -> u8 {
     //println!("Rel Addr ({:?}) = {} {:#04x}", section, addr, addr);
 
     match section {
-        MemSection::CartRom => sys.cart.rom[addr as usize],
+        MemSection::CartRom => sys.cart.rd(addr),
         MemSection::Vram => sys.vram.rd(addr),
         MemSection::ExtRam => sys.ext_ram.rd(addr),
         MemSection::Wram => sys.wram.rd(addr),
@@ -99,7 +99,7 @@ pub fn write(sys: &mut Sys, addr: Addr, data: u8) {
 
     match section {
         MemSection::CartRom => {
-            sys.cart.rom[addr as usize] = data;
+            sys.cart.wr(addr, data);
         }
         MemSection::Vram => {
             sys.vram.wr(addr, data);

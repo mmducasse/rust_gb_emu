@@ -7,20 +7,30 @@ use std::{
 
 use num::FromPrimitive;
 
-use crate::util::string::slice_to_hex_string;
+use crate::{mem::map::Addr, util::string::slice_to_hex_string};
 
 use super::type_::CartType;
 
 pub struct Cart {
     type_: CartType,
-    pub rom: Vec<u8>,
+
+    rom_bank_sel: u8,
+    rom: Vec<u8>,
+
+    ram_bank_sel: u8,
+    ram: Vec<u8>,
 }
 
 impl Cart {
     pub fn new() -> Self {
         Self {
             type_: CartType::RomOnly,
+
+            rom_bank_sel: 0,
             rom: vec![],
+
+            ram_bank_sel: 0,
+            ram: vec![],
         }
     }
 
@@ -30,53 +40,42 @@ impl Cart {
             panic!("File extension for file {} wasn't specified.", file_path);
         };
 
-        if ext == OsStr::new("gb") {
-            let s = path.file_name().unwrap().to_str().unwrap();
-            println!("loaded rom: {}", s);
-            self.load_from_gb_rom_file(file_path);
-        } else {
-            todo!()
+        if ext != OsStr::new("gb") {
+            panic!("Couldnt load gb rom. Expected a \".gb\" file.");
         }
 
-        let type_ = self.rom[0x0147];
+        let s = path.file_name().unwrap().to_str().unwrap();
+        println!("loaded rom: {}", s);
+        let program = fs::read(file_path).expect(&format!("Unable to read file {}.", file_path));
+
+        let type_ = program[0x0147];
         self.type_ = CartType::from_u8(type_).unwrap();
+        if !self.type_.is_supported_by_emu() {
+            panic!(
+                "EMU doesn't currenty support cartridge type: {:?} ({})",
+                self.type_, self.type_ as u8
+            );
+        }
+
+        let rom_size = self.type_.max_rom_size();
+        self.rom = vec![0; rom_size];
+        {
+            let (rom, _) = self.rom.split_at_mut(program.len());
+            rom.copy_from_slice(&program);
+        }
+
+        let ram_size = self.type_.max_ram_size();
+        self.ram = vec![0; ram_size];
 
         self.print_header_info();
     }
 
-    pub fn load_from_script_file(&mut self, file_path: &str) {
-        self.rom.append(&mut vec![0; 0x100]);
-
-        let script =
-            fs::read_to_string(file_path).expect(&format!("Unable to read file {}.", file_path));
-
-        let lines = script.split('\n').collect::<Vec<_>>();
-
-        let mut ops = vec![];
-        for line in lines {
-            println!("line {}", line);
-            if line.starts_with("0x") {
-                let hex = u8::from_str_radix(&line[2..=3], 16).unwrap();
-                ops.push(hex);
-            } else {
-                let first = line
-                    .split_ascii_whitespace()
-                    .nth(0)
-                    .unwrap()
-                    .replace(";", "");
-                let decimal = first.parse::<i8>().unwrap();
-                let u: u8 = unsafe { transmute(decimal) };
-                ops.push(u);
-            }
-        }
-
-        self.rom.append(&mut ops);
-
-        self.rom.append(&mut vec![0; 0xFFFF]);
+    pub fn rd(&self, addr: Addr) -> u8 {
+        return self.rom[addr as usize];
     }
 
-    pub fn load_from_gb_rom_file(&mut self, file_path: &str) {
-        self.rom = fs::read(file_path).expect(&format!("Unable to read file {}.", file_path));
+    pub fn wr(&mut self, addr: Addr, data: u8) {
+        self.rom[addr as usize] = data;
     }
 
     pub fn print_header_info(&self) {
@@ -91,7 +90,7 @@ impl Cart {
             println!("  Title: {}", title);
         }
 
-        println!("  Type: {:?}", self.type_);
+        println!("  Type: {:?} ({})", self.type_, self.type_ as u8);
 
         let (checksum, is_matching) = self.check_header_checksum();
         println!("  Checksum ({:#02x}) Matches: {}", checksum, is_matching);
