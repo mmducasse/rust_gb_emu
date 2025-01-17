@@ -85,6 +85,14 @@ impl Cart {
         self.hw.wr(addr, data);
     }
 
+    pub fn rom(&self) -> &[u8] {
+        self.hw.rom()
+    }
+
+    pub fn ram(&self) -> &[u8] {
+        self.hw.ram()
+    }
+
     pub fn print_header_info(&self) {
         println!("Cartridge:");
 

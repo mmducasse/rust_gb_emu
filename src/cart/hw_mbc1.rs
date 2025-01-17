@@ -52,6 +52,10 @@ impl CartHw for HwMbc1 {
         &mut self.rom
     }
 
+    fn ram(&self) -> &[u8] {
+        &self.ram
+    }
+
     // todo cleanup
     fn rd(&self, addr: Addr) -> u8 {
         match addr {

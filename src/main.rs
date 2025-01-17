@@ -41,10 +41,13 @@ mod util;
 async fn main() {
     println!("*** RUST GAMEBOY EMU (Matthew Ducasse 2025) ***");
 
+    std::env::set_var("RUST_BACKTRACE", "1");
+
     //let path = ".\\assets\\files\\custom_roms\\ld_r8_r8\\rom.gb";
     //let path = ".\\assets\\real_gb_roms\\tetris.gb";
     //let path = ".\\assets\\real_gb_roms\\Pokemon.gb";
     //let path = ".\\assets\\real_gb_roms\\Zelda.gb";
+    //let path = ".\\assets\\real_gb_roms\\Kirby.gb";
     let path = ".\\assets\\imported_test_roms\\other\\hello_world\\rom.gb";
 
     //temp_tests::draw_vram_tile_data_test(path).await;

@@ -1,6 +1,6 @@
 use super::{
     map::{Addr, MemSection},
-    ram::Ram,
+    mem::Mem,
 };
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
@@ -50,30 +50,30 @@ impl Into<Addr> for IoReg {
 }
 
 pub struct IoRegs {
-    ram: Ram,
+    mem: Mem,
 }
 
 impl IoRegs {
     pub fn new() -> Self {
         Self {
-            ram: Ram::new(MemSection::IoRegs.size()),
+            mem: Mem::from_mem_section(MemSection::IoRegs),
         }
     }
 
-    pub fn ram(&self) -> &Ram {
-        &self.ram
+    pub fn ram(&self) -> &Mem {
+        &self.mem
     }
 
     pub fn rd(&self, addr: Addr) -> u8 {
-        return self.ram.rd(addr);
+        return self.mem.rd(addr);
     }
 
     pub fn wr(&mut self, addr: Addr, data: u8) {
         let div: Addr = IoReg::Div.into();
         if addr == div {
-            self.ram.wr(IoReg::Div, 0x00);
+            self.mem.wr(IoReg::Div, 0x00);
         } else {
-            self.ram.wr(addr, data);
+            self.mem.wr(addr, data);
         }
     }
 }

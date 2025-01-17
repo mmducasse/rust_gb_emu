@@ -1,33 +1,45 @@
-use crate::{consts::KB_32, mem::map::Addr};
+use crate::{
+    consts::KB_32,
+    mem::{map::Addr, mem::Mem},
+};
 
 use super::cart_hw::CartHw;
 
 pub struct HwRomOnly {
-    rom: Vec<u8>,
+    rom: Mem,
 }
 
 impl HwRomOnly {
     pub fn new() -> Self {
         Self {
-            rom: vec![0; KB_32],
+            rom: Mem::new(0, KB_32 as u16),
         }
     }
 }
 
 impl CartHw for HwRomOnly {
     fn rom(&self) -> &[u8] {
-        &self.rom
+        self.rom.as_slice()
     }
 
     fn rom_mut(&mut self) -> &mut [u8] {
-        &mut self.rom
+        self.rom.as_mut_slice()
+    }
+
+    fn ram(&self) -> &[u8] {
+        &[]
     }
 
     fn rd(&self, addr: Addr) -> u8 {
-        self.rom[addr as usize]
+        if self.rom.contains_addr(addr) {
+            return self.rom.rd(addr);
+        }
+        return 0x00;
     }
 
     fn wr(&mut self, addr: Addr, data: u8) {
-        self.rom[addr as usize] = data;
+        if self.rom.contains_addr(addr) {
+            self.rom.wr(addr, data);
+        }
     }
 }

@@ -50,12 +50,11 @@ impl MemSection {
 
     /// Returns the memory section that the address belongs to, as
     /// well as it's relative address within that section.
-    pub fn from_abs_addr(addr: Addr) -> (Self, Addr) {
+    pub fn from_abs_addr(addr: Addr) -> Self {
         for section in MemSection::iter().rev() {
             let start_addr = section.start_addr();
             if addr >= start_addr {
-                let rel_addr = addr - start_addr;
-                return (section, rel_addr);
+                return section;
             }
         }
 
@@ -65,13 +64,13 @@ impl MemSection {
 
 pub fn read(sys: &Sys, addr: Addr) -> u8 {
     //println!("Addr = {} {:#04x}", addr, addr);
-    let (section, addr) = MemSection::from_abs_addr(addr);
+    let section = MemSection::from_abs_addr(addr);
     //println!("Rel Addr ({:?}) = {} {:#04x}", section, addr, addr);
 
     match section {
         MemSection::CartRom => sys.cart.rd(addr),
         MemSection::Vram => sys.vram.rd(addr),
-        MemSection::ExtRam => sys.ext_ram.rd(addr),
+        MemSection::ExtRam => sys.cart.rd(addr), // sys.ext_ram.rd(abs_addr),
         MemSection::Wram => sys.wram.rd(addr),
         MemSection::EchoRam => {
             if FAIL_ON_BAD_RW {
@@ -95,7 +94,7 @@ pub fn read(sys: &Sys, addr: Addr) -> u8 {
 }
 
 pub fn write(sys: &mut Sys, addr: Addr, data: u8) {
-    let (section, addr) = MemSection::from_abs_addr(addr);
+    let section = MemSection::from_abs_addr(addr);
 
     match section {
         MemSection::CartRom => {
@@ -105,7 +104,7 @@ pub fn write(sys: &mut Sys, addr: Addr, data: u8) {
             sys.vram.wr(addr, data);
         }
         MemSection::ExtRam => {
-            sys.ext_ram.wr(addr, data);
+            sys.cart.wr(addr, data);
         }
         MemSection::Wram => {
             sys.wram.wr(addr, data);
@@ -140,17 +139,14 @@ pub fn get_section_slice(sys: &Sys, section: MemSection) -> &[u8] {
         MemSection::EchoRam | MemSection::UnusableMemory => {
             return &[];
         }
-        MemSection::CartRom => {
-            println!("Todo: implement cart printing.");
-            return &[];
-        }
-        MemSection::Vram => &sys.vram.as_slice(),
-        MemSection::ExtRam => &sys.ext_ram.as_slice(),
-        MemSection::Wram => &sys.wram.as_slice(),
-        MemSection::Oam => &sys.oam.as_slice(),
-        MemSection::IoRegs => &sys.io_regs.ram().as_slice(),
-        MemSection::Hram => &sys.hram.as_slice(),
-        MemSection::IeReg => &sys.ie_reg.as_slice(),
+        MemSection::CartRom => sys.cart.rom(),
+        MemSection::Vram => sys.vram.as_slice(),
+        MemSection::ExtRam => sys.cart.ram(),
+        MemSection::Wram => sys.wram.as_slice(),
+        MemSection::Oam => sys.oam.as_slice(),
+        MemSection::IoRegs => sys.io_regs.ram().as_slice(),
+        MemSection::Hram => sys.hram.as_slice(),
+        MemSection::IeReg => sys.ie_reg.as_slice(),
     }
 }
 

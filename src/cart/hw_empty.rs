@@ -14,6 +14,10 @@ impl CartHw for HwEmpty {
         todo!()
     }
 
+    fn ram(&self) -> &[u8] {
+        todo!()
+    }
+
     fn rd(&self, addr: Addr) -> u8 {
         todo!()
     }

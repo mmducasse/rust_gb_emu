@@ -11,7 +11,7 @@ use crate::{
     mem::{
         io_regs::{IoReg, IoRegs},
         map::{self, Addr, MemSection},
-        ram::Ram,
+        mem::Mem,
     },
     ppu::ppu::Ppu,
     time::{
@@ -24,13 +24,12 @@ use crate::{
 pub struct Sys {
     pub cart: Cart,
     pub regs: CpuRegs,
-    pub wram: Ram,
-    pub vram: Ram,
-    pub ext_ram: Ram,
-    pub oam: Ram,
+    pub wram: Mem,
+    pub vram: Mem,
+    pub oam: Mem,
     pub io_regs: IoRegs,
-    pub hram: Ram,
-    pub ie_reg: Ram,
+    pub hram: Mem,
+    pub ie_reg: Mem,
 
     pub ppu: Ppu,
 
@@ -53,13 +52,12 @@ impl Sys {
         Self {
             cart: Cart::new(),
             regs: CpuRegs::new(),
-            wram: Ram::new(MemSection::Wram.size()),
-            vram: Ram::new(MemSection::Vram.size()),
-            ext_ram: Ram::new(MemSection::ExtRam.size()),
-            oam: Ram::new(MemSection::Oam.size()),
+            wram: Mem::from_mem_section(MemSection::Wram),
+            vram: Mem::from_mem_section(MemSection::Vram),
+            oam: Mem::from_mem_section(MemSection::Oam),
             io_regs: IoRegs::new(),
-            hram: Ram::new(MemSection::Hram.size()),
-            ie_reg: Ram::new(MemSection::IeReg.size()),
+            hram: Mem::from_mem_section(MemSection::Hram),
+            ie_reg: Mem::from_mem_section(MemSection::IeReg),
 
             ppu: Ppu::new(),
 
