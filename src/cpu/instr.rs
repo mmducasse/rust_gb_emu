@@ -457,7 +457,7 @@ fn decode_block_3_opcode(op: u8) -> DecodeResult {
     }
 
     // CALL COND IMM16, CALL IMM16, RST TGT3
-    if bit8(&op, 5) == 0b0 && bits8(&op, 2, 0) == 0b110 {
+    if bit8(&op, 5) == 0b0 && bits8(&op, 2, 0) == 0b100 {
         return Ok(Instr::Call_Cond_Imm16 { cond });
     }
     if bits8(&op, 5, 0) == 0b00_1101 {

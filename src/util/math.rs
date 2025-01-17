@@ -23,6 +23,20 @@ pub fn set_bit8(data: &mut u8, idx: u8, value: u8) {
     }
 }
 
+pub fn set_bits8(data: &mut u8, hi: u8, lo: u8, value: u8) {
+    let shift_r = 7 - (hi - lo);
+    let shift_l = lo;
+    let mask = (0xFF >> shift_r) << shift_l;
+    //println!("\nData (before): {:0>8b}", *data);
+    //println!("Mask: {:0>8b}", mask);
+
+    //println!("Value: {:0>8b}", value);
+    let value = value << lo;
+    //println!("Value (shifted): {:0>8b}", value);
+    *data = (*data & !mask) | (value & mask);
+    //println!("Data (after): {:0>8b}", *data);
+}
+
 pub fn bit16(op: &u16, idx: usize) -> u16 {
     (op >> idx) & 0b1
 }
@@ -107,5 +121,16 @@ mod tests {
         assert_eq!(bits8(&x, 7, 0), 0b0100_0001);
         assert_eq!(bits8(&x, 3, 0), 0b0001);
         assert_eq!(bits8(&x, 7, 4), 0b0100);
+    }
+
+    #[test]
+    fn test_set_bits8() {
+        let mut x = 0b0000_0000;
+        set_bits8(&mut x, 5, 2, 0b1111);
+        assert_eq!(x, 0b0011_1100);
+
+        let mut x = 0b1011_0110;
+        set_bits8(&mut x, 6, 3, 0b1001);
+        assert_eq!(x, 0b1100_1110);
     }
 }
