@@ -40,6 +40,12 @@ impl Mem {
         self.memory[rel_addr as usize] = data;
     }
 
+    pub fn mut_(&mut self, abs_addr: impl Into<Addr>) -> &mut u8 {
+        let abs_addr: Addr = abs_addr.into();
+        let rel_addr = abs_addr - self.start_addr;
+        return &mut self.memory[rel_addr as usize];
+    }
+
     pub fn as_slice(&self) -> &[u8] {
         return self.memory.as_slice();
     }

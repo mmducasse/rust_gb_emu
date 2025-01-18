@@ -90,7 +90,7 @@ impl Ppu {
         sys.ppu.curr_mode = mode;
 
         // Update the PPU mode indicator bits (1:0)
-        let stat = sys.mem_mut(IoReg::Stat, |stat| {
+        let stat = sys.io_reg_mut(IoReg::Stat, |stat| {
             *stat &= 0b1111_1100;
             *stat |= mode as u8;
         });
@@ -111,14 +111,14 @@ impl Ppu {
     }
 
     fn set_scanline(sys: &mut Sys, next: u8) {
-        let ly = sys.mem_mut(IoReg::Ly, |ly| {
+        let ly = sys.io_reg_mut(IoReg::Ly, |ly| {
             *ly = next;
         });
 
         let lyc = sys.mem_get(IoReg::Lyc);
         let eq = ly == lyc;
 
-        let stat = sys.mem_mut(IoReg::Stat, |stat| {
+        let stat = sys.io_reg_mut(IoReg::Stat, |stat| {
             set_bit8(stat, 2, eq.into());
         });
 

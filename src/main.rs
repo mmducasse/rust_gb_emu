@@ -47,7 +47,7 @@ async fn main() {
     //let path = ".\\assets\\imported_test_roms\\cpu_instrs\\individual\\01-special.gb";
 
     //let path = ".\\assets\\real_gb_roms\\tetris.gb";
-    let path = ".\\assets\\real_gb_roms\\Dr_Mario.gb";
+    //let path = ".\\assets\\real_gb_roms\\Dr_Mario.gb";
     //let path = ".\\assets\\real_gb_roms\\Pokemon.gb";
     //let path = ".\\assets\\real_gb_roms\\Zelda.gb";
     //let path = ".\\assets\\real_gb_roms\\Kirby.gb";
@@ -57,8 +57,8 @@ async fn main() {
     //let path = ".\\assets\\homebrew_roms\\64boy-opcode-scroll.gb";
     //let path = ".\\assets\\homebrew_roms\\life.gb";
 
-    //let path = ".\\assets\\imported_test_roms\\other\\hello_world\\rom.gb";
+    let path = ".\\assets\\imported_test_roms\\other\\hello_world\\rom.gb";
 
-    temp_tests::draw_vram_tile_data_test(path).await;
-    //temp_tests::draw_vram_tile_map_test(path).await;
+    //temp_tests::draw_vram_tile_data_test(path).await;
+    temp_tests::draw_vram_tile_map_test(path).await;
 }

@@ -190,13 +190,22 @@ impl Sys {
         self.mem_set(addr, data);
     }
 
-    pub fn mem_mut(&mut self, addr: impl Into<Addr>, mut f: impl FnMut(&mut u8) -> ()) -> u8 {
-        let addr = addr.into();
-        let mut data = self.mem_get(addr);
-        f(&mut data);
-        self.mem_set(addr, data);
+    // /// Returns a mutable reference to the data at 'addr'. Does not allow setting read-only bits.
+    // /// To set read-only bits, call 'io_reg_mut'.
+    // pub fn mem_mut(&mut self, addr: impl Into<Addr>, mut f: impl FnMut(&mut u8) -> ()) -> u8 {
+    //     let addr = addr.into();
+    //     let mut data = self.mem_get(addr);
+    //     f(&mut data);
+    //     self.mem_set(addr, data);
 
-        return data;
+    //     return data;
+    // }
+
+    pub fn io_reg_mut(&mut self, reg: IoReg, mut f: impl FnMut(&mut u8) -> ()) -> u8 {
+        let data = self.io_regs.mut_(reg);
+        f(data);
+
+        return *data;
     }
 
     pub fn get_pc(&self) -> Addr {

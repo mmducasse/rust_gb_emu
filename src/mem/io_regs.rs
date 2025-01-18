@@ -1,9 +1,18 @@
+use std::collections::HashMap;
+
+use num::FromPrimitive;
+use strum::IntoEnumIterator;
+use strum_macros::EnumIter;
+
+use crate::util::math::{set_bits8, set_bits8_masked};
+
 use super::{
+    io_reg_data::IoRegData,
     map::{Addr, MemSection},
     mem::Mem,
 };
 
-#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+#[derive(Hash, Clone, Copy, PartialEq, Eq, Debug, FromPrimitive, EnumIter)]
 pub enum IoReg {
     P1 = 0xFF00,
     Sb = 0xFF01,
@@ -27,19 +36,19 @@ pub enum IoReg {
     Obp1 = 0xFF49,
     Wy = 0xFF4A,
     Wx = 0xFF4B,
-    Key1 = 0xFF4D,
-    Vbk = 0xFF4F,
-    Hdma1 = 0xFF51,
-    Hdma2 = 0xFF52,
-    Hdma3 = 0xFF53,
-    Hdma4 = 0xFF54,
-    Hdma5 = 0xFF55,
-    Rp = 0xFF56,
-    Bcps = 0xFF68,
-    Bcpd = 0xFF69,
-    Ocps = 0xFF6A,
-    Ocpd = 0xFF6B,
-    Svbk = 0xFF70,
+    // Key1 = 0xFF4D,
+    // Vbk = 0xFF4F,
+    // Hdma1 = 0xFF51,
+    // Hdma2 = 0xFF52,
+    // Hdma3 = 0xFF53,
+    // Hdma4 = 0xFF54,
+    // Hdma5 = 0xFF55,
+    // Rp = 0xFF56,
+    // Bcps = 0xFF68,
+    // Bcpd = 0xFF69,
+    // Ocps = 0xFF6A,
+    // Ocpd = 0xFF6B,
+    // Svbk = 0xFF70,
     Ie = 0xFFFF,
 }
 
@@ -57,13 +66,23 @@ impl Into<Addr> for IoReg {
 
 pub struct IoRegs {
     mem: Mem,
+    reg_datas: HashMap<IoReg, IoRegData>,
 }
+
+const DEBUG_DIRECT_TO_MEM: bool = false;
 
 impl IoRegs {
     pub fn new() -> Self {
-        Self {
-            mem: Mem::from_mem_section(MemSection::IoRegs),
+        let mut reg_datas = HashMap::new();
+        for reg in IoReg::iter() {
+            let reg_data = IoRegData::from_reg(reg);
+            reg_datas.insert(reg, reg_data);
         }
+
+        return Self {
+            mem: Mem::from_mem_section(MemSection::IoRegs),
+            reg_datas,
+        };
     }
 
     pub fn ram(&self) -> &Mem {
@@ -71,16 +90,47 @@ impl IoRegs {
     }
 
     pub fn rd(&self, addr: Addr) -> u8 {
-        return self.mem.rd(addr);
+        if DEBUG_DIRECT_TO_MEM {
+            return self.mem.rd(addr);
+        }
+
+        if let Some(reg) = IoReg::from_u16(addr) {
+            let Some(reg_data) = self.reg_datas.get(&reg) else {
+                unreachable!();
+            };
+
+            let data = self.mem.rd(addr);
+            return data;
+            //return data & reg_data.read_mask();
+        } else {
+            return self.mem.rd(addr);
+        }
     }
 
-    pub fn wr(&mut self, addr: Addr, data: u8) {
-        if addr == IoReg::Ly.as_u16() {
-            // Do nothing..
-        } else if addr == IoReg::Div.as_u16() {
-            self.mem.wr(IoReg::Div, 0x00);
-        } else {
-            self.mem.wr(addr, data);
+    pub fn wr(&mut self, addr: Addr, value: u8) {
+        if DEBUG_DIRECT_TO_MEM {
+            self.mem.wr(addr, value);
+            return;
         }
+
+        if let Some(reg) = IoReg::from_u16(addr) {
+            let Some(reg_data) = self.reg_datas.get(&reg) else {
+                unreachable!();
+            };
+
+            if reg_data.reset_on_write() {
+                self.mem.wr(addr, 0x00);
+            } else {
+                let data = self.mem.mut_(addr);
+                let mask = reg_data.write_mask();
+                set_bits8_masked(data, mask, value);
+            }
+        } else {
+            self.mem.wr(addr, value);
+        }
+    }
+
+    pub fn mut_(&mut self, reg: IoReg) -> &mut u8 {
+        return self.mem.mut_(reg);
     }
 }
