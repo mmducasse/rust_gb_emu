@@ -52,7 +52,7 @@ pub async fn draw_vram_tile_data_test(path: &str) {
     sys.cart.load(path);
 
     sys.debug.enable_debug_print = false; //true;
-    sys.debug.kill_after_seconds = Some(2.5);
+    sys.debug.kill_after_cpu_ticks = Some(100_000);
     sys.run();
 
     crate::debug::Debug::print_system_state(&sys);
@@ -79,7 +79,7 @@ pub async fn draw_vram_tile_map_test(path: &str) {
     sys.cart.load(path);
 
     sys.debug.enable_debug_print = false; //true;
-    sys.debug.kill_after_seconds = Some(0.5);
+    sys.debug.kill_after_cpu_ticks = Some(100_000);
     sys.run();
 
     Debug::print_system_state(&sys);

@@ -48,7 +48,8 @@ impl Ppu {
         }
     }
 
-    pub fn update_ppu(sys: &mut Sys, dots: u32) {
+    pub fn update_ppu(sys: &mut Sys) {
+        let dots = 1;
         let dots_since_mode_start = sys.ppu.dots_since_mode_start + dots;
         if dots_since_mode_start < sys.ppu.curr_mode.typical_duration() {
             // Stay in current mode.

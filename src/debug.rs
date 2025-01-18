@@ -23,7 +23,7 @@ pub struct Debug {
     instr_ring_buffer: RingBuffer<InstrRecord>,
     used_instrs: HashMap<Instr, u64>,
     used_instr_variants: HashMap<String, u64>,
-    pub kill_after_seconds: Option<f64>,
+    pub kill_after_cpu_ticks: Option<u64>,
 }
 
 struct InstrRecord {
@@ -50,7 +50,7 @@ impl Debug {
             instr_ring_buffer: RingBuffer::new(10),
             used_instrs: HashMap::new(),
             used_instr_variants: HashMap::new(),
-            kill_after_seconds: None,
+            kill_after_cpu_ticks: None,
         }
     }
 

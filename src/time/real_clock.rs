@@ -1,5 +1,5 @@
 #[derive(Clone)]
-pub struct Clock {
+pub struct RealClock {
     name: String,
     frequency_hz: f64,
     time_since_last_tick_s: f64,
@@ -7,7 +7,7 @@ pub struct Clock {
     debug_total_ticks: u64,
 }
 
-impl Clock {
+impl RealClock {
     pub fn new(name: impl Into<String>, frequency_hz: f64) -> Self {
         Self {
             name: name.into(),

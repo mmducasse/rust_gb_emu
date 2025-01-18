@@ -15,8 +15,9 @@ use crate::{
     },
     ppu::ppu::Ppu,
     time::{
-        clock::Clock,
-        timers::{update_timer_regs, CPU_FREQ_HZ, DIV_FREQ_HZ, LCD_FREQ_HZ, TAC_CLK_SEL_0_FREQ_HZ},
+        real_clock::RealClock,
+        simple_clock::SimpleClock,
+        timers::{update_timer_regs, CPU_PERIOD_DOTS, DIV_PERIOD_DOTS, TAC_CLK_0_PERIOD_DOTS},
     },
     util::math::{bit8, set_bit8},
 };
@@ -33,11 +34,12 @@ pub struct Sys {
 
     pub ppu: Ppu,
 
-    pub cpu_clock: Clock,
-    pub div_timer_clock: Clock,
-    pub tima_timer_clock: Clock,
+    pub sys_clock: SimpleClock,
+    pub cpu_clock: SimpleClock,
+    pub div_timer_clock: SimpleClock,
+    pub tima_timer_clock: SimpleClock,
 
-    pub cpu_exec_delay_s: f64,
+    pub cpu_delay_ticks: u32,
 
     pub cpu_enable: bool,
     pub lcd_enable: bool,
@@ -61,11 +63,12 @@ impl Sys {
 
             ppu: Ppu::new(),
 
-            cpu_clock: Clock::new("CPU", CPU_FREQ_HZ),
-            div_timer_clock: Clock::new("DIV", DIV_FREQ_HZ),
-            tima_timer_clock: Clock::new("TIMA", TAC_CLK_SEL_0_FREQ_HZ),
+            sys_clock: SimpleClock::new("SYS", 1),
+            cpu_clock: SimpleClock::new("CPU", CPU_PERIOD_DOTS),
+            div_timer_clock: SimpleClock::new("DIV", DIV_PERIOD_DOTS),
+            tima_timer_clock: SimpleClock::new("TIMA", TAC_CLK_0_PERIOD_DOTS),
 
-            cpu_exec_delay_s: 0.0,
+            cpu_delay_ticks: 0,
 
             cpu_enable: true,
             lcd_enable: true,
@@ -120,31 +123,28 @@ impl Sys {
     }
 
     pub fn run(&mut self) {
-        let mut prev = Instant::now();
         while !self.hard_lock {
-            let now = Instant::now();
-            // println!("Iter: {:?}", now);
+            self.sys_clock.update_and_check();
 
-            let elapsed_s = (now - prev).as_secs_f64();
-            let dots = self.cpu_clock.update(elapsed_s);
-            update_timer_regs(self, elapsed_s);
-            Ppu::update_ppu(self, dots);
+            update_timer_regs(self);
 
-            self.cpu_exec_delay_s -= elapsed_s;
-            if self.cpu_exec_delay_s <= 0.0 {
+            if self.cpu_clock.update_and_check() {
+                self.cpu_delay_ticks = u32::wrapping_sub(self.cpu_delay_ticks, 1);
+            }
+            if self.cpu_delay_ticks == 0 {
+                self.cpu_delay_ticks = execute_next_instr(self);
                 try_handle_interrupts(self);
-                let m_cycles = execute_next_instr(self);
-                let next_delay = ((4 * m_cycles) as f64) * self.cpu_clock.period();
-                self.cpu_exec_delay_s += next_delay;
-                // println!("CPU exec {}", self.cpu_exec_delay_s);
             }
 
+            Ppu::update_ppu(self);
+
+            ///////// DEBUG //////////////////////////////////////////////
             if self.debug.nop_count > Debug::EXIT_AFTER_NOP_COUNT {
                 break;
             }
 
-            if let Some(kill_after_seconds) = self.debug.kill_after_seconds {
-                if kill_after_seconds < 0.0 {
+            if let Some(kill_after_ticks) = self.debug.kill_after_cpu_ticks {
+                if self.cpu_clock.debug_total_ticks >= kill_after_ticks {
                     //Debug::fail(self, "Debug kill time elapsed.");
                     return;
                 }
@@ -152,7 +152,7 @@ impl Sys {
 
             // self.test_code();
 
-            prev = now;
+            //////////////////////////////////////////////////////////////
         }
     }
 
