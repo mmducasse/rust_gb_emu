@@ -299,62 +299,6 @@ fn decode_block_0_opcode(op: u8) -> DecodeResult {
         return Ok(Instr::Nop);
     }
 
-    // STOP
-    if op == 0x10 {
-        return Ok(Instr::Stop);
-    }
-
-    // JR
-    if bits8(&op, 2, 0) == 0b000 {
-        if bit8(&op, 5) == 0b1 {
-            let cond = Cond::from_u8(bits8(&op, 4, 3));
-            return Ok(Instr::Jr_Cond_Imm8 { cond });
-        } else {
-            return Ok(Instr::Jr_Imm8);
-        }
-    }
-
-    // RCLA, etc...
-    if bits8(&op, 2, 0) == 0b111 {
-        return match bits8(&op, 7, 3) {
-            0b0000_0 => Ok(Instr::Rlca),
-            0b0000_1 => Ok(Instr::RRca),
-            0b0001_0 => Ok(Instr::Rla),
-            0b0001_1 => Ok(Instr::Rra),
-
-            0b0010_0 => Ok(Instr::Daa),
-            0b0010_1 => Ok(Instr::Cpl),
-            0b0011_0 => Ok(Instr::Scf),
-            0b0011_1 => Ok(Instr::Ccf),
-
-            _ => unreachable!(),
-        };
-    }
-
-    // LD R8 IMM8
-    if bits8(&op, 2, 0) == 0b110 {
-        let dst = R8::from_u8(bits8(&op, 5, 3));
-        return Ok(Instr::Ld_R8_Imm8 { dst });
-    }
-
-    // INC R8, DEC R8
-    let operand = R8::from_u8(bits8(&op, 5, 3));
-    if bits8(&op, 2, 0) == 0b100 {
-        return Ok(Instr::Inc_R8 { operand });
-    } else if bits8(&op, 2, 0) == 0b101 {
-        return Ok(Instr::Dec_R8 { operand });
-    }
-
-    // INC R16, DEC R16, and ADD HL R16
-    let operand = R16::from_u8(bits8(&op, 5, 4));
-    if bits8(&op, 3, 0) == 0b0011 {
-        return Ok(Instr::Inc_R16 { operand });
-    } else if bits8(&op, 3, 0) == 0b1011 {
-        return Ok(Instr::Dec_R16 { operand });
-    } else if bits8(&op, 3, 0) == 0b1001 {
-        return Ok(Instr::Add_Hl_R16 { operand });
-    }
-
     // LD R16 IMM16, LD R16MEMP A, LD A R16MEMP, LD IMM16P SP
     if bits8(&op, 3, 0) == 0b0001 {
         let dst = R16::from_u8(bits8(&op, 5, 4));
@@ -367,6 +311,62 @@ fn decode_block_0_opcode(op: u8) -> DecodeResult {
         return Ok(Instr::Ld_A_R16MemP { src });
     } else if bits8(&op, 3, 0) == 0b1000 {
         return Ok(Instr::Ld_Imm16P_Sp);
+    }
+
+    // INC R16, DEC R16, and ADD HL R16
+    let operand = R16::from_u8(bits8(&op, 5, 4));
+    if bits8(&op, 3, 0) == 0b0011 {
+        return Ok(Instr::Inc_R16 { operand });
+    } else if bits8(&op, 3, 0) == 0b1011 {
+        return Ok(Instr::Dec_R16 { operand });
+    } else if bits8(&op, 3, 0) == 0b1001 {
+        return Ok(Instr::Add_Hl_R16 { operand });
+    }
+
+    // INC R8, DEC R8
+    let operand = R8::from_u8(bits8(&op, 5, 3));
+    if bits8(&op, 2, 0) == 0b100 {
+        return Ok(Instr::Inc_R8 { operand });
+    } else if bits8(&op, 2, 0) == 0b101 {
+        return Ok(Instr::Dec_R8 { operand });
+    }
+
+    // LD R8 IMM8
+    if bits8(&op, 2, 0) == 0b110 {
+        let dst = R8::from_u8(bits8(&op, 5, 3));
+        return Ok(Instr::Ld_R8_Imm8 { dst });
+    }
+
+    // RCLA, etc...
+    if bits8(&op, 2, 0) == 0b111 {
+        return match bits8(&op, 5, 3) {
+            0b000 => Ok(Instr::Rlca),
+            0b001 => Ok(Instr::RRca),
+            0b010 => Ok(Instr::Rla),
+            0b011 => Ok(Instr::Rra),
+
+            0b100 => Ok(Instr::Daa),
+            0b101 => Ok(Instr::Cpl),
+            0b110 => Ok(Instr::Scf),
+            0b111 => Ok(Instr::Ccf),
+
+            _ => unreachable!(),
+        };
+    }
+
+    // JR
+    if bits8(&op, 2, 0) == 0b000 {
+        if bit8(&op, 5) == 0b1 {
+            let cond = Cond::from_u8(bits8(&op, 4, 3));
+            return Ok(Instr::Jr_Cond_Imm8 { cond });
+        } else if bits8(&op, 4, 3) == 0b11 {
+            return Ok(Instr::Jr_Imm8);
+        }
+    }
+
+    // STOP
+    if op == 0x10 {
+        return Ok(Instr::Stop);
     }
 
     return Err(format!(

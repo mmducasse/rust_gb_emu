@@ -43,6 +43,12 @@ pub enum IoReg {
     Ie = 0xFFFF,
 }
 
+impl IoReg {
+    pub fn as_u16(self) -> Addr {
+        self.into()
+    }
+}
+
 impl Into<Addr> for IoReg {
     fn into(self) -> Addr {
         return self as Addr;
@@ -69,8 +75,9 @@ impl IoRegs {
     }
 
     pub fn wr(&mut self, addr: Addr, data: u8) {
-        let div: Addr = IoReg::Div.into();
-        if addr == div {
+        if addr == IoReg::Ly.as_u16() {
+            // Do nothing..
+        } else if addr == IoReg::Div.as_u16() {
             self.mem.wr(IoReg::Div, 0x00);
         } else {
             self.mem.wr(addr, data);

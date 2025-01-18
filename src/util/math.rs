@@ -107,8 +107,11 @@ mod tests {
     #[test]
     fn test_bit8() {
         let a0 = 0b0000_1110;
+        assert_eq!(bit8(&a0, 0), 0b0);
+        assert_eq!(bit8(&a0, 1), 0b1);
         assert_eq!(bit8(&a0, 3), 0b1);
         assert_eq!(bit8(&a0, 4), 0b0);
+        assert_eq!(bit8(&a0, 7), 0b0);
     }
 
     #[test]
