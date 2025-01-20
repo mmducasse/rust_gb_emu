@@ -96,26 +96,26 @@ impl Sys {
 
         // Set IO registers to defaults.
         use IoReg::*;
-        sys.mem_set(P1, 0xCF);
-        sys.mem_set(Sb, 0x00);
-        sys.mem_set(Sc, 0x7E);
-        sys.mem_set(Div, 0x18);
-        sys.mem_set(Tima, 0x00);
-        sys.mem_set(Tma, 0x00);
-        sys.mem_set(Tac, 0xF8);
-        sys.mem_set(If, 0xE1);
-        sys.mem_set(Lcdc, 0x91);
-        sys.mem_set(Stat, 0x81);
-        sys.mem_set(Scy, 0x00);
-        sys.mem_set(Scx, 0x00);
-        sys.mem_set(Ly, 0x91);
-        sys.mem_set(Lyc, 0x00);
-        sys.mem_set(Dma, 0xFF);
-        sys.mem_set(Bgp, 0xFC);
-        sys.mem_set(Obp0, 0);
-        sys.mem_set(Obp1, 0);
-        sys.mem_set(Wy, 0x00);
-        sys.mem_set(Wx, 0x00);
+        sys.set_io_reg(P1, 0xCF);
+        sys.set_io_reg(Sb, 0x00);
+        sys.set_io_reg(Sc, 0x7E);
+        sys.set_io_reg(Div, 0x18);
+        sys.set_io_reg(Tima, 0x00);
+        sys.set_io_reg(Tma, 0x00);
+        sys.set_io_reg(Tac, 0xF8);
+        sys.set_io_reg(If, 0xE1);
+        sys.set_io_reg(Lcdc, 0x91);
+        sys.set_io_reg(Stat, 0x81);
+        sys.set_io_reg(Scy, 0x00);
+        sys.set_io_reg(Scx, 0x00);
+        sys.set_io_reg(Ly, 0x91);
+        sys.set_io_reg(Lyc, 0x00);
+        sys.set_io_reg(Dma, 0xFF);
+        sys.set_io_reg(Bgp, 0xFC);
+        sys.set_io_reg(Obp0, 0);
+        sys.set_io_reg(Obp1, 0);
+        sys.set_io_reg(Wy, 0x00);
+        sys.set_io_reg(Wx, 0x00);
 
         // Key1..Svbk are not initialized.
 
@@ -124,36 +124,44 @@ impl Sys {
 
     pub fn run(&mut self) {
         while !self.hard_lock {
-            self.sys_clock.update_and_check();
-
-            update_timer_regs(self);
-
-            if self.cpu_clock.update_and_check() {
-                self.cpu_delay_ticks = u32::saturating_sub(self.cpu_delay_ticks, 1);
-            }
-            if self.cpu_delay_ticks == 0 {
-                self.cpu_delay_ticks = execute_next_instr(self);
-                try_handle_interrupts(self);
-            }
-
-            Ppu::update_ppu(self);
-
-            ///////// DEBUG //////////////////////////////////////////////
-            if self.debug.nop_count > Debug::EXIT_AFTER_NOP_COUNT {
-                break;
-            }
-
-            if let Some(kill_after_ticks) = self.debug.kill_after_cpu_ticks {
-                if self.cpu_clock.debug_total_ticks >= kill_after_ticks {
-                    //Debug::fail(self, "Debug kill time elapsed.");
-                    return;
-                }
-            }
-
-            // self.test_code();
-
-            //////////////////////////////////////////////////////////////
+            self.run_one();
         }
+    }
+
+    pub fn run_one(&mut self) {
+        self.sys_clock.update_and_check();
+
+        update_timer_regs(self);
+
+        if self.cpu_clock.update_and_check() {
+            self.cpu_delay_ticks = u32::saturating_sub(self.cpu_delay_ticks, 1);
+        }
+        if self.cpu_delay_ticks == 0 {
+            self.cpu_delay_ticks = execute_next_instr(self);
+            try_handle_interrupts(self);
+        }
+
+        Ppu::update_ppu(self);
+
+        ///////// DEBUG //////////////////////////////////////////////
+        if let Some(kill_after_nop_count) = self.debug.kill_after_nop_count {
+            if self.debug.nop_count >= kill_after_nop_count {
+                self.hard_lock = true;
+                return;
+            }
+        }
+
+        if let Some(kill_after_ticks) = self.debug.kill_after_cpu_ticks {
+            if self.cpu_clock.debug_total_ticks >= kill_after_ticks {
+                //Debug::fail(self, "Debug kill time elapsed.");
+                self.hard_lock = true;
+                return;
+            }
+        }
+
+        // self.test_code();
+
+        //////////////////////////////////////////////////////////////
     }
 
     fn test_code(&mut self) {
@@ -201,11 +209,17 @@ impl Sys {
     //     return data;
     // }
 
+    /// Applies a function to the IO reg value. Doesn't abide by it's write mask.
     pub fn io_reg_mut(&mut self, reg: IoReg, mut f: impl FnMut(&mut u8) -> ()) -> u8 {
         let data = self.io_regs.mut_(reg);
         f(data);
 
         return *data;
+    }
+
+    /// Sets the entire IO reg. Doesn't abide by it's write mask.
+    pub fn set_io_reg(&mut self, reg: IoReg, data: u8) {
+        *self.io_regs.mut_(reg) = data;
     }
 
     pub fn get_pc(&self) -> Addr {

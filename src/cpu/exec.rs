@@ -22,8 +22,7 @@ pub fn execute_next_instr(sys: &mut Sys) -> u32 {
     let has_cb_prefix;
 
     if op == Instr::CB_PREFIX {
-        sys.inc_pc();
-        pc = sys.get_pc();
+        pc += 1;
         op = sys.mem_get(pc);
         has_cb_prefix = true;
     } else {
@@ -40,7 +39,8 @@ pub fn execute_next_instr(sys: &mut Sys) -> u32 {
 
     Debug::record_curr_instr(sys);
 
-    sys.inc_pc();
+    pc += 1;
+    sys.set_pc(pc);
 
     let cycles: u8 = match instr {
         // Block 0.

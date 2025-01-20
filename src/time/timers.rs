@@ -31,13 +31,14 @@ pub fn update_timer_regs(sys: &mut Sys) {
 
     let div_ticked = sys.div_timer_clock.update_and_check();
 
-    let div = sys.mem_get(IoReg::Div);
-    let div_ = u8::wrapping_add(div, 1);
-    if div_ < div {
-        // DIV overflow
-        println!("DIV overflow");
-    }
-    sys.mem_set(IoReg::Div, div_);
+    sys.io_reg_mut(IoReg::Div, |div| {
+        let div_ = u8::wrapping_add(*div, 1);
+        if div_ < *div {
+            // DIV overflow
+            //println!("DIV overflow");
+        }
+        *div = div_;
+    });
 
     // Update TIMA
     let tac = sys.mem_get(IoReg::Tac);

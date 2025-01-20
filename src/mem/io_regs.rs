@@ -69,8 +69,6 @@ pub struct IoRegs {
     reg_datas: HashMap<IoReg, IoRegData>,
 }
 
-const DEBUG_DIRECT_TO_MEM: bool = false;
-
 impl IoRegs {
     pub fn new() -> Self {
         let mut reg_datas = HashMap::new();
@@ -90,30 +88,22 @@ impl IoRegs {
     }
 
     pub fn rd(&self, addr: Addr) -> u8 {
-        if DEBUG_DIRECT_TO_MEM {
-            return self.mem.rd(addr);
-        }
-
         if let Some(reg) = IoReg::from_u16(addr) {
+            //println!("Read IO reg: {:?}", reg);
             let Some(reg_data) = self.reg_datas.get(&reg) else {
                 unreachable!();
             };
 
             let data = self.mem.rd(addr);
-            return data;
-            //return data & reg_data.read_mask();
+            return data & reg_data.read_mask();
         } else {
             return self.mem.rd(addr);
         }
     }
 
     pub fn wr(&mut self, addr: Addr, value: u8) {
-        if DEBUG_DIRECT_TO_MEM {
-            self.mem.wr(addr, value);
-            return;
-        }
-
         if let Some(reg) = IoReg::from_u16(addr) {
+            //println!("Write IO reg: {:?}: {:0>4X}", reg, value);
             let Some(reg_data) = self.reg_datas.get(&reg) else {
                 unreachable!();
             };

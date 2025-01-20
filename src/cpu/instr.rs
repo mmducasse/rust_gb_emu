@@ -309,7 +309,7 @@ fn decode_block_0_opcode(op: u8) -> DecodeResult {
     } else if bits8(&op, 3, 0) == 0b1010 {
         let src = R16Mem::from_u8(bits8(&op, 5, 4));
         return Ok(Instr::Ld_A_R16MemP { src });
-    } else if bits8(&op, 3, 0) == 0b1000 {
+    } else if bits8(&op, 5, 0) == 0b00_1000 {
         return Ok(Instr::Ld_Imm16P_Sp);
     }
 

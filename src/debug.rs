@@ -18,12 +18,13 @@ use crate::{
 
 pub struct Debug {
     pub enable_debug_print: bool,
-    pub nop_count: u32,
+    pub nop_count: u64,
     pub total_instrs_executed: u64,
     instr_ring_buffer: RingBuffer<InstrRecord>,
     used_instrs: HashMap<Instr, u64>,
     used_instr_variants: HashMap<String, u64>,
     pub kill_after_cpu_ticks: Option<u64>,
+    pub kill_after_nop_count: Option<u64>,
 }
 
 struct InstrRecord {
@@ -40,17 +41,16 @@ enum ImmValue {
 }
 
 impl Debug {
-    pub const EXIT_AFTER_NOP_COUNT: u32 = 8;
-
     pub fn new() -> Self {
         Self {
             enable_debug_print: false,
             nop_count: 0,
             total_instrs_executed: 0,
-            instr_ring_buffer: RingBuffer::new(10),
+            instr_ring_buffer: RingBuffer::new(100),
             used_instrs: HashMap::new(),
             used_instr_variants: HashMap::new(),
             kill_after_cpu_ticks: None,
+            kill_after_nop_count: None,
         }
     }
 
@@ -61,8 +61,7 @@ impl Debug {
         let mut op = sys.mem_get(pc);
         let mut has_cb_prefix = false;
         if op == Instr::CB_PREFIX {
-            sys.inc_pc();
-            pc = sys.get_pc();
+            pc += 1;
             op = sys.mem_get(pc);
             has_cb_prefix = true;
         }

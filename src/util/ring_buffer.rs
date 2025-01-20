@@ -49,7 +49,7 @@ impl<'a, T> Iterator for RingBufferIterator<'a, T> {
     type Item = &'a T;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.is_done {
+        if self.is_done || self.ring_buffer.len() == 0 {
             return None;
         }
 
