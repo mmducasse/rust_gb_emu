@@ -413,7 +413,7 @@ fn decode_block_3_opcode(op: u8) -> DecodeResult {
     }
 
     if op == 0xCB {
-        unreachable!();
+        return Err("Encountered 0xCB when expecting block 3 opcode.".to_owned());
     }
 
     // ARITH A IMM8
@@ -509,10 +509,10 @@ fn decode_block_3_opcode(op: u8) -> DecodeResult {
         }
 
         0b1111_0011 => {
-            return Ok(Instr::Ei);
+            return Ok(Instr::Di);
         }
         0b1111_1011 => {
-            return Ok(Instr::Di);
+            return Ok(Instr::Ei);
         }
 
         _ => {}

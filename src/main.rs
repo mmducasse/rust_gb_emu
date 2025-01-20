@@ -16,7 +16,7 @@ use ppu::{
     tile_map_test::{self, draw_bg_tile_map},
 };
 use sys::Sys;
-use test::{blargg::run_blargg_test, gb_microtest::run_gb_microtest};
+use test::{blargg::run_blargg_test, gb_microtest::run_gb_microtest, instr::test_all_opcodes};
 use xf::{
     mq::window::{Window, WindowParams},
     num::ivec2::{i2, IVec2},
@@ -44,6 +44,8 @@ async fn main() {
 
     //std::env::set_var("RUST_BACKTRACE", "1");
 
+    //test_all_opcodes();
+
     //let path = ".\\assets\\files\\custom_roms\\ld_r8_r8\\rom.gb";
     //let path = ".\\assets\\imported_test_roms\\cpu_instrs\\individual\\01-special.gb";
     //let path = ".\\assets\\imported_test_roms\\cpu_instrs\\individual\\06-ld r,r.gb";
@@ -62,8 +64,8 @@ async fn main() {
 
     let path = ".\\assets\\imported_test_roms\\other\\hello_world\\rom.gb";
 
-    temp_tests::draw_vram_tile_data_test(path).await;
-    //temp_tests::draw_vram_tile_map_test(path).await;
+    //temp_tests::draw_vram_tile_data_test(path).await;
+    temp_tests::draw_vram_tile_map_test(path).await;
     //run_blargg_test(path).await;
     //run_gb_microtest(&path).await;
 }
