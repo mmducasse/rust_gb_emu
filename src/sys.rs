@@ -163,19 +163,9 @@ impl Sys {
         }
     }
 
-    pub fn mem_get(&self, addr: Addr) -> u8 {
-        let addr = addr.into();
-        self.mem.read(addr)
-    }
-
     pub fn get_hl_p(&self) -> u8 {
         let addr = self.regs.get_16(CpuReg16::HL);
-        self.mem_get(addr)
-    }
-
-    pub fn mem_set(&mut self, addr: Addr, data: u8) {
-        let addr = addr.into();
-        self.mem.write(addr, data);
+        self.mem.read(addr)
     }
 
     pub fn get_pc(&self) -> Addr {

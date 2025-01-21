@@ -25,15 +25,15 @@ pub async fn run_gb_microtest(rom_path: &str) {
     debug::print_system_state(&sys);
 
     //0xFF80 - Test result
-    let result = sys.mem_get(0xFF80u16);
+    let result = sys.mem.read(0xFF80u16);
     println!("0xFF80 - Result: {:0>2X}", result);
 
     // 0xFF81 - Expected result
-    let expected_result = sys.mem_get(0xFF81u16);
+    let expected_result = sys.mem.read(0xFF81u16);
     println!("0xFF81 - Expected result: {:0>2X}", result);
 
     // 0xFF82 - 0x01 if the test passed, 0xFF if the test failed.
-    let pass_fail = sys.mem_get(0xFF82u16);
+    let pass_fail = sys.mem.read(0xFF82u16);
     println!("0xFF82 - Pass ($01) or Fail ($FF): {:0>2X}", pass_fail);
 
     while !is_key_pressed(KeyCode::Escape) {
@@ -43,8 +43,8 @@ pub async fn run_gb_microtest(rom_path: &str) {
 }
 
 fn print_output_char(sys: &Sys) {
-    if sys.mem_get(0xFF02u16) == 0x81 {
-        let data = sys.mem_get(0xFF01u16);
+    if sys.mem.read(0xFF02u16) == 0x81 {
+        let data = sys.mem.read(0xFF01u16);
         let c = char::from_u32(data as u32).unwrap_or('?');
         // if c.is_whitespace() {
         //     println!();

@@ -157,9 +157,9 @@ impl CpuRegs {
     }
 
     pub fn print_key_addrs(sys: &Sys) {
-        let sp_p = sys.mem_get(sys.regs.get_16(CpuReg16::SP));
-        let pc_p = sys.mem_get(sys.regs.get_16(CpuReg16::PC));
-        let hl_p = sys.mem_get(sys.regs.get_16(CpuReg16::HL));
+        let sp_p = sys.mem.read(sys.regs.get_16(CpuReg16::SP));
+        let pc_p = sys.mem.read(sys.regs.get_16(CpuReg16::PC));
+        let hl_p = sys.mem.read(sys.regs.get_16(CpuReg16::HL));
 
         println!(
             "  [SP]={:0>2X}  [PC]={:0>2X}  [HL]={:0>2X}",

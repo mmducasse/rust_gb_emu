@@ -38,8 +38,8 @@ pub async fn run_blargg_test(rom_path: &str) {
 }
 
 fn print_output_char(sys: &Sys) {
-    if sys.mem_get(0xFF02u16) == 0x81 {
-        let data = sys.mem_get(0xFF01u16);
+    if sys.mem.read(0xFF02u16) == 0x81 {
+        let data = sys.mem.read(0xFF01u16);
         let c = char::from_u32(data as u32).unwrap_or('?');
         // if c.is_whitespace() {
         //     println!();
