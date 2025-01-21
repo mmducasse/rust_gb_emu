@@ -45,8 +45,8 @@ pub fn try_handle_interrupts(sys: &mut Sys) {
         return;
     }
 
-    let ie = sys.mem_get(IoReg::Ie);
-    let if_ = sys.mem_get(IoReg::If);
+    let ie = sys.mem.io_regs.get(IoReg::Ie);
+    let if_ = sys.mem.io_regs.get(IoReg::If);
     for type_ in InterruptType::iter() {
         let flag_idx = type_.flag_idx();
         let is_int_enabled = bit8(&ie, flag_idx) == 1;

@@ -13,7 +13,6 @@ pub struct Mem {
     pub oam: Array,
     pub io_regs: IoRegs,
     pub hram: Array,
-    pub ie_reg: Array,
 }
 
 impl Mem {
@@ -25,7 +24,6 @@ impl Mem {
             oam: Array::from_mem_section(MemSection::Oam),
             io_regs: IoRegs::new(),
             hram: Array::from_mem_section(MemSection::Hram),
-            ie_reg: Array::from_mem_section(MemSection::IeReg),
         }
     }
 
@@ -54,7 +52,7 @@ impl Mem {
             }
             MemSection::IoRegs => self.io_regs.user_read(addr),
             MemSection::Hram => self.hram.rd(addr),
-            MemSection::IeReg => self.ie_reg.rd(addr),
+            MemSection::IeReg => self.io_regs.user_read(addr),
         }
     }
 
@@ -94,7 +92,7 @@ impl Mem {
                 self.hram.wr(addr, data);
             }
             MemSection::IeReg => {
-                self.ie_reg.wr(addr, data);
+                self.io_regs.user_write(addr, data);
             }
         }
     }
@@ -111,7 +109,7 @@ impl Mem {
             MemSection::Oam => self.oam.as_slice(),
             MemSection::IoRegs => self.io_regs.ram().as_slice(),
             MemSection::Hram => self.hram.as_slice(),
-            MemSection::IeReg => self.ie_reg.as_slice(),
+            MemSection::IeReg => self.io_regs.ie().as_slice(),
         }
     }
 

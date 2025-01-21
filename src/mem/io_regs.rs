@@ -70,6 +70,7 @@ impl Into<Addr> for IoReg {
 
 pub struct IoRegs {
     mem: Array,
+    ie: Array, // IE reg is not part of contiguous IO regs memory.
     reg_datas: HashMap<IoReg, IoRegData>,
 }
 
@@ -83,6 +84,7 @@ impl IoRegs {
 
         return Self {
             mem: Array::from_mem_section(MemSection::IoRegs),
+            ie: Array::from_mem_section(MemSection::IeReg),
             reg_datas,
         };
     }
@@ -91,9 +93,17 @@ impl IoRegs {
         &self.mem
     }
 
+    pub fn ie(&self) -> &Array {
+        &self.ie
+    }
+
     /// Reads from the readable bits in the IO register.
     pub fn user_read(&self, addr: Addr) -> u8 {
-        let mut data = self.mem.rd(addr);
+        let mut data = if addr == IoReg::Ie.as_addr() {
+            self.ie.rd(addr)
+        } else {
+            self.mem.rd(addr)
+        };
 
         if let Some(reg) = IoReg::from_u16(addr) {
             debug::record_io_reg_usage(reg, false);
@@ -107,9 +117,19 @@ impl IoRegs {
         return data;
     }
 
+    pub fn get(&self, reg: IoReg) -> u8 {
+        return if reg == IoReg::Ie {
+            self.ie.rd(reg)
+        } else {
+            self.mem.rd(reg)
+        };
+    }
+
     /// Writes to the writeable bits in the IO register.
     pub fn user_write(&mut self, addr: Addr, value: u8) {
-        if let Some(reg) = IoReg::from_u16(addr) {
+        if addr == IoReg::Ie.as_addr() {
+            self.ie.wr(addr, value);
+        } else if let Some(reg) = IoReg::from_u16(addr) {
             debug::record_io_reg_usage(reg, true);
             let Some(reg_data) = self.reg_datas.get(&reg) else {
                 unreachable!();
@@ -134,6 +154,10 @@ impl IoRegs {
 
     /// Returns a mutable reference to the entire byte in the IO register. Doesn't abide by read/write masks.
     pub fn mut_(&mut self, reg: IoReg) -> &mut u8 {
-        return self.mem.mut_(reg);
+        return if reg == IoReg::Ie {
+            self.ie.mut_(reg)
+        } else {
+            self.mem.mut_(reg)
+        };
     }
 }

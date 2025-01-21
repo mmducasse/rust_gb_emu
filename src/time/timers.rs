@@ -41,7 +41,7 @@ pub fn update_timer_regs(sys: &mut Sys) {
     });
 
     // Update TIMA
-    let tac = sys.mem_get(IoReg::Tac);
+    let tac = sys.mem.io_regs.get(IoReg::Tac);
     let enable = bit8(&tac, 2); // todo unused
     let clock_sel = bits8(&tac, 1, 0);
     let tima_clk_period = match clock_sel {
@@ -57,12 +57,12 @@ pub fn update_timer_regs(sys: &mut Sys) {
     let tima_ticked = sys.tima_timer_clock.update_and_check();
 
     if tima_ticked {
-        let tima = sys.mem_get(IoReg::Tima);
+        let tima = sys.mem.io_regs.get(IoReg::Tima);
         let tima_ = u8::wrapping_add(tima, 1);
         if tima_ < tima {
             // TIMA overflow
             println!("TIMA overflow");
-            let tma = sys.mem_get(IoReg::Tma);
+            let tma = sys.mem.io_regs.get(IoReg::Tma);
             sys.mem_set(IoReg::Div, tma);
             request_interrupt(sys, InterruptType::Timer);
         } else {

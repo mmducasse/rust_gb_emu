@@ -163,7 +163,7 @@ impl Sys {
         }
     }
 
-    pub fn mem_get(&self, addr: impl Into<Addr>) -> u8 {
+    pub fn mem_get(&self, addr: Addr) -> u8 {
         let addr = addr.into();
         self.mem.read(addr)
     }
@@ -257,8 +257,8 @@ impl Sys {
     pub fn print(&self) {
         self.regs.print();
         println!("IME={}", self.interrupt_master_enable);
-        println!("IE={:0>8b}", self.mem_get(IoReg::Ie));
-        println!("IF={:0>8b}", self.mem_get(IoReg::If));
+        println!("IE={:0>8b}", self.mem.io_regs.get(IoReg::Ie));
+        println!("IF={:0>8b}", self.mem.io_regs.get(IoReg::If));
 
         Ppu::print(self);
 
