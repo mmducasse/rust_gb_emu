@@ -3,6 +3,8 @@ use strum_macros::EnumIter;
 
 use crate::{consts::FAIL_ON_BAD_RW, debug::Debug, sys::Sys};
 
+use super::io_regs::IoRegs;
+
 pub type Addr = u16;
 
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, EnumIter, FromPrimitive, Debug)]
@@ -123,7 +125,7 @@ pub fn write(sys: &mut Sys, addr: Addr, data: u8) {
             }
         }
         MemSection::IoRegs => {
-            sys.io_regs.wr(addr, data);
+            IoRegs::wr(sys, addr, data);
         }
         MemSection::Hram => {
             sys.hram.wr(addr, data);

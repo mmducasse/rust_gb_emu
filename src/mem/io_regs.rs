@@ -4,7 +4,10 @@ use num::FromPrimitive;
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 
-use crate::util::math::{set_bits8, set_bits8_masked};
+use crate::{
+    sys::Sys,
+    util::math::{set_bits8, set_bits8_masked},
+};
 
 use super::{
     io_reg_data::IoRegData,
@@ -89,7 +92,6 @@ impl IoRegs {
 
     pub fn rd(&self, addr: Addr) -> u8 {
         if let Some(reg) = IoReg::from_u16(addr) {
-            //println!("Read IO reg: {:?}", reg);
             let Some(reg_data) = self.reg_datas.get(&reg) else {
                 unreachable!();
             };
@@ -101,22 +103,22 @@ impl IoRegs {
         }
     }
 
-    pub fn wr(&mut self, addr: Addr, value: u8) {
+    pub fn wr(sys: &mut Sys, addr: Addr, value: u8) {
         if let Some(reg) = IoReg::from_u16(addr) {
-            //println!("Write IO reg: {:?}: {:0>4X}", reg, value);
-            let Some(reg_data) = self.reg_datas.get(&reg) else {
+            sys.debug.record_io_reg_usage(reg, true);
+            let Some(reg_data) = sys.io_regs.reg_datas.get(&reg) else {
                 unreachable!();
             };
 
             if reg_data.reset_on_write() {
-                self.mem.wr(addr, 0x00);
+                sys.io_regs.mem.wr(addr, 0x00);
             } else {
-                let data = self.mem.mut_(addr);
+                let data = sys.io_regs.mem.mut_(addr);
                 let mask = reg_data.write_mask();
                 set_bits8_masked(data, mask, value);
             }
         } else {
-            self.mem.wr(addr, value);
+            sys.io_regs.mem.wr(addr, value);
         }
     }
 

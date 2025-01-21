@@ -11,7 +11,10 @@ use crate::{
         instr::{decode, ImmType, Instr},
         regs::CpuRegs,
     },
-    mem::map::{get_section_slice, print_section, MemSection},
+    mem::{
+        io_regs::IoReg,
+        map::{get_section_slice, print_section, MemSection},
+    },
     sys::Sys,
     util::{math::join_16, ring_buffer::RingBuffer},
 };
@@ -23,6 +26,7 @@ pub struct Debug {
     instr_ring_buffer: RingBuffer<InstrRecord>,
     used_instrs: HashMap<Instr, u64>,
     used_instr_variants: HashMap<String, u64>,
+    used_io_regs: HashMap<IoReg, IoRegRecord>,
     pub kill_after_cpu_ticks: Option<u64>,
     pub kill_after_nop_count: Option<u64>,
 }
@@ -40,15 +44,22 @@ enum ImmValue {
     Imm16(u16),
 }
 
+struct IoRegRecord {
+    reg: IoReg,
+    reads: u64,
+    writes: u64,
+}
+
 impl Debug {
     pub fn new() -> Self {
         Self {
             enable_debug_print: false,
             nop_count: 0,
             total_instrs_executed: 0,
-            instr_ring_buffer: RingBuffer::new(100),
+            instr_ring_buffer: RingBuffer::new(10),
             used_instrs: HashMap::new(),
             used_instr_variants: HashMap::new(),
+            used_io_regs: HashMap::new(),
             kill_after_cpu_ticks: None,
             kill_after_nop_count: None,
         }
@@ -115,6 +126,27 @@ impl Debug {
         sys.debug.used_instr_variants.insert(variant_str, count + 1);
     }
 
+    /// is_write: false for read, true for write.
+    pub fn record_io_reg_usage(&mut self, reg: IoReg, is_write: bool) {
+        if !self.used_io_regs.contains_key(&reg) {
+            self.used_io_regs.insert(
+                reg,
+                IoRegRecord {
+                    reg,
+                    reads: 0,
+                    writes: 0,
+                },
+            );
+        }
+        let record = self.used_io_regs.get_mut(&reg).unwrap();
+        if is_write == false {
+            record.reads += 1;
+        }
+        if is_write == true {
+            record.writes += 1;
+        }
+    }
+
     pub fn fail(sys: &Sys, msg: impl Into<String>) -> ! {
         Self::print_system_state(sys);
         println!("\nFAILURE: {}\n", msg.into());
@@ -174,6 +206,17 @@ impl Debug {
         );
         for (variant_str, count) in &sys.debug.used_instr_variants {
             println!("    {}: {}", variant_str, count);
+        }
+
+        // Print all IO reg usage.
+        println!("IO Reg usage:");
+        for reg in IoReg::iter() {
+            if let Some(record) = sys.debug.used_io_regs.get(&reg) {
+                println!(
+                    "  {:?}: {} reads, {} writes",
+                    reg, record.reads, record.writes
+                );
+            }
         }
 
         // System state.
