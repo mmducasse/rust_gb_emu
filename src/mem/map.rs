@@ -125,7 +125,7 @@ pub fn write(sys: &mut Sys, addr: Addr, data: u8) {
             }
         }
         MemSection::IoRegs => {
-            IoRegs::wr(sys, addr, data);
+            sys.io_regs.wr(addr, data);
         }
         MemSection::Hram => {
             sys.hram.wr(addr, data);

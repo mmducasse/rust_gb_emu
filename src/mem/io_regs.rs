@@ -105,22 +105,22 @@ impl IoRegs {
         }
     }
 
-    pub fn wr(sys: &mut Sys, addr: Addr, value: u8) {
+    pub fn wr(&mut self, addr: Addr, value: u8) {
         if let Some(reg) = IoReg::from_u16(addr) {
             debug::record_io_reg_usage(reg, true);
-            let Some(reg_data) = sys.io_regs.reg_datas.get(&reg) else {
+            let Some(reg_data) = self.reg_datas.get(&reg) else {
                 unreachable!();
             };
 
             if reg_data.reset_on_write() {
-                sys.io_regs.mem.wr(addr, 0x00);
+                self.mem.wr(addr, 0x00);
             } else {
-                let data = sys.io_regs.mem.mut_(addr);
+                let data = self.mem.mut_(addr);
                 let mask = reg_data.write_mask();
                 set_bits8_masked(data, mask, value);
             }
         } else {
-            sys.io_regs.mem.wr(addr, value);
+            self.mem.wr(addr, value);
         }
     }
 
