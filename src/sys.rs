@@ -161,7 +161,7 @@ impl Sys {
 
     pub fn mem_get(&self, addr: impl Into<Addr>) -> u8 {
         let addr = addr.into();
-        map::read(self, addr)
+        self.mem.read(addr)
     }
 
     pub fn mem_get_bit(&self, addr: impl Into<Addr>, idx: u8) -> u8 {
@@ -177,7 +177,7 @@ impl Sys {
 
     pub fn mem_set(&mut self, addr: impl Into<Addr>, data: u8) {
         let addr = addr.into();
-        map::write(self, addr, data);
+        self.mem.write(addr, data);
     }
 
     pub fn mem_set_bit(&mut self, addr: impl Into<Addr>, idx: u8, value: u8) {

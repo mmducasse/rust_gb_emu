@@ -11,10 +11,7 @@ use crate::{
         instr::{decode, ImmType, Instr},
         regs::CpuRegs,
     },
-    mem::{
-        io_regs::IoReg,
-        map::{get_section_slice, print_section, MemSection},
-    },
+    mem::{io_regs::IoReg, map::MemSection},
     sys::Sys,
     util::{math::join_16, ring_buffer::RingBuffer},
 };
@@ -257,7 +254,7 @@ pub fn print_system_state(sys: &Sys) {
         println!("\nMemory section sums:");
         for section in MemSection::iter() {
             let mut sum = 0;
-            for data in get_section_slice(sys, section) {
+            for data in sys.mem.get_section_slice(section) {
                 sum += *data as u64;
             }
             println!("  {:?} data sum: {}", section, sum);
