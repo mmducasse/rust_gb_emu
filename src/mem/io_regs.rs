@@ -11,9 +11,9 @@ use crate::{
 };
 
 use super::{
+    array::Array,
     io_reg_data::IoRegData,
     map::{Addr, MemSection},
-    mem::Mem,
 };
 
 #[derive(Hash, Clone, Copy, PartialEq, Eq, Debug, FromPrimitive, EnumIter)]
@@ -69,7 +69,7 @@ impl Into<Addr> for IoReg {
 }
 
 pub struct IoRegs {
-    mem: Mem,
+    mem: Array,
     reg_datas: HashMap<IoReg, IoRegData>,
 }
 
@@ -82,12 +82,12 @@ impl IoRegs {
         }
 
         return Self {
-            mem: Mem::from_mem_section(MemSection::IoRegs),
+            mem: Array::from_mem_section(MemSection::IoRegs),
             reg_datas,
         };
     }
 
-    pub fn ram(&self) -> &Mem {
+    pub fn ram(&self) -> &Array {
         &self.mem
     }
 

@@ -2,12 +2,12 @@ use crate::mem::map::Addr;
 
 use super::map::MemSection;
 
-pub struct Mem {
+pub struct Array {
     start_addr: Addr,
     memory: Vec<u8>,
 }
 
-impl Mem {
+impl Array {
     pub fn new(start_addr: Addr, size: u16) -> Self {
         Self {
             start_addr,

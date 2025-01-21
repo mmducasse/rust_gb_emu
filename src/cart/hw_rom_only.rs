@@ -1,18 +1,18 @@
 use crate::{
     consts::KB_32,
-    mem::{map::Addr, mem::Mem},
+    mem::{array::Array, map::Addr},
 };
 
 use super::cart_hw::CartHw;
 
 pub struct HwRomOnly {
-    rom: Mem,
+    rom: Array,
 }
 
 impl HwRomOnly {
     pub fn new() -> Self {
         Self {
-            rom: Mem::new(0, KB_32 as u16),
+            rom: Array::new(0, KB_32 as u16),
         }
     }
 }
