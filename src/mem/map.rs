@@ -1,7 +1,7 @@
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 
-use crate::{consts::FAIL_ON_BAD_RW, debug::Debug, sys::Sys};
+use crate::{consts::FAIL_ON_BAD_RW, debug, sys::Sys};
 
 use super::io_regs::IoRegs;
 
@@ -76,7 +76,7 @@ pub fn read(sys: &Sys, addr: Addr) -> u8 {
         MemSection::Wram => sys.wram.rd(addr),
         MemSection::EchoRam => {
             if FAIL_ON_BAD_RW {
-                Debug::fail(sys, "Attempted to read from Echo RAM");
+                debug::fail(sys, "Attempted to read from Echo RAM");
             } else {
                 0x00
             }
@@ -84,7 +84,7 @@ pub fn read(sys: &Sys, addr: Addr) -> u8 {
         MemSection::Oam => sys.oam.rd(addr),
         MemSection::UnusableMemory => {
             if FAIL_ON_BAD_RW {
-                Debug::fail(sys, "Attempted to read from unusable memory");
+                debug::fail(sys, "Attempted to read from unusable memory");
             } else {
                 0x00
             }
@@ -113,7 +113,7 @@ pub fn write(sys: &mut Sys, addr: Addr, data: u8) {
         }
         MemSection::EchoRam => {
             if FAIL_ON_BAD_RW {
-                Debug::fail(sys, "Attempted to write to Echo RAM");
+                debug::fail(sys, "Attempted to write to Echo RAM");
             }
         }
         MemSection::Oam => {
@@ -121,7 +121,7 @@ pub fn write(sys: &mut Sys, addr: Addr, data: u8) {
         }
         MemSection::UnusableMemory => {
             if FAIL_ON_BAD_RW {
-                Debug::fail(sys, "Attempted to write to unusable memory");
+                debug::fail(sys, "Attempted to write to unusable memory");
             }
         }
         MemSection::IoRegs => {

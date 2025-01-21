@@ -1,7 +1,7 @@
 use std::mem::transmute;
 
 use crate::{
-    debug::Debug,
+    debug::{self, debug_state},
     sys::Sys,
     util::math::{
         add16_ui, add16_uu, add_u16_i8, bit8, bits16, bits8, join_16, set_bit8, split_16,
@@ -30,14 +30,14 @@ pub fn execute_next_instr(sys: &mut Sys) -> u32 {
     }
     let instr = match decode(op, has_cb_prefix) {
         Ok(instr) => instr,
-        Err(msg) => Debug::fail(sys, msg),
+        Err(msg) => debug::fail(sys, msg),
     };
 
-    if sys.debug.enable_debug_print {
+    if debug_state().config.enable_debug_print {
         println!("[{:#02x}] {:?}", pc, instr);
     }
 
-    Debug::record_curr_instr(sys);
+    debug::record_curr_instr(sys);
 
     pc += 1;
     sys.set_pc(pc);
@@ -147,7 +147,7 @@ pub fn execute_next_instr(sys: &mut Sys) -> u32 {
 
 // Helper functions.
 fn print_if_ld_a_a(sys: &mut Sys, instr: Instr) {
-    if sys.debug.enable_debug_print
+    if debug_state().config.enable_debug_print
         && matches!(
             instr,
             Instr::Ld_R8_R8 {
@@ -165,7 +165,7 @@ fn take_imm8(sys: &mut Sys) -> u8 {
     let imm8 = sys.mem_get(sys.get_pc());
     sys.inc_pc();
 
-    if sys.debug.enable_debug_print {
+    if debug_state().config.enable_debug_print {
         println!("  imm8: {:0>2X} ({})", imm8, imm8);
     }
 
@@ -180,7 +180,7 @@ fn take_imm16(sys: &mut Sys) -> u16 {
 
     let imm16 = join_16(hi, lo);
 
-    if sys.debug.enable_debug_print {
+    if debug_state().config.enable_debug_print {
         println!("  imm16: {:0>4X} ({})", imm16, imm16);
     }
 
@@ -1149,5 +1149,5 @@ fn set_b3_r8(sys: &mut Sys, b3: u8, operand: R8) -> u8 {
 // Misc functions.
 fn hard_lock(sys: &mut Sys) -> ! {
     sys.hard_lock = true;
-    Debug::fail(sys, "Invalid instr occurred.");
+    debug::fail(sys, "Invalid instr occurred.");
 }

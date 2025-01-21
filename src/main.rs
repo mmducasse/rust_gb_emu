@@ -6,7 +6,7 @@
 #![allow(static_mut_refs)]
 
 use consts::{PIXEL_SCALE, SCREEN_SIZE};
-use debug::Debug;
+use debug::{initialize_debug, DebugConfig};
 use macroquad::{
     input::{is_key_pressed, KeyCode},
     window::next_frame,
@@ -41,6 +41,12 @@ mod util;
 #[macroquad::main("rust_gb_emu")]
 async fn main() {
     println!("*** RUST GAMEBOY EMU (Matthew Ducasse 2025) ***");
+
+    initialize_debug(DebugConfig {
+        enable_debug_print: false,
+        kill_after_cpu_ticks: Some(100_000),
+        kill_after_nop_count: Some(32),
+    });
 
     //std::env::set_var("RUST_BACKTRACE", "1");
 

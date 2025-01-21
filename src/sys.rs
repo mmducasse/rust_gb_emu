@@ -7,7 +7,7 @@ use crate::{
         interrupt::try_handle_interrupts,
         regs::{CpuReg16, CpuReg8, CpuRegs},
     },
-    debug::Debug,
+    debug::debug_state,
     mem::{
         io_regs::{IoReg, IoRegs},
         map::{self, Addr, MemSection},
@@ -46,7 +46,6 @@ pub struct Sys {
     pub interrupt_master_enable: bool,
 
     pub hard_lock: bool,
-    pub debug: Debug,
 }
 
 impl Sys {
@@ -75,7 +74,6 @@ impl Sys {
             interrupt_master_enable: true,
 
             hard_lock: false,
-            debug: Debug::new(),
         }
     }
 
@@ -144,14 +142,14 @@ impl Sys {
         Ppu::update_ppu(self);
 
         ///////// DEBUG //////////////////////////////////////////////
-        if let Some(kill_after_nop_count) = self.debug.kill_after_nop_count {
-            if self.debug.nop_count >= kill_after_nop_count {
+        if let Some(kill_after_nop_count) = debug_state().config.kill_after_nop_count {
+            if debug_state().nop_count >= kill_after_nop_count {
                 self.hard_lock = true;
                 return;
             }
         }
 
-        if let Some(kill_after_ticks) = self.debug.kill_after_cpu_ticks {
+        if let Some(kill_after_ticks) = debug_state().config.kill_after_cpu_ticks {
             if self.cpu_clock.debug_total_ticks >= kill_after_ticks {
                 //Debug::fail(self, "Debug kill time elapsed.");
                 self.hard_lock = true;
@@ -165,7 +163,7 @@ impl Sys {
     }
 
     fn test_code(&mut self) {
-        if self.debug.total_instrs_executed > 100 {
+        if debug_state().total_instrs_executed > 100 {
             self.hard_lock = true;
         }
     }

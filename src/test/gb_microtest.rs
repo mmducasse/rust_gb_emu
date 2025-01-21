@@ -7,7 +7,7 @@ use xf::{
     num::ivec2::i2,
 };
 
-use crate::{consts::PIXEL_SCALE, debug::Debug, sys::Sys};
+use crate::{consts::PIXEL_SCALE, debug, sys::Sys};
 
 pub async fn run_gb_microtest(rom_path: &str) {
     let window = Window::new(WindowParams {
@@ -19,13 +19,10 @@ pub async fn run_gb_microtest(rom_path: &str) {
     Sys::initialize(&mut sys);
 
     sys.cart.load(rom_path);
-    sys.debug.kill_after_cpu_ticks = Some(1_000_000);
-    sys.debug.kill_after_nop_count = Some(64);
-    sys.debug.enable_debug_print = false; //true;
     sys.run();
 
     println!("Done");
-    Debug::print_system_state(&sys);
+    debug::print_system_state(&sys);
 
     //0xFF80 - Test result
     let result = sys.mem_get(0xFF80u16);

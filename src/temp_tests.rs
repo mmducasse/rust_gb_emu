@@ -7,7 +7,7 @@ use xf::mq::window::{Window, WindowParams};
 
 use crate::{
     consts::PIXEL_SCALE,
-    debug::Debug,
+    debug::{self, initialize_debug, DebugConfig},
     mem::map::MemSection,
     ppu::{
         tile_data_test,
@@ -50,12 +50,9 @@ pub async fn draw_vram_tile_data_test(path: &str) {
     Sys::initialize(&mut sys);
 
     sys.cart.load(path);
-
-    sys.debug.enable_debug_print = false; //true;
-    sys.debug.kill_after_cpu_ticks = Some(100_000);
     sys.run();
 
-    crate::debug::Debug::print_system_state(&sys);
+    debug::print_system_state(&sys);
 
     window.render_pass(|| {
         tile_data_test::draw_vram_tile_data(&sys);
@@ -77,12 +74,9 @@ pub async fn draw_vram_tile_map_test(path: &str) {
     Sys::initialize(&mut sys);
 
     sys.cart.load(path);
-
-    sys.debug.enable_debug_print = false; //true;
-    sys.debug.kill_after_cpu_ticks = Some(100_000);
     sys.run();
 
-    Debug::print_system_state(&sys);
+    debug::print_system_state(&sys);
 
     window.render_pass(|| {
         draw_bg_tile_map(&sys);

@@ -5,6 +5,7 @@ use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 
 use crate::{
+    debug,
     sys::Sys,
     util::math::{set_bits8, set_bits8_masked},
 };
@@ -92,6 +93,7 @@ impl IoRegs {
 
     pub fn rd(&self, addr: Addr) -> u8 {
         if let Some(reg) = IoReg::from_u16(addr) {
+            debug::record_io_reg_usage(reg, false);
             let Some(reg_data) = self.reg_datas.get(&reg) else {
                 unreachable!();
             };
@@ -105,7 +107,7 @@ impl IoRegs {
 
     pub fn wr(sys: &mut Sys, addr: Addr, value: u8) {
         if let Some(reg) = IoReg::from_u16(addr) {
-            sys.debug.record_io_reg_usage(reg, true);
+            debug::record_io_reg_usage(reg, true);
             let Some(reg_data) = sys.io_regs.reg_datas.get(&reg) else {
                 unreachable!();
             };
