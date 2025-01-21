@@ -30,7 +30,7 @@ pub fn draw_vram_tile_data(sys: &Sys) {
         let y = i / SCREEN_P8_SIZE.x;
 
         let rel_addr = addr - range.start;
-        let bytes = &sys.vram.as_slice()[rel_addr..(rel_addr + 16)];
+        let bytes = &sys.mem.vram.as_slice()[rel_addr..(rel_addr + 16)];
 
         // if sum_slice(bytes) == 0 {
         //     continue;

@@ -56,7 +56,7 @@ fn draw_tile_from_map(sys: &Sys, pos: IVec2, map_addr: Addr) {
 
     //println!(" tile_data_addr = {:0>4X}", tile_data_addr);
     let addr = (tile_data_addr - MemSection::Vram.start_addr()) as usize;
-    let bytes = &sys.vram.as_slice()[addr..(addr + 16)];
+    let bytes = &sys.mem.vram.as_slice()[addr..(addr + 16)];
 
     let org = pos * P8;
     draw_tile(bytes, org);

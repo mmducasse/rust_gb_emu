@@ -12,6 +12,7 @@ use crate::{
         array::Array,
         io_regs::{IoReg, IoRegs},
         map::{self, Addr, MemSection},
+        mem::Mem,
     },
     ppu::ppu::Ppu,
     time::{
@@ -23,16 +24,11 @@ use crate::{
 };
 
 pub struct Sys {
-    pub cart: Cart,
-    pub regs: CpuRegs,
-    pub wram: Array,
-    pub vram: Array,
-    pub oam: Array,
-    pub io_regs: IoRegs,
-    pub hram: Array,
-    pub ie_reg: Array,
+    pub mem: Mem,
 
     pub ppu: Ppu,
+
+    pub regs: CpuRegs,
 
     pub sys_clock: SimpleClock,
     pub cpu_clock: SimpleClock,
@@ -51,16 +47,11 @@ pub struct Sys {
 impl Sys {
     pub fn new() -> Self {
         Self {
-            cart: Cart::new(),
-            regs: CpuRegs::new(),
-            wram: Array::from_mem_section(MemSection::Wram),
-            vram: Array::from_mem_section(MemSection::Vram),
-            oam: Array::from_mem_section(MemSection::Oam),
-            io_regs: IoRegs::new(),
-            hram: Array::from_mem_section(MemSection::Hram),
-            ie_reg: Array::from_mem_section(MemSection::IeReg),
+            mem: Mem::new(),
 
             ppu: Ppu::new(),
+
+            regs: CpuRegs::new(),
 
             sys_clock: SimpleClock::new("SYS", 1),
             cpu_clock: SimpleClock::new("CPU", CPU_PERIOD_DOTS),
@@ -214,12 +205,12 @@ impl Sys {
 
     /// Sets the entire byte in the IO reg. Doesn't abide by it's write mask.
     pub fn set_io_reg(&mut self, reg: IoReg, data: u8) {
-        *self.io_regs.mut_(reg) = data;
+        *self.mem.io_regs.mut_(reg) = data;
     }
 
     /// Applies a function to the byte in the IO reg. Doesn't abide by it's read/write masks.
     pub fn io_reg_mut(&mut self, reg: IoReg, mut f: impl FnMut(&mut u8) -> ()) -> u8 {
-        let data = self.io_regs.mut_(reg);
+        let data = self.mem.io_regs.mut_(reg);
         f(data);
 
         return *data;

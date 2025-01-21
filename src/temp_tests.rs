@@ -49,7 +49,7 @@ pub async fn draw_vram_tile_data_test(path: &str) {
     let mut sys = Sys::new();
     Sys::initialize(&mut sys);
 
-    sys.cart.load(path);
+    sys.mem.cart.load(path);
     sys.run();
 
     debug::print_system_state(&sys);
@@ -73,7 +73,7 @@ pub async fn draw_vram_tile_map_test(path: &str) {
     let mut sys = Sys::new();
     Sys::initialize(&mut sys);
 
-    sys.cart.load(path);
+    sys.mem.cart.load(path);
     sys.run();
 
     debug::print_system_state(&sys);

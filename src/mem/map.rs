@@ -70,10 +70,10 @@ pub fn read(sys: &Sys, addr: Addr) -> u8 {
     //println!("Rel Addr ({:?}) = {} {:#04x}", section, addr, addr);
 
     match section {
-        MemSection::CartRom => sys.cart.rd(addr),
-        MemSection::Vram => sys.vram.rd(addr),
-        MemSection::ExtRam => sys.cart.rd(addr), // sys.ext_ram.rd(abs_addr),
-        MemSection::Wram => sys.wram.rd(addr),
+        MemSection::CartRom => sys.mem.cart.rd(addr),
+        MemSection::Vram => sys.mem.vram.rd(addr),
+        MemSection::ExtRam => sys.mem.cart.rd(addr), // sys.ext_ram.rd(abs_addr),
+        MemSection::Wram => sys.mem.wram.rd(addr),
         MemSection::EchoRam => {
             if FAIL_ON_BAD_RW {
                 debug::fail(sys, "Attempted to read from Echo RAM");
@@ -81,7 +81,7 @@ pub fn read(sys: &Sys, addr: Addr) -> u8 {
                 0x00
             }
         }
-        MemSection::Oam => sys.oam.rd(addr),
+        MemSection::Oam => sys.mem.oam.rd(addr),
         MemSection::UnusableMemory => {
             if FAIL_ON_BAD_RW {
                 debug::fail(sys, "Attempted to read from unusable memory");
@@ -89,9 +89,9 @@ pub fn read(sys: &Sys, addr: Addr) -> u8 {
                 0x00
             }
         }
-        MemSection::IoRegs => sys.io_regs.user_read(addr),
-        MemSection::Hram => sys.hram.rd(addr),
-        MemSection::IeReg => sys.ie_reg.rd(addr),
+        MemSection::IoRegs => sys.mem.io_regs.user_read(addr),
+        MemSection::Hram => sys.mem.hram.rd(addr),
+        MemSection::IeReg => sys.mem.ie_reg.rd(addr),
     }
 }
 
@@ -100,16 +100,16 @@ pub fn write(sys: &mut Sys, addr: Addr, data: u8) {
 
     match section {
         MemSection::CartRom => {
-            sys.cart.wr(addr, data);
+            sys.mem.cart.wr(addr, data);
         }
         MemSection::Vram => {
-            sys.vram.wr(addr, data);
+            sys.mem.vram.wr(addr, data);
         }
         MemSection::ExtRam => {
-            sys.cart.wr(addr, data);
+            sys.mem.cart.wr(addr, data);
         }
         MemSection::Wram => {
-            sys.wram.wr(addr, data);
+            sys.mem.wram.wr(addr, data);
         }
         MemSection::EchoRam => {
             if FAIL_ON_BAD_RW {
@@ -117,7 +117,7 @@ pub fn write(sys: &mut Sys, addr: Addr, data: u8) {
             }
         }
         MemSection::Oam => {
-            sys.oam.wr(addr, data);
+            sys.mem.oam.wr(addr, data);
         }
         MemSection::UnusableMemory => {
             if FAIL_ON_BAD_RW {
@@ -125,13 +125,13 @@ pub fn write(sys: &mut Sys, addr: Addr, data: u8) {
             }
         }
         MemSection::IoRegs => {
-            sys.io_regs.user_write(addr, data);
+            sys.mem.io_regs.user_write(addr, data);
         }
         MemSection::Hram => {
-            sys.hram.wr(addr, data);
+            sys.mem.hram.wr(addr, data);
         }
         MemSection::IeReg => {
-            sys.ie_reg.wr(addr, data);
+            sys.mem.ie_reg.wr(addr, data);
         }
     }
 }
@@ -141,14 +141,14 @@ pub fn get_section_slice(sys: &Sys, section: MemSection) -> &[u8] {
         MemSection::EchoRam | MemSection::UnusableMemory => {
             return &[];
         }
-        MemSection::CartRom => sys.cart.rom(),
-        MemSection::Vram => sys.vram.as_slice(),
-        MemSection::ExtRam => sys.cart.ram(),
-        MemSection::Wram => sys.wram.as_slice(),
-        MemSection::Oam => sys.oam.as_slice(),
-        MemSection::IoRegs => sys.io_regs.ram().as_slice(),
-        MemSection::Hram => sys.hram.as_slice(),
-        MemSection::IeReg => sys.ie_reg.as_slice(),
+        MemSection::CartRom => sys.mem.cart.rom(),
+        MemSection::Vram => sys.mem.vram.as_slice(),
+        MemSection::ExtRam => sys.mem.cart.ram(),
+        MemSection::Wram => sys.mem.wram.as_slice(),
+        MemSection::Oam => sys.mem.oam.as_slice(),
+        MemSection::IoRegs => sys.mem.io_regs.ram().as_slice(),
+        MemSection::Hram => sys.mem.hram.as_slice(),
+        MemSection::IeReg => sys.mem.ie_reg.as_slice(),
     }
 }
 

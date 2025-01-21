@@ -18,7 +18,7 @@ pub async fn run_gb_microtest(rom_path: &str) {
     let mut sys = Sys::new();
     Sys::initialize(&mut sys);
 
-    sys.cart.load(rom_path);
+    sys.mem.cart.load(rom_path);
     sys.run();
 
     println!("Done");
