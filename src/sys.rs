@@ -85,30 +85,30 @@ impl Sys {
 
         // Set IO registers to defaults.
         use IoReg::*;
-        sys.set_io_reg(P1, 0xCF);
-        sys.set_io_reg(Sb, 0x00);
-        sys.set_io_reg(Sc, 0x7E);
-        sys.set_io_reg(Div, 0x18);
-        sys.set_io_reg(Tima, 0x00);
-        sys.set_io_reg(Tma, 0x00);
-        sys.set_io_reg(Tac, 0xF8);
-        sys.set_io_reg(If, 0xE1);
-        sys.set_io_reg(Lcdc, 0x91);
-        sys.set_io_reg(Stat, 0x81);
-        sys.set_io_reg(Scy, 0x00);
-        sys.set_io_reg(Scx, 0x00);
-        sys.set_io_reg(Ly, 0x91);
-        sys.set_io_reg(Lyc, 0x00);
-        sys.set_io_reg(Dma, 0xFF);
-        sys.set_io_reg(Bgp, 0xFC);
-        sys.set_io_reg(Obp0, 0);
-        sys.set_io_reg(Obp1, 0);
-        sys.set_io_reg(Wy, 0x00);
-        sys.set_io_reg(Wx, 0x00);
+        sys.mem.io_regs.set(P1, 0xCF);
+        sys.mem.io_regs.set(Sb, 0x00);
+        sys.mem.io_regs.set(Sc, 0x7E);
+        sys.mem.io_regs.set(Div, 0x18);
+        sys.mem.io_regs.set(Tima, 0x00);
+        sys.mem.io_regs.set(Tma, 0x00);
+        sys.mem.io_regs.set(Tac, 0xF8);
+        sys.mem.io_regs.set(If, 0xE1);
+        sys.mem.io_regs.set(Lcdc, 0x91);
+        sys.mem.io_regs.set(Stat, 0x81);
+        sys.mem.io_regs.set(Scy, 0x00);
+        sys.mem.io_regs.set(Scx, 0x00);
+        sys.mem.io_regs.set(Ly, 0x91);
+        sys.mem.io_regs.set(Lyc, 0x00);
+        sys.mem.io_regs.set(Dma, 0xFF);
+        sys.mem.io_regs.set(Bgp, 0xFC);
+        sys.mem.io_regs.set(Obp0, 0);
+        sys.mem.io_regs.set(Obp1, 0);
+        sys.mem.io_regs.set(Wy, 0x00);
+        sys.mem.io_regs.set(Wx, 0x00);
 
         // Key1..Svbk are not initialized.
 
-        sys.mem_set(Ie, 0x00);
+        sys.mem.io_regs.set(Ie, 0x00);
     }
 
     pub fn run(&mut self) {
@@ -168,56 +168,14 @@ impl Sys {
         self.mem.read(addr)
     }
 
-    pub fn mem_get_bit(&self, addr: impl Into<Addr>, idx: u8) -> u8 {
-        let addr = addr.into();
-        let data = self.mem_get(addr);
-        return bit8(&data, idx);
-    }
-
     pub fn get_hl_p(&self) -> u8 {
         let addr = self.regs.get_16(CpuReg16::HL);
         self.mem_get(addr)
     }
 
-    pub fn mem_set(&mut self, addr: impl Into<Addr>, data: u8) {
+    pub fn mem_set(&mut self, addr: Addr, data: u8) {
         let addr = addr.into();
         self.mem.write(addr, data);
-    }
-
-    pub fn mem_set_bit(&mut self, addr: impl Into<Addr>, idx: u8, value: u8) {
-        let addr = addr.into();
-        let mut data = self.mem_get(addr);
-        set_bit8(&mut data, idx, value);
-        self.mem_set(addr, data);
-    }
-
-    // /// Returns a mutable reference to the data at 'addr'. Does not allow setting read-only bits.
-    // /// To set read-only bits, call 'io_reg_mut'.
-    // pub fn mem_mut(&mut self, addr: impl Into<Addr>, mut f: impl FnMut(&mut u8) -> ()) -> u8 {
-    //     let addr = addr.into();
-    //     let mut data = self.mem_get(addr);
-    //     f(&mut data);
-    //     self.mem_set(addr, data);
-
-    //     return data;
-    // }
-
-    // /// Gets the entire byte in the IO reg. Doesn't abide by it's read mask.
-    // pub fn get_io_reg(&self, reg: IoReg) -> u8 {
-    //     return self.io_regs.get(reg);
-    // }
-
-    /// Sets the entire byte in the IO reg. Doesn't abide by it's write mask.
-    pub fn set_io_reg(&mut self, reg: IoReg, data: u8) {
-        *self.mem.io_regs.mut_(reg) = data;
-    }
-
-    /// Applies a function to the byte in the IO reg. Doesn't abide by it's read/write masks.
-    pub fn io_reg_mut(&mut self, reg: IoReg, mut f: impl FnMut(&mut u8) -> ()) -> u8 {
-        let data = self.mem.io_regs.mut_(reg);
-        f(data);
-
-        return *data;
     }
 
     pub fn get_pc(&self) -> Addr {

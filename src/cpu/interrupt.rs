@@ -4,7 +4,7 @@ use strum_macros::EnumIter;
 use crate::{
     mem::{io_regs::IoReg, map::Addr},
     sys::Sys,
-    util::math::bit8,
+    util::math::{bit8, set_bit8},
 };
 
 use super::exec::call;
@@ -37,7 +37,9 @@ impl InterruptType {
 }
 
 pub fn request_interrupt(sys: &mut Sys, type_: InterruptType) {
-    sys.mem_set_bit(IoReg::If, type_.flag_idx(), 1);
+    sys.mem.io_regs.mut_(IoReg::If, |if_| {
+        set_bit8(if_, type_.flag_idx(), 1);
+    });
 }
 
 pub fn try_handle_interrupts(sys: &mut Sys) {
@@ -65,7 +67,9 @@ fn handle_interrupt(sys: &mut Sys, type_: InterruptType) {
     sys.interrupt_master_enable = false;
 
     let flag_idx = type_.flag_idx();
-    sys.mem_set_bit(IoReg::If, flag_idx, 0);
+    sys.mem.io_regs.mut_(IoReg::If, |if_| {
+        set_bit8(if_, flag_idx, 0);
+    });
 
     // 2 NOP cycles
 

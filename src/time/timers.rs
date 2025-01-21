@@ -31,7 +31,7 @@ pub fn update_timer_regs(sys: &mut Sys) {
 
     let div_ticked = sys.div_timer_clock.update_and_check();
 
-    sys.io_reg_mut(IoReg::Div, |div| {
+    sys.mem.io_regs.mut_(IoReg::Div, |div| {
         let div_ = u8::wrapping_add(*div, 1);
         if div_ < *div {
             // DIV overflow
@@ -63,10 +63,10 @@ pub fn update_timer_regs(sys: &mut Sys) {
             // TIMA overflow
             println!("TIMA overflow");
             let tma = sys.mem.io_regs.get(IoReg::Tma);
-            sys.mem_set(IoReg::Div, tma);
+            sys.mem.io_regs.set(IoReg::Div, tma);
             request_interrupt(sys, InterruptType::Timer);
         } else {
-            sys.mem_set(IoReg::Div, tima_);
+            sys.mem.io_regs.set(IoReg::Div, tima_);
         }
     }
 }

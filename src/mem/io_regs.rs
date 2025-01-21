@@ -147,17 +147,23 @@ impl IoRegs {
         }
     }
 
-    // /// Gets the entire byte in IO register. Doesn't abide by read/write masks.
-    // pub fn get(&self, reg: IoReg) -> u8 {
-    //     return self.mem.rd(reg);
-    // }
-
-    /// Returns a mutable reference to the entire byte in the IO register. Doesn't abide by read/write masks.
-    pub fn mut_(&mut self, reg: IoReg) -> &mut u8 {
+    pub fn set(&mut self, reg: IoReg, data: u8) {
         return if reg == IoReg::Ie {
+            self.ie.wr(reg, data)
+        } else {
+            self.mem.wr(reg, data)
+        };
+    }
+
+    pub fn mut_(&mut self, reg: IoReg, mut f: impl FnMut(&mut u8) -> ()) -> u8 {
+        let data = if reg == IoReg::Ie {
             self.ie.mut_(reg)
         } else {
             self.mem.mut_(reg)
         };
+
+        f(data);
+
+        return *data;
     }
 }
