@@ -1,6 +1,6 @@
 use crate::{
     consts::KB_32,
-    mem::{array::Array, map::Addr},
+    mem::{array::Array, sections::Addr},
 };
 
 use super::cart_hw::CartHw;

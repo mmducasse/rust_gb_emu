@@ -2,7 +2,7 @@ use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 
 use crate::{
-    mem::{io_regs::IoReg, map::Addr},
+    mem::{io_regs::IoReg, sections::Addr},
     sys::Sys,
     util::math::{bit8, set_bit8},
 };

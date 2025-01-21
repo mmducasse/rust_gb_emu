@@ -9,7 +9,7 @@ use xf::{
 
 use crate::{
     consts::P8,
-    mem::map::{Addr, MemSection},
+    mem::sections::{Addr, MemSection},
     sys::Sys,
     util::{math::bit8, slice::sum_slice},
 };

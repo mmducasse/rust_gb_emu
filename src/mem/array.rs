@@ -1,6 +1,6 @@
-use crate::mem::map::Addr;
+use crate::mem::sections::Addr;
 
-use super::map::MemSection;
+use super::sections::MemSection;
 
 pub struct Array {
     start_addr: Addr,

@@ -3,7 +3,7 @@ use crate::{cart::cart::Cart, consts::FAIL_ON_BAD_RW, cpu::regs::CpuRegs, debug}
 use super::{
     array::Array,
     io_regs::IoRegs,
-    map::{Addr, MemSection},
+    sections::{Addr, MemSection},
 };
 
 pub struct Mem {

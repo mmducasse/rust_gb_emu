@@ -11,7 +11,7 @@ use crate::{
         instr::{decode, ImmType, Instr},
         regs::CpuRegs,
     },
-    mem::{io_regs::IoReg, map::MemSection},
+    mem::{io_regs::IoReg, sections::MemSection},
     sys::Sys,
     util::{math::join_16, ring_buffer::RingBuffer},
 };

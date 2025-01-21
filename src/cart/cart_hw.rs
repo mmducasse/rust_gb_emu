@@ -1,4 +1,4 @@
-use crate::mem::map::Addr;
+use crate::mem::sections::Addr;
 
 pub trait CartHw {
     fn rom(&self) -> &[u8];

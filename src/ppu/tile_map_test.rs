@@ -13,7 +13,7 @@ use crate::{
     consts::P8,
     mem::{
         io_regs::IoReg,
-        map::{Addr, MemSection},
+        sections::{Addr, MemSection},
     },
     sys::Sys,
     util::math::bit8,

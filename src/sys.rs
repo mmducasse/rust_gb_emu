@@ -11,8 +11,8 @@ use crate::{
     mem::{
         array::Array,
         io_regs::{IoReg, IoRegs},
-        map::{self, Addr, MemSection},
         mem::Mem,
+        sections::{self, Addr, MemSection},
     },
     ppu::ppu::Ppu,
     time::{

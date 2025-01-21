@@ -2,7 +2,7 @@ use num::FromPrimitive;
 
 use crate::{
     consts::{KB_32, MB_2},
-    mem::map::Addr,
+    mem::sections::Addr,
     util::math::{bit8, bits8, set_bits8},
 };
 

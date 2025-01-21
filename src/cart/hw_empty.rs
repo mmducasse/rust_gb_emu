@@ -1,4 +1,4 @@
-use crate::mem::map::Addr;
+use crate::mem::sections::Addr;
 
 use super::cart_hw::CartHw;
 

@@ -8,7 +8,7 @@ use xf::mq::window::{Window, WindowParams};
 use crate::{
     consts::PIXEL_SCALE,
     debug::{self, initialize_debug, DebugConfig},
-    mem::map::MemSection,
+    mem::sections::MemSection,
     ppu::{
         tile_data_test,
         tile_map_test::{self, draw_bg_tile_map},

@@ -8,7 +8,7 @@ use std::{
 use num::FromPrimitive;
 
 use crate::{
-    mem::map::Addr,
+    mem::sections::Addr,
     util::{slice::copy_from_safe, string::slice_to_hex_string},
 };
 

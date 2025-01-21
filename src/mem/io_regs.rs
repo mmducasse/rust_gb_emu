@@ -13,7 +13,7 @@ use crate::{
 use super::{
     array::Array,
     io_reg_data::IoRegData,
-    map::{Addr, MemSection},
+    sections::{Addr, MemSection},
 };
 
 #[derive(Hash, Clone, Copy, PartialEq, Eq, Debug, FromPrimitive, EnumIter)]
