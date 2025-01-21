@@ -57,7 +57,7 @@ pub enum IoReg {
 }
 
 impl IoReg {
-    pub fn as_u16(self) -> Addr {
+    pub fn as_addr(self) -> Addr {
         self.into()
     }
 }
@@ -91,21 +91,24 @@ impl IoRegs {
         &self.mem
     }
 
-    pub fn rd(&self, addr: Addr) -> u8 {
+    /// Reads from the readable bits in the IO register.
+    pub fn user_read(&self, addr: Addr) -> u8 {
+        let mut data = self.mem.rd(addr);
+
         if let Some(reg) = IoReg::from_u16(addr) {
             debug::record_io_reg_usage(reg, false);
             let Some(reg_data) = self.reg_datas.get(&reg) else {
                 unreachable!();
             };
 
-            let data = self.mem.rd(addr);
-            return data & reg_data.read_mask();
-        } else {
-            return self.mem.rd(addr);
+            data &= reg_data.read_mask();
         }
+
+        return data;
     }
 
-    pub fn wr(&mut self, addr: Addr, value: u8) {
+    /// Writes to the writeable bits in the IO register.
+    pub fn user_write(&mut self, addr: Addr, value: u8) {
         if let Some(reg) = IoReg::from_u16(addr) {
             debug::record_io_reg_usage(reg, true);
             let Some(reg_data) = self.reg_datas.get(&reg) else {
@@ -124,6 +127,12 @@ impl IoRegs {
         }
     }
 
+    // /// Gets the entire byte in IO register. Doesn't abide by read/write masks.
+    // pub fn get(&self, reg: IoReg) -> u8 {
+    //     return self.mem.rd(reg);
+    // }
+
+    /// Returns a mutable reference to the entire byte in the IO register. Doesn't abide by read/write masks.
     pub fn mut_(&mut self, reg: IoReg) -> &mut u8 {
         return self.mem.mut_(reg);
     }

@@ -239,7 +239,7 @@ pub fn print_system_state(sys: &Sys) {
         }
 
         // Print all IO reg usage.
-        println!("IO Reg usage:");
+        println!("\nIO Reg usage:");
         for reg in IoReg::iter() {
             if let Some(record) = debug.used_io_regs.get(&reg) {
                 println!(

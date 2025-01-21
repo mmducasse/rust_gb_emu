@@ -207,17 +207,22 @@ impl Sys {
     //     return data;
     // }
 
-    /// Applies a function to the IO reg value. Doesn't abide by it's write mask.
+    // /// Gets the entire byte in the IO reg. Doesn't abide by it's read mask.
+    // pub fn get_io_reg(&self, reg: IoReg) -> u8 {
+    //     return self.io_regs.get(reg);
+    // }
+
+    /// Sets the entire byte in the IO reg. Doesn't abide by it's write mask.
+    pub fn set_io_reg(&mut self, reg: IoReg, data: u8) {
+        *self.io_regs.mut_(reg) = data;
+    }
+
+    /// Applies a function to the byte in the IO reg. Doesn't abide by it's read/write masks.
     pub fn io_reg_mut(&mut self, reg: IoReg, mut f: impl FnMut(&mut u8) -> ()) -> u8 {
         let data = self.io_regs.mut_(reg);
         f(data);
 
         return *data;
-    }
-
-    /// Sets the entire IO reg. Doesn't abide by it's write mask.
-    pub fn set_io_reg(&mut self, reg: IoReg, data: u8) {
-        *self.io_regs.mut_(reg) = data;
     }
 
     pub fn get_pc(&self) -> Addr {
