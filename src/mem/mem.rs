@@ -1,4 +1,4 @@
-use crate::{cart::cart::Cart, consts::FAIL_ON_BAD_RW, cpu::regs::CpuRegs};
+use crate::{cart::cart::Cart, consts::FAIL_ON_BAD_RW, cpu::regs::CpuRegs, debug};
 
 use super::{
     array::Array,
@@ -41,20 +41,16 @@ impl Mem {
             MemSection::Wram => self.wram.rd(addr),
             MemSection::EchoRam => {
                 if FAIL_ON_BAD_RW {
-                    //debug::fail(sys, "Attempted to read from Echo RAM");
-                    0x00
-                } else {
-                    0x00
+                    debug::fail("Attempted to read from Echo RAM");
                 }
+                0x00
             }
             MemSection::Oam => self.oam.rd(addr),
             MemSection::UnusableMemory => {
                 if FAIL_ON_BAD_RW {
-                    //debug::fail(sys, "Attempted to read from unusable memory");
-                    0x00
-                } else {
-                    0x00
+                    debug::fail("Attempted to read from unusable memory");
                 }
+                0x00
             }
             MemSection::IoRegs => self.io_regs.user_read(addr),
             MemSection::Hram => self.hram.rd(addr),

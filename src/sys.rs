@@ -7,7 +7,7 @@ use crate::{
         interrupt::try_handle_interrupts,
         regs::{CpuReg16, CpuReg8, CpuRegs},
     },
-    debug::debug_state,
+    debug::{self, debug_state},
     mem::{
         array::Array,
         io_regs::{IoReg, IoRegs},
@@ -135,17 +135,21 @@ impl Sys {
         ///////// DEBUG //////////////////////////////////////////////
         if let Some(kill_after_nop_count) = debug_state().config.kill_after_nop_count {
             if debug_state().nop_count >= kill_after_nop_count {
-                self.hard_lock = true;
-                return;
+                debug::fail("Debug max NOP count exceeded.");
             }
         }
 
         if let Some(kill_after_ticks) = debug_state().config.kill_after_cpu_ticks {
             if self.cpu_clock.debug_total_ticks >= kill_after_ticks {
-                //Debug::fail(self, "Debug kill time elapsed.");
-                self.hard_lock = true;
-                return;
+                debug::fail("Debug kill time elapsed.");
             }
+        }
+
+        if let Some(failure) = debug::get_failure() {
+            println!("FAILURE: {}", failure);
+            debug::print_system_state(&self);
+            self.hard_lock = true;
+            return;
         }
 
         // self.test_code();

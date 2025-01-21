@@ -30,7 +30,10 @@ pub fn execute_next_instr(sys: &mut Sys) -> u32 {
     }
     let instr = match decode(op, has_cb_prefix) {
         Ok(instr) => instr,
-        Err(msg) => debug::fail(sys, msg),
+        Err(msg) => {
+            debug::fail(msg);
+            Instr::Nop
+        }
     };
 
     if debug_state().config.enable_debug_print {
@@ -135,9 +138,7 @@ pub fn execute_next_instr(sys: &mut Sys) -> u32 {
         Instr::Set_B3_R8 { b3, operand } => set_b3_r8(sys, b3, operand),
 
         // Misc.
-        Instr::HardLock => {
-            hard_lock(sys);
-        }
+        Instr::HardLock => hard_lock(sys),
     };
 
     print_if_ld_a_a(sys, instr);
@@ -1147,7 +1148,8 @@ fn set_b3_r8(sys: &mut Sys, b3: u8, operand: R8) -> u8 {
 }
 
 // Misc functions.
-fn hard_lock(sys: &mut Sys) -> ! {
+fn hard_lock(sys: &mut Sys) -> u8 {
     sys.hard_lock = true;
-    debug::fail(sys, "Invalid instr occurred.");
+    debug::fail("Invalid instr occurred.");
+    return 1;
 }

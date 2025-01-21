@@ -26,6 +26,7 @@ pub struct DebugConfig {
 static mut DEBUG_STATE: Option<DebugState> = None;
 
 pub struct DebugState {
+    failure: Option<String>,
     pub config: DebugConfig,
     pub nop_count: u64,
     pub total_instrs_executed: u64,
@@ -38,6 +39,7 @@ pub struct DebugState {
 pub fn initialize_debug(config: DebugConfig) {
     unsafe {
         DEBUG_STATE = Some(DebugState {
+            failure: None,
             config,
             nop_count: 0,
             total_instrs_executed: 0,
@@ -55,6 +57,15 @@ pub fn debug_state() -> &'static DebugState {
             unreachable!();
         };
         return debug;
+    }
+}
+
+pub fn get_failure() -> Option<String> {
+    unsafe {
+        let Some(debug) = &DEBUG_STATE else {
+            unreachable!();
+        };
+        return debug.failure.clone();
     }
 }
 
@@ -95,7 +106,7 @@ pub fn record_curr_instr(sys: &Sys) {
     }
     let instr = match decode(op, has_cb_prefix) {
         Ok(instr) => instr,
-        Err(msg) => fail(sys, msg),
+        Err(msg) => Instr::HardLock,
     };
 
     unsafe {
@@ -180,10 +191,13 @@ pub fn record_io_reg_usage(reg: IoReg, is_write: bool) {
     }
 }
 
-pub fn fail(sys: &Sys, msg: impl Into<String>) -> ! {
-    print_system_state(sys);
-    println!("\nFAILURE: {}\n", msg.into());
-    panic!("");
+pub fn fail(msg: impl Into<String>) {
+    unsafe {
+        let Some(debug) = &mut DEBUG_STATE else {
+            unreachable!()
+        };
+        debug.failure = Some(msg.into());
+    }
 }
 
 pub fn print_system_state(sys: &Sys) {
