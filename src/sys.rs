@@ -163,11 +163,6 @@ impl Sys {
         }
     }
 
-    pub fn get_hl_p(&self) -> u8 {
-        let addr = self.regs.get_16(CpuReg16::HL);
-        self.mem.read(addr)
-    }
-
     pub fn get_pc(&self) -> Addr {
         return self.regs.get_16(CpuReg16::PC);
     }

@@ -36,7 +36,10 @@ pub fn test_all_opcodes() {
 
 #[cfg(test)]
 mod tests {
-    use crate::{cpu::regs::CpuReg8, sys::Sys};
+    use crate::{
+        cpu::regs::{CpuReg16, CpuReg8},
+        sys::Sys,
+    };
 
     #[test]
     fn test_ld() {
@@ -53,7 +56,7 @@ mod tests {
 
         assert_eq!(sys.regs.get_8(CpuReg8::H), 5);
         assert_eq!(sys.regs.get_8(CpuReg8::L), 6);
-        assert_eq!(sys.get_hl_p(), 7);
+        assert_eq!(sys.mem.read(sys.regs.get_16(CpuReg16::HL)), 7);
         assert_eq!(sys.regs.get_8(CpuReg8::A), 8);
     }
 }
