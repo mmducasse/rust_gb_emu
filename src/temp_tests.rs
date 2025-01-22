@@ -1,5 +1,5 @@
 use macroquad::{
-    input::{is_key_pressed, KeyCode},
+    input::{is_key_down, is_key_pressed, KeyCode},
     window::next_frame,
 };
 use strum::IntoEnumIterator;
@@ -75,6 +75,23 @@ pub async fn draw_vram_tile_map_test(path: &str) {
 
     sys.mem.cart.load(path);
     sys.run();
+    // while !sys.hard_lock {
+    //     let do_print = sys.run_one();
+    //     if do_print {
+    //         debug::print_last_instr();
+    //         println!("Press enter: ");
+    //         while !is_key_pressed(KeyCode::Space)
+    //             && !is_key_pressed(KeyCode::Escape)
+    //             && !is_key_down(KeyCode::J)
+    //         {
+    //             if is_key_pressed(KeyCode::Escape) {
+    //                 sys.hard_lock = true;
+    //             }
+    //             next_frame().await;
+    //         }
+    //         next_frame().await;
+    //     }
+    // }
 
     debug::print_system_state(&sys);
 

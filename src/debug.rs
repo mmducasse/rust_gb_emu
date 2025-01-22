@@ -164,6 +164,18 @@ pub fn record_curr_instr(sys: &Sys) {
     }
 }
 
+pub fn print_last_instr() {
+    unsafe {
+        let Some(debug) = &mut DEBUG_STATE else {
+            unreachable!()
+        };
+
+        if let Some(last) = debug.instr_ring_buffer.iter().last() {
+            print_instr_record(last);
+        };
+    }
+}
+
 /// is_write: false for read, true for write.
 pub fn record_io_reg_usage(reg: IoReg, is_write: bool) {
     unsafe {
@@ -208,30 +220,8 @@ pub fn print_system_state(sys: &Sys) {
 
         // Print Instr record
         println!("last {} instrs executed:", debug.instr_ring_buffer.len());
-        for InstrRecord {
-            addr,
-            instr,
-            imm,
-            regs,
-        } in debug.instr_ring_buffer.iter()
-        {
-            println!("  [${:0>4X}] {:?}", addr, instr);
-            match imm {
-                ImmValue::None => {}
-                ImmValue::Imm8(imm8) => println!(
-                    "     imm8 = {:#02x} (u{}) (s{})",
-                    imm8,
-                    imm8,
-                    transmute::<u8, i8>(*imm8)
-                ),
-                ImmValue::Imm16(imm16) => println!(
-                    "     imm16 = {:#04x} (u{}) (s{})",
-                    imm16,
-                    imm16,
-                    transmute::<u16, i16>(*imm16)
-                ),
-            };
-            regs.print();
+        for record in debug.instr_ring_buffer.iter() {
+            print_instr_record(record);
         }
 
         println!("  total instrs executed: {}", debug.total_instrs_executed);
@@ -276,4 +266,27 @@ pub fn print_system_state(sys: &Sys) {
 
         println!();
     }
+}
+
+fn print_instr_record(record: &InstrRecord) {
+    let InstrRecord {
+        addr,
+        instr,
+        imm,
+        regs,
+    } = record;
+
+    println!("  [${:0>4X}] {:?}", addr, instr);
+    match imm {
+        ImmValue::None => {}
+        ImmValue::Imm8(imm8) => println!("     imm8 = {:#02x} (u{}) (s{})", imm8, imm8, unsafe {
+            transmute::<u8, i8>(*imm8)
+        }),
+        ImmValue::Imm16(imm16) => {
+            println!("     imm16 = {:#04x} (u{}) (s{})", imm16, imm16, unsafe {
+                transmute::<u16, i16>(*imm16)
+            })
+        }
+    };
+    regs.print();
 }

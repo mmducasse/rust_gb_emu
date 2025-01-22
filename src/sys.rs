@@ -71,14 +71,14 @@ impl Sys {
     pub fn initialize(sys: &mut Self) {
         // Set CPU registers to defaults.
         sys.regs.set_8(CpuReg8::A, 0x01);
-        sys.regs.set_8(CpuReg8::F, 0x00);
-        sys.regs.set_8(CpuReg8::B, 0xFF);
+        sys.regs.set_8(CpuReg8::F, 0b1000_0000);
+        sys.regs.set_8(CpuReg8::B, 0x00);
         sys.regs.set_8(CpuReg8::C, 0x13);
 
         sys.regs.set_8(CpuReg8::D, 0x00);
-        sys.regs.set_8(CpuReg8::E, 0xC1);
-        sys.regs.set_8(CpuReg8::H, 0x84);
-        sys.regs.set_8(CpuReg8::L, 0x03);
+        sys.regs.set_8(CpuReg8::E, 0xD8);
+        sys.regs.set_8(CpuReg8::H, 0x01);
+        sys.regs.set_8(CpuReg8::L, 0x48);
 
         sys.set_pc(0x0100);
         sys.set_sp(0xFFFE);
@@ -88,16 +88,16 @@ impl Sys {
         sys.mem.io_regs.set(P1, 0xCF);
         sys.mem.io_regs.set(Sb, 0x00);
         sys.mem.io_regs.set(Sc, 0x7E);
-        sys.mem.io_regs.set(Div, 0x18);
+        sys.mem.io_regs.set(Div, 0xAB);
         sys.mem.io_regs.set(Tima, 0x00);
         sys.mem.io_regs.set(Tma, 0x00);
         sys.mem.io_regs.set(Tac, 0xF8);
         sys.mem.io_regs.set(If, 0xE1);
         sys.mem.io_regs.set(Lcdc, 0x91);
-        sys.mem.io_regs.set(Stat, 0x81);
+        sys.mem.io_regs.set(Stat, 0x85);
         sys.mem.io_regs.set(Scy, 0x00);
         sys.mem.io_regs.set(Scx, 0x00);
-        sys.mem.io_regs.set(Ly, 0x91);
+        sys.mem.io_regs.set(Ly, 0x00);
         sys.mem.io_regs.set(Lyc, 0x00);
         sys.mem.io_regs.set(Dma, 0xFF);
         sys.mem.io_regs.set(Bgp, 0xFC);
@@ -117,7 +117,9 @@ impl Sys {
         }
     }
 
-    pub fn run_one(&mut self) {
+    pub fn run_one(&mut self) -> bool {
+        let mut did_run_cpu_instr = false;
+
         self.sys_clock.update_and_check();
 
         update_timer_regs(self);
@@ -128,6 +130,7 @@ impl Sys {
         if self.cpu_delay_ticks == 0 {
             self.cpu_delay_ticks = execute_next_instr(self);
             try_handle_interrupts(self);
+            did_run_cpu_instr = true;
         }
 
         Ppu::update_ppu(self);
@@ -149,12 +152,14 @@ impl Sys {
             println!("FAILURE: {}", failure);
             debug::print_system_state(&self);
             self.hard_lock = true;
-            return;
+            return did_run_cpu_instr;
         }
 
         // self.test_code();
 
         //////////////////////////////////////////////////////////////
+
+        return did_run_cpu_instr;
     }
 
     fn test_code(&mut self) {
