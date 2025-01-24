@@ -27,6 +27,7 @@ static mut DEBUG_STATE: Option<DebugState> = None;
 
 pub struct DebugState {
     failure: Option<String>,
+    pending_breakpoint: bool,
     pub config: DebugConfig,
     pub nop_count: u64,
     pub total_instrs_executed: u64,
@@ -40,6 +41,7 @@ pub fn initialize_debug(config: DebugConfig) {
     unsafe {
         DEBUG_STATE = Some(DebugState {
             failure: None,
+            pending_breakpoint: false,
             config,
             nop_count: 0,
             total_instrs_executed: 0,
@@ -66,6 +68,27 @@ pub fn get_failure() -> Option<String> {
             unreachable!();
         };
         return debug.failure.clone();
+    }
+}
+
+pub fn request_breakpoint() {
+    unsafe {
+        let Some(debug) = &mut DEBUG_STATE else {
+            unreachable!();
+        };
+        debug.pending_breakpoint = true;
+    }
+}
+
+pub fn take_pending_breakpoint() -> bool {
+    unsafe {
+        let Some(debug) = &mut DEBUG_STATE else {
+            unreachable!();
+        };
+        let pending_breakpoint = debug.pending_breakpoint;
+        debug.pending_breakpoint = false;
+
+        return pending_breakpoint;
     }
 }
 
@@ -97,6 +120,7 @@ pub fn record_curr_instr(sys: &Sys) {
     }
 
     let mut pc = sys.get_pc();
+    let addr = pc;
     let mut op = sys.mem.read(pc);
     let mut has_cb_prefix = false;
     if op == Instr::CB_PREFIX {
@@ -106,7 +130,9 @@ pub fn record_curr_instr(sys: &Sys) {
     }
     let instr = match decode(op, has_cb_prefix) {
         Ok(instr) => instr,
-        Err(msg) => Instr::HardLock,
+        Err(msg) => {
+            return;
+        }
     };
 
     unsafe {
@@ -137,7 +163,7 @@ pub fn record_curr_instr(sys: &Sys) {
     };
 
     let record = InstrRecord {
-        addr: pc,
+        addr,
         instr,
         imm: imm_value,
         regs: sys.regs.clone(),
@@ -212,56 +238,72 @@ pub fn fail(msg: impl Into<String>) {
     }
 }
 
+const PRINT_LAST_INSTRS: bool = true;
+const PRINT_TOTAL_INSTRS: bool = true;
+const PRINT_IO_REG_USAGE: bool = true;
+const PRINT_SYS_STATE: bool = true;
+const PRINT_MEM_SUMS: bool = true;
+
 pub fn print_system_state(sys: &Sys) {
     unsafe {
         let Some(debug) = &mut DEBUG_STATE else {
             unreachable!()
         };
 
-        // Print Instr record
-        println!("last {} instrs executed:", debug.instr_ring_buffer.len());
-        for record in debug.instr_ring_buffer.iter() {
-            print_instr_record(record);
-        }
-
-        println!("  total instrs executed: {}", debug.total_instrs_executed);
-
-        // Print all used instructions and counts.
-        println!("\n  unique instrs executed: {}", debug.used_instrs.len());
-        for (instr, count) in &debug.used_instrs {
-            println!("    {:?}: {}", instr, count);
-        }
-        println!(
-            "\n  unique instr variants executed: {}",
-            debug.used_instr_variants.len()
-        );
-        for (variant_str, count) in &debug.used_instr_variants {
-            println!("    {}: {}", variant_str, count);
-        }
-
-        // Print all IO reg usage.
-        println!("\nIO Reg usage:");
-        for reg in IoReg::iter() {
-            if let Some(record) = debug.used_io_regs.get(&reg) {
-                println!(
-                    "  {:?}: {} reads, {} writes",
-                    reg, record.reads, record.writes
-                );
+        if PRINT_LAST_INSTRS {
+            // Print Instr record
+            println!("last {} instrs executed:", debug.instr_ring_buffer.len());
+            for record in debug.instr_ring_buffer.iter() {
+                print_instr_record(record);
             }
         }
 
-        // System state.
-        println!("\nFinal state:");
-        sys.print();
+        if PRINT_TOTAL_INSTRS {
+            println!("  total instrs executed: {}", debug.total_instrs_executed);
 
-        // Sample of each memory section.
-        println!("\nMemory section sums:");
-        for section in MemSection::iter() {
-            let mut sum = 0;
-            for data in sys.mem.get_section_slice(section) {
-                sum += *data as u64;
+            // Print all used instructions and counts.
+            println!("\n  unique instrs executed: {}", debug.used_instrs.len());
+            for (instr, count) in &debug.used_instrs {
+                println!("    {:?}: {}", instr, count);
             }
-            println!("  {:?} data sum: {}", section, sum);
+            println!(
+                "\n  unique instr variants executed: {}",
+                debug.used_instr_variants.len()
+            );
+            for (variant_str, count) in &debug.used_instr_variants {
+                println!("    {}: {}", variant_str, count);
+            }
+        }
+
+        if PRINT_IO_REG_USAGE {
+            // Print all IO reg usage.
+            println!("\nIO Reg usage:");
+            for reg in IoReg::iter() {
+                if let Some(record) = debug.used_io_regs.get(&reg) {
+                    println!(
+                        "  {:?}: {} reads, {} writes",
+                        reg, record.reads, record.writes
+                    );
+                }
+            }
+        }
+
+        if PRINT_SYS_STATE {
+            // System state.
+            println!("\nFinal state:");
+            sys.print();
+        }
+
+        if PRINT_MEM_SUMS {
+            // Sample of each memory section.
+            println!("\nMemory section sums:");
+            for section in MemSection::iter() {
+                let mut sum = 0;
+                for data in sys.mem.get_section_slice(section) {
+                    sum += *data as u64;
+                }
+                println!("  {:?} data sum: {}", section, sum);
+            }
         }
 
         println!();

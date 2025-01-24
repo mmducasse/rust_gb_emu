@@ -17,6 +17,8 @@ use super::{
 /// Returns the number of machine cycles needed to execute
 /// the instruction.
 pub fn execute_next_instr(sys: &mut Sys) -> u32 {
+    debug::record_curr_instr(sys);
+
     let mut pc = sys.get_pc();
     let mut op = sys.mem.read(pc);
     let has_cb_prefix;
@@ -32,15 +34,13 @@ pub fn execute_next_instr(sys: &mut Sys) -> u32 {
         Ok(instr) => instr,
         Err(msg) => {
             debug::fail(msg);
-            Instr::Nop
+            return 1;
         }
     };
 
     if debug_state().config.enable_debug_print {
         println!("[{:#02x}] {:?}", pc, instr);
     }
-
-    debug::record_curr_instr(sys);
 
     pc += 1;
     sys.set_pc(pc);
@@ -490,6 +490,10 @@ fn stop(sys: &mut Sys) -> u8 {
 fn ld_r8_r8(sys: &mut Sys, dst: R8, src: R8) -> u8 {
     let data = get_r8_data(sys, src);
     set_r8_data(sys, dst, data);
+
+    if dst == R8::B && src == R8::B {
+        debug::request_breakpoint();
+    }
 
     return if dst == R8::HlMem || src == R8::HlMem {
         2

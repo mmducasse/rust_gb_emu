@@ -37,6 +37,7 @@ impl InterruptType {
 }
 
 pub fn request_interrupt(sys: &mut Sys, type_: InterruptType) {
+    //println!("Int req: {:?}", type_);
     sys.mem.io_regs.mut_(IoReg::If, |if_| {
         set_bit8(if_, type_.flag_idx(), 1);
     });

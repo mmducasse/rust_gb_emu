@@ -52,7 +52,9 @@ pub async fn draw_vram_tile_data_test(path: &str) {
     sys.mem.cart.load(path);
     sys.run();
 
-    debug::print_system_state(&sys);
+    if debug::get_failure().is_none() {
+        debug::print_system_state(&sys);
+    }
 
     window.render_pass(|| {
         tile_data_test::draw_vram_tile_data(&sys);
@@ -74,26 +76,28 @@ pub async fn draw_vram_tile_map_test(path: &str) {
     Sys::initialize(&mut sys);
 
     sys.mem.cart.load(path);
-    sys.run();
-    // while !sys.hard_lock {
-    //     let do_print = sys.run_one();
-    //     if do_print {
-    //         debug::print_last_instr();
-    //         println!("Press enter: ");
-    //         while !is_key_pressed(KeyCode::Space)
-    //             && !is_key_pressed(KeyCode::Escape)
-    //             && !is_key_down(KeyCode::J)
-    //         {
-    //             if is_key_pressed(KeyCode::Escape) {
-    //                 sys.hard_lock = true;
-    //             }
-    //             next_frame().await;
-    //         }
-    //         next_frame().await;
-    //     }
-    // }
+    //sys.run();
+    while !sys.hard_lock {
+        let do_print = sys.run_one();
+        if do_print && debug::take_pending_breakpoint() {
+            debug::print_last_instr();
+            println!("Press enter: ");
+            while !is_key_pressed(KeyCode::Space)
+                && !is_key_pressed(KeyCode::Escape)
+                && !is_key_down(KeyCode::J)
+            {
+                if is_key_pressed(KeyCode::Escape) {
+                    sys.hard_lock = true;
+                }
+                next_frame().await;
+            }
+            next_frame().await;
+        }
+    }
 
-    debug::print_system_state(&sys);
+    if debug::get_failure().is_none() {
+        debug::print_system_state(&sys);
+    }
 
     window.render_pass(|| {
         draw_bg_tile_map(&sys);

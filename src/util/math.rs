@@ -144,4 +144,21 @@ mod tests {
         set_bits8_masked(&mut x, 0b0000_1111, 0b0000_0000);
         assert_eq!(x, 0b1010_0000);
     }
+
+    #[test]
+    fn test_join16_split16() {
+        let x = join_16(0xFF, 0x77);
+        assert_eq!(x, 0xFF77);
+
+        let (hi, lo) = split_16(x);
+        assert_eq!(hi, 0xFF);
+        assert_eq!(lo, 0x77);
+
+        let x = join_16(0x12, 0xAD);
+        assert_eq!(x, 0x12AD);
+
+        let (hi, lo) = split_16(x);
+        assert_eq!(hi, 0x12);
+        assert_eq!(lo, 0xAD);
+    }
 }
