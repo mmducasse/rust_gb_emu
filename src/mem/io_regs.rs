@@ -106,7 +106,7 @@ impl IoRegs {
         };
 
         if let Some(reg) = IoReg::from_u16(addr) {
-            debug::record_io_reg_usage(reg, false);
+            debug::record_io_reg_usage(reg, false, 0x00);
             let Some(reg_data) = self.reg_datas.get(&reg) else {
                 unreachable!();
             };
@@ -128,9 +128,10 @@ impl IoRegs {
     /// Writes to the writeable bits in the IO register.
     pub fn user_write(&mut self, addr: Addr, value: u8) {
         if addr == IoReg::Ie.as_addr() {
+            debug::record_io_reg_usage(IoReg::Ie, true, value);
             self.ie.wr(addr, value);
         } else if let Some(reg) = IoReg::from_u16(addr) {
-            debug::record_io_reg_usage(reg, true);
+            debug::record_io_reg_usage(reg, true, value);
             let Some(reg_data) = self.reg_datas.get(&reg) else {
                 unreachable!();
             };

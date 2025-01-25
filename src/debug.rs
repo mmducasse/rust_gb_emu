@@ -109,6 +109,7 @@ struct IoRegRecord {
     reg: IoReg,
     reads: u64,
     writes: u64,
+    last_write_data: u8,
 }
 
 pub fn record_curr_instr(sys: &Sys) {
@@ -203,7 +204,7 @@ pub fn print_last_instr() {
 }
 
 /// is_write: false for read, true for write.
-pub fn record_io_reg_usage(reg: IoReg, is_write: bool) {
+pub fn record_io_reg_usage(reg: IoReg, is_write: bool, data: u8) {
     unsafe {
         let Some(debug) = &mut DEBUG_STATE else {
             unreachable!()
@@ -216,6 +217,7 @@ pub fn record_io_reg_usage(reg: IoReg, is_write: bool) {
                     reg,
                     reads: 0,
                     writes: 0,
+                    last_write_data: 0,
                 },
             );
         }
@@ -225,6 +227,7 @@ pub fn record_io_reg_usage(reg: IoReg, is_write: bool) {
         }
         if is_write == true {
             record.writes += 1;
+            record.last_write_data = data;
         }
     }
 }
@@ -281,8 +284,8 @@ pub fn print_system_state(sys: &Sys) {
             for reg in IoReg::iter() {
                 if let Some(record) = debug.used_io_regs.get(&reg) {
                     println!(
-                        "  {:?}: {} reads, {} writes",
-                        reg, record.reads, record.writes
+                        "  {:?}: {} reads, {} writes, [last write = 0b{:0>8b}]",
+                        reg, record.reads, record.writes, record.last_write_data
                     );
                 }
             }

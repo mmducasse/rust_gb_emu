@@ -73,8 +73,11 @@ fn handle_interrupt(sys: &mut Sys, type_: InterruptType) {
     });
 
     // 2 NOP cycles
+    sys.cpu_delay_ticks += 2;
 
     let prev_pc = sys.get_pc();
     let next_pc = type_.jump_addr();
     call(sys, prev_pc, next_pc); // 3 cycles
+
+    sys.cpu_delay_ticks += 3;
 }
