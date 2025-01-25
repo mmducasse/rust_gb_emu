@@ -57,7 +57,7 @@ impl CartHw for HwMbc1 {
     }
 
     // todo cleanup
-    fn rd(&self, addr: Addr) -> u8 {
+    fn read(&self, addr: Addr) -> u8 {
         match addr {
             0x0000..=0x3FFF => {
                 // ROM Bank 00
@@ -84,7 +84,7 @@ impl CartHw for HwMbc1 {
     }
 
     // todo cleanup
-    fn wr(&mut self, addr: Addr, data: u8) {
+    fn write(&mut self, addr: Addr, data: u8) {
         match addr {
             0x0000..=0x1FFF => {
                 self.ram_enable = bits8(&data, 3, 0) == 0xA;

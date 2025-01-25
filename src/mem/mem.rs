@@ -33,9 +33,9 @@ impl Mem {
         //println!("Rel Addr ({:?}) = {} {:#04x}", section, addr, addr);
 
         match section {
-            MemSection::CartRom => self.cart.rd(addr),
+            MemSection::CartRom => self.cart.read(addr),
             MemSection::Vram => self.vram.rd(addr),
-            MemSection::ExtRam => self.cart.rd(addr), // sys.ext_ram.rd(abs_addr),
+            MemSection::ExtRam => self.cart.read(addr), // sys.ext_ram.rd(abs_addr),
             MemSection::Wram => self.wram.rd(addr),
             MemSection::EchoRam => {
                 if FAIL_ON_BAD_RW {
@@ -61,13 +61,13 @@ impl Mem {
 
         match section {
             MemSection::CartRom => {
-                self.cart.wr(addr, data);
+                self.cart.write(addr, data);
             }
             MemSection::Vram => {
                 self.vram.wr(addr, data);
             }
             MemSection::ExtRam => {
-                self.cart.wr(addr, data);
+                self.cart.write(addr, data);
             }
             MemSection::Wram => {
                 self.wram.wr(addr, data);

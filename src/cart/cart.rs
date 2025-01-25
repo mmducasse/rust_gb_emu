@@ -77,12 +77,12 @@ impl Cart {
         return cart_hw;
     }
 
-    pub fn rd(&self, addr: Addr) -> u8 {
-        return self.hw.rd(addr);
+    pub fn read(&self, addr: Addr) -> u8 {
+        return self.hw.read(addr);
     }
 
-    pub fn wr(&mut self, addr: Addr, data: u8) {
-        self.hw.wr(addr, data);
+    pub fn write(&mut self, addr: Addr, data: u8) {
+        self.hw.write(addr, data);
     }
 
     pub fn rom(&self) -> &[u8] {

@@ -18,11 +18,11 @@ impl CartHw for HwEmpty {
         todo!()
     }
 
-    fn rd(&self, addr: Addr) -> u8 {
+    fn read(&self, addr: Addr) -> u8 {
         todo!()
     }
 
-    fn wr(&mut self, addr: Addr, data: u8) {
+    fn write(&mut self, addr: Addr, data: u8) {
         todo!()
     }
 }

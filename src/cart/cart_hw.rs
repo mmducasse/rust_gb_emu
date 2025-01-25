@@ -5,6 +5,6 @@ pub trait CartHw {
     fn rom_mut(&mut self) -> &mut [u8];
     fn ram(&self) -> &[u8];
 
-    fn rd(&self, addr: Addr) -> u8;
-    fn wr(&mut self, addr: Addr, data: u8);
+    fn read(&self, addr: Addr) -> u8;
+    fn write(&mut self, addr: Addr, data: u8);
 }
