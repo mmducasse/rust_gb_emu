@@ -41,11 +41,11 @@ impl Cart {
             panic!("Couldnt load gb rom. Expected a \".gb\" file.");
         }
 
+        let program = fs::read(file_path).expect(&format!("Unable to read file {}.", file_path));
         println!(
             "loaded rom: {}",
             path.file_name().unwrap().to_str().unwrap()
         );
-        let program = fs::read(file_path).expect(&format!("Unable to read file {}.", file_path));
 
         let cart_type_id = program[0x0147];
         let cart_type = CartType::from_u8(cart_type_id).unwrap();

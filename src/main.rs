@@ -16,7 +16,10 @@ use ppu::{
     tile_map_test::{self, draw_bg_tile_map},
 };
 use sys::Sys;
-use test::{blargg::run_blargg_test, gb_microtest::run_gb_microtest, instr::test_all_opcodes};
+use test::{
+    blargg::run_blargg_test, gb_microtest::run_gb_microtest, instr::test_all_opcodes,
+    mooneye::run_simple_test,
+};
 use xf::{
     mq::window::{Window, WindowParams},
     num::ivec2::{i2, IVec2},
@@ -44,7 +47,7 @@ async fn main() {
 
     initialize_debug(DebugConfig {
         enable_debug_print: false,
-        kill_after_cpu_ticks: Some(2_000_000),
+        kill_after_cpu_ticks: None, //Some(1_000_000),
         kill_after_nop_count: Some(32),
     });
 
@@ -53,11 +56,14 @@ async fn main() {
     //test_all_opcodes();
 
     //let path = ".\\assets\\files\\custom_roms\\ld_r8_r8\\rom.gb";
-    //let path = ".\\assets\\imported_test_roms\\cpu_instrs\\individual\\01-special.gb";
-    //let path = ".\\assets\\imported_test_roms\\cpu_instrs\\individual\\06-ld r,r.gb";
     //let path = ".\\assets\\gb_microtest\\000-write_to_x8000.gb";
+    
+    let path = ".\\assets\\blaargs\\cpu_instrs\\cpu_instrs.gb";
 
-    let path = ".\\assets\\real_gb_roms\\tetris.gb";
+    //let path = ".\\assets\\mooneye\\acceptance\\add_sp_e_timing.gb";
+    //let path = ".\\assets\\mooneye\\acceptance\\bits\\reg_f.gb";
+
+    //let path = ".\\assets\\real_gb_roms\\tetris.gb";
     //let path = ".\\assets\\real_gb_roms\\Dr_Mario.gb";
     //let path = ".\\assets\\real_gb_roms\\Pokemon.gb";
     //let path = ".\\assets\\real_gb_roms\\Zelda.gb";
@@ -71,7 +77,8 @@ async fn main() {
     //let path = ".\\assets\\imported_test_roms\\other\\hello_world\\rom.gb";
 
     //temp_tests::draw_vram_tile_data_test(path).await;
-    temp_tests::draw_vram_tile_map_test(path).await;
+    //temp_tests::draw_vram_tile_map_test(path).await;
     //run_blargg_test(path).await;
     //run_gb_microtest(&path).await;
+    run_simple_test(&path);
 }
