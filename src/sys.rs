@@ -42,6 +42,7 @@ pub struct Sys {
     pub interrupt_master_enable: bool,
 
     pub hard_lock: bool,
+    pub is_render_pending: bool,
 }
 
 impl Sys {
@@ -65,6 +66,7 @@ impl Sys {
             interrupt_master_enable: true,
 
             hard_lock: false,
+            is_render_pending: false,
         }
     }
 
@@ -113,11 +115,11 @@ impl Sys {
 
     pub fn run(&mut self) {
         while !self.hard_lock {
-            self.run_one();
+            self.run_one_m_cycle();
         }
     }
 
-    pub fn run_one(&mut self) -> bool {
+    pub fn run_one_m_cycle(&mut self) -> bool {
         let mut did_run_cpu_instr = false;
 
         self.sys_clock.update_and_check();

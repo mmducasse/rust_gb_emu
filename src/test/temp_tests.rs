@@ -3,7 +3,10 @@ use macroquad::{
     window::next_frame,
 };
 use strum::IntoEnumIterator;
-use xf::mq::window::{Window, WindowParams};
+use xf::{
+    mq::window::{Window, WindowParams},
+    num::ivec2::IVec2,
+};
 
 use crate::{
     consts::PIXEL_SCALE,
@@ -57,7 +60,7 @@ pub async fn draw_vram_tile_data_test(path: &str) {
     }
 
     window.render_pass(|| {
-        tile_data_test::draw_vram_tile_data(&sys);
+        tile_data_test::draw_vram_tile_data(&sys, IVec2::ZERO);
         //draw_bg_tile_map(&sys);
     });
     while !is_key_pressed(KeyCode::Escape) {
@@ -78,7 +81,7 @@ pub async fn draw_vram_tile_map_test(path: &str) {
     sys.mem.cart.load(path);
     //sys.run();
     while !sys.hard_lock {
-        let do_print = sys.run_one();
+        let do_print = sys.run_one_m_cycle();
         if do_print && debug::take_pending_breakpoint() {
             debug::print_last_instr();
             println!("Press enter: ");
@@ -100,7 +103,7 @@ pub async fn draw_vram_tile_map_test(path: &str) {
     }
 
     window.render_pass(|| {
-        draw_bg_tile_map(&sys);
+        draw_bg_tile_map(&sys, IVec2::ZERO);
     });
     while !is_key_pressed(KeyCode::Escape) {
         window.render_pass(|| {});

@@ -24,7 +24,7 @@ pub async fn run_blargg_test(rom_path: &str) {
     next_frame().await;
 
     while !sys.hard_lock {
-        sys.run_one();
+        sys.run_one_m_cycle();
         print_output_char(&sys);
     }
 

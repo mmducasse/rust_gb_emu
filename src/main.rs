@@ -12,13 +12,15 @@ use macroquad::{
     window::next_frame,
 };
 use ppu::{
+    consts::TILE_MAP_P8_SIZE,
+    draw::render_screen,
     tile_data_test::{self, draw_vram_tile_data},
     tile_map_test::{self, draw_bg_tile_map},
 };
 use sys::Sys;
 use test::{
     blargg::run_blargg_test, gb_microtest::run_gb_microtest, instr::test_all_opcodes,
-    mooneye::run_simple_test,
+    mooneye::run_simple_test, temp_tests,
 };
 use xf::{
     mq::window::{Window, WindowParams},
@@ -36,7 +38,6 @@ mod debug;
 mod mem;
 mod ppu;
 mod sys;
-mod temp_tests;
 mod test;
 mod time;
 mod util;
@@ -47,7 +48,7 @@ async fn main() {
 
     initialize_debug(DebugConfig {
         enable_debug_print: false,
-        kill_after_cpu_ticks: None, //Some(1_000_000),
+        kill_after_cpu_ticks: None, // Some(100_000),
         kill_after_nop_count: Some(32),
     });
 
@@ -57,7 +58,7 @@ async fn main() {
 
     //let path = ".\\assets\\files\\custom_roms\\ld_r8_r8\\rom.gb";
     //let path = ".\\assets\\gb_microtest\\000-write_to_x8000.gb";
-    
+
     let path = ".\\assets\\blaargs\\cpu_instrs\\cpu_instrs.gb";
 
     //let path = ".\\assets\\mooneye\\acceptance\\add_sp_e_timing.gb";
@@ -74,11 +75,43 @@ async fn main() {
     //let path = ".\\assets\\homebrew_roms\\64boy-opcode-scroll.gb";
     //let path = ".\\assets\\homebrew_roms\\life.gb";
 
-    //let path = ".\\assets\\imported_test_roms\\other\\hello_world\\rom.gb";
+    //let path = ".\\assets\\other\\hello_world\\rom.gb";
 
-    //temp_tests::draw_vram_tile_data_test(path).await;
+    //emp_tests::draw_vram_tile_data_test(path).await;
     //temp_tests::draw_vram_tile_map_test(path).await;
     //run_blargg_test(path).await;
     //run_gb_microtest(&path).await;
-    run_simple_test(&path);
+    //run_simple_test(&path);
+    run_normal(&path).await;
+}
+
+async fn run_normal(path: &str) {
+    let window = Window::new(WindowParams {
+        resolution: SCREEN_SIZE,
+        scale: PIXEL_SCALE,
+    });
+
+    let mut sys = Sys::new();
+    Sys::initialize(&mut sys);
+    sys.mem.cart.load(path);
+
+    while !sys.hard_lock {
+        if is_key_pressed(KeyCode::Escape) {
+            sys.hard_lock = true;
+        }
+        sys.run_one_m_cycle();
+
+        if sys.is_render_pending {
+            window.render_pass(|| {
+                render_screen(&mut sys);
+            });
+            next_frame().await;
+            sys.is_render_pending = false;
+        }
+    }
+
+    while !is_key_pressed(KeyCode::Escape) {
+        window.render_pass(|| {});
+        next_frame().await;
+    }
 }

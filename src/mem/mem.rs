@@ -64,7 +64,6 @@ impl Mem {
                 self.cart.write(addr, data);
             }
             MemSection::Vram => {
-                println!("Write to VRAM: {:0>2x}", data);
                 self.vram.wr(addr, data);
             }
             MemSection::ExtRam => {

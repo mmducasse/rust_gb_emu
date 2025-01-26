@@ -5,6 +5,8 @@ use crate::{
     util::math::{bit8, set_bit8},
 };
 
+use super::draw::render_screen;
+
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub enum PpuMode {
     HBlank,
@@ -88,7 +90,17 @@ impl Ppu {
     }
 
     fn enter_mode(sys: &mut Sys, mode: PpuMode) {
+        //println!("Enter PPU mode: {:?}", mode);
         sys.ppu.curr_mode = mode;
+
+        // Perform specific actions for mode.
+        match mode {
+            PpuMode::VBlank => {
+                //render_screen(sys);
+                sys.is_render_pending = true;
+            }
+            _ => {}
+        }
 
         // Update the PPU mode indicator bits (1:0)
         let stat = sys.mem.io_regs.mut_(IoReg::Stat, |stat| {

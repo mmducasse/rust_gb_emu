@@ -3,6 +3,8 @@ use xf::num::{
     ivec2::{i2, IVec2},
 };
 
+use crate::ppu::{self};
+
 pub const FAIL_ON_BAD_RW: bool = false;
 
 pub const P1: IVec2 = i2(1, 1);
@@ -13,8 +15,8 @@ pub const P16: IVec2 = i2(16, 16);
 
 pub const PIXEL_SCALE: f32 = 2.0;
 
-pub const SCREEN_P16_SIZE: IVec2 = i2(8, 8);
-pub const SCREEN_SIZE: IVec2 = i2(SCREEN_P16_SIZE.x * P16.x, SCREEN_P16_SIZE.y * P16.y);
+pub const SCREEN_P8_SIZE: IVec2 = ppu::consts::DEBUG_SCREEN_P8_SIZE;
+pub const SCREEN_SIZE: IVec2 = IVec2::mul(SCREEN_P8_SIZE, P8);
 pub const SCREEN_BOUNDS: IRect = ir(IVec2::ZERO, SCREEN_SIZE);
 
 // Memory sizes

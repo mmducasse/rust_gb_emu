@@ -27,7 +27,7 @@ const TILE_MAP_2_ADDR: Addr = 0x9C00;
 pub const SCREEN_P8_SIZE: IVec2 = i2(32, 32);
 pub const SCREEN_SIZE: IVec2 = IVec2::mul(SCREEN_P8_SIZE, P8);
 
-pub fn draw_bg_tile_map(sys: &Sys) {
+pub fn draw_bg_tile_map(sys: &Sys, org: IVec2) {
     let tile_map_1 = TILE_MAP_1_ADDR..TILE_MAP_2_ADDR;
 
     for i in 0..TILE_MAP_P8_SIZE.product() {
@@ -38,11 +38,11 @@ pub fn draw_bg_tile_map(sys: &Sys) {
         // if (x + y) % 2 == 0 {
         //     draw_rect(rect(x * 8, y * 8, 8, 8), YELLOW);
         // }
-        draw_tile_from_map(sys, i2(x, y), addr);
+        draw_tile_from_map(sys, i2(x, y), addr, org);
     }
 }
 
-fn draw_tile_from_map(sys: &Sys, pos: IVec2, map_addr: Addr) {
+fn draw_tile_from_map(sys: &Sys, pos: IVec2, map_addr: Addr, org: IVec2) {
     let lcdc = sys.mem.io_regs.get(IoReg::Lcdc);
     let mode_8000 = false; // bit8(&lcdc, 4) == 0;
     let tile_idx = sys.mem.read(map_addr);
@@ -58,7 +58,7 @@ fn draw_tile_from_map(sys: &Sys, pos: IVec2, map_addr: Addr) {
     let addr = (tile_data_addr - MemSection::Vram.start_addr()) as usize;
     let bytes = &sys.mem.vram.as_slice()[addr..(addr + 16)];
 
-    let org = pos * P8;
+    let org = org + pos * P8;
     draw_tile(bytes, org);
 }
 

@@ -17,7 +17,7 @@ use crate::{
 pub const SCREEN_P8_SIZE: IVec2 = i2(16, 24);
 pub const SCREEN_SIZE: IVec2 = IVec2::mul(SCREEN_P8_SIZE, P8);
 
-pub fn draw_vram_tile_data(sys: &Sys) {
+pub fn draw_vram_tile_data(sys: &Sys, org: IVec2) {
     // let max = SCREEN_SIZE.x;
     // for i in 0..max {
     //     draw_pixel(i2(i, i), 0b01);
@@ -44,9 +44,9 @@ pub fn draw_vram_tile_data(sys: &Sys) {
         } else {
             YELLOW
         };
-        draw_rect(rect(x * 8, y * 8, 8, 8), block_color);
+        draw_rect(rect(org.x + x * 8, org.y + y * 8, 8, 8), block_color);
 
-        draw_tile(bytes, i2(x * 8, y * 8));
+        draw_tile(bytes, org + i2(x * 8, y * 8));
     }
 
     // let offset = 0x9000; // MemSection::Vram.start_addr();
