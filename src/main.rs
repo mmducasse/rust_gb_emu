@@ -48,8 +48,9 @@ async fn main() {
 
     initialize_debug(DebugConfig {
         enable_debug_print: false,
-        kill_after_cpu_ticks: None, // Some(100_000),
-        kill_after_nop_count: Some(32),
+        kill_after_cpu_ticks: None, // Some(90),
+        kill_after_nop_count: None, //Some(64),
+        last_instr_count: 3,
     });
 
     //std::env::set_var("RUST_BACKTRACE", "1");
@@ -59,7 +60,18 @@ async fn main() {
     //let path = ".\\assets\\files\\custom_roms\\ld_r8_r8\\rom.gb";
     //let path = ".\\assets\\gb_microtest\\000-write_to_x8000.gb";
 
-    let path = ".\\assets\\blaargs\\cpu_instrs\\cpu_instrs.gb";
+    //let path = ".\\assets\\blaargs\\cpu_instrs\\cpu_instrs.gb";
+    //let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\01-special.gb";
+    //let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\02-interrupts.gb";
+    //let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\03-op sp,hl.gb";
+    //let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\04-op r,imm.gb";
+    // let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\05-op rp.gb";
+    let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\06-ld r,r.gb";
+    // let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\07-jr,jp,call,ret,rst.gb";
+    // let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\08-misc instrs.gb";
+    // let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\09-op r,r.gb";
+    // let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\10-bit ops.gb";
+    // let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\11-op a,(hl).gb";
 
     //let path = ".\\assets\\mooneye\\acceptance\\add_sp_e_timing.gb";
     //let path = ".\\assets\\mooneye\\acceptance\\bits\\reg_f.gb";
@@ -91,6 +103,9 @@ async fn run_normal(path: &str) {
         scale: PIXEL_SCALE,
     });
 
+    window.render_pass(|| {});
+    next_frame().await;
+
     let mut sys = Sys::new();
     Sys::initialize(&mut sys);
     sys.mem.cart.load(path);
@@ -100,6 +115,15 @@ async fn run_normal(path: &str) {
             sys.hard_lock = true;
         }
         sys.run_one_m_cycle();
+
+        // blarggs test - serial output
+        if sys.mem.io_regs.get(mem::io_regs::IoReg::Sc) == 0x81 {
+            let data = sys.mem.io_regs.get(mem::io_regs::IoReg::Sb);
+            let c = data as char;
+            println!("> {}", c);
+
+            sys.mem.io_regs.set(mem::io_regs::IoReg::Sc, 0x00);
+        }
 
         if sys.is_render_pending {
             window.render_pass(|| {

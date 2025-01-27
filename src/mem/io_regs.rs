@@ -136,6 +136,10 @@ impl IoRegs {
                 unreachable!();
             };
 
+            // if reg == IoReg::Sc {
+            //     println!("% {}", value as char);
+            // }
+
             if reg_data.reset_on_write() {
                 self.mem.wr(addr, 0x00);
             } else {

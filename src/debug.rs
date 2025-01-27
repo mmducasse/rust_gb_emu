@@ -21,6 +21,7 @@ pub struct DebugConfig {
     pub enable_debug_print: bool,
     pub kill_after_cpu_ticks: Option<u64>,
     pub kill_after_nop_count: Option<u64>,
+    pub last_instr_count: usize,
 }
 
 static mut DEBUG_STATE: Option<DebugState> = None;
@@ -39,13 +40,15 @@ pub struct DebugState {
 
 pub fn initialize_debug(config: DebugConfig) {
     unsafe {
+        let last_instr_count = config.last_instr_count;
+
         DEBUG_STATE = Some(DebugState {
             failure: None,
             pending_breakpoint: false,
             config,
             nop_count: 0,
             total_instrs_executed: 0,
-            instr_ring_buffer: RingBuffer::new(10),
+            instr_ring_buffer: RingBuffer::new(last_instr_count),
             used_instrs: HashMap::new(),
             used_instr_variants: HashMap::new(),
             used_io_regs: HashMap::new(),
@@ -112,6 +115,8 @@ struct IoRegRecord {
     last_write_data: u8,
 }
 
+const DO_RECORD_NOP: bool = false;
+
 pub fn record_curr_instr(sys: &Sys) {
     unsafe {
         let Some(debug) = &mut DEBUG_STATE else {
@@ -143,7 +148,9 @@ pub fn record_curr_instr(sys: &Sys) {
         if let Instr::Nop = instr {
             // Don't record NOPs.
             debug.nop_count += 1;
-            return;
+            if !DO_RECORD_NOP {
+                return;
+            }
         } else {
             debug.nop_count = 0;
         }
@@ -245,7 +252,7 @@ const PRINT_LAST_INSTRS: bool = true;
 const PRINT_TOTAL_INSTRS: bool = true;
 const PRINT_IO_REG_USAGE: bool = true;
 const PRINT_SYS_STATE: bool = true;
-const PRINT_MEM_SUMS: bool = true;
+const PRINT_MEM_SUMS: bool = false;
 
 pub fn print_system_state(sys: &Sys) {
     unsafe {
