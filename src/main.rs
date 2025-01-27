@@ -49,7 +49,7 @@ async fn main() {
     initialize_debug(DebugConfig {
         enable_debug_print: false,
         kill_after_cpu_ticks: None, // Some(90),
-        kill_after_nop_count: None, //Some(64),
+        kill_after_nop_count: Some(64),
         last_instr_count: 3,
     });
 
@@ -65,8 +65,8 @@ async fn main() {
     //let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\02-interrupts.gb";
     //let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\03-op sp,hl.gb";
     //let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\04-op r,imm.gb";
-    // let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\05-op rp.gb";
-    let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\06-ld r,r.gb";
+    //let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\05-op rp.gb";
+    //let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\06-ld r,r.gb";
     // let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\07-jr,jp,call,ret,rst.gb";
     // let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\08-misc instrs.gb";
     // let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\09-op r,r.gb";
@@ -87,7 +87,7 @@ async fn main() {
     //let path = ".\\assets\\homebrew_roms\\64boy-opcode-scroll.gb";
     //let path = ".\\assets\\homebrew_roms\\life.gb";
 
-    //let path = ".\\assets\\other\\hello_world\\rom.gb";
+    let path = ".\\assets\\other\\hello_world\\rom.gb";
 
     //emp_tests::draw_vram_tile_data_test(path).await;
     //temp_tests::draw_vram_tile_map_test(path).await;

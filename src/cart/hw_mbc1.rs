@@ -6,7 +6,10 @@ use crate::{
     util::math::{bit8, bits8, set_bits8},
 };
 
-use super::cart_hw::CartHw;
+use super::{
+    cart_hw::CartHw,
+    consts::{RAM_BANK_SIZE, ROM_BANK_SIZE},
+};
 
 #[derive(Clone, Copy, FromPrimitive)]
 enum Mode {
@@ -19,27 +22,42 @@ const RAM_MAX_SIZE: usize = KB_32;
 
 pub struct HwMbc1 {
     rom: Vec<u8>,
-    rom_bank_sel: u8,
 
     ram: Vec<u8>,
-    ram_bank_sel: u8,
     ram_enable: bool,
+
+    bank_sel_lower_5: u8,
+    bank_sel_upper_2: u8,
 
     mode_sel: Mode,
 }
 
 impl HwMbc1 {
-    pub fn new() -> Self {
+    pub fn new(rom_banks: usize, ram_banks: usize) -> Self {
         Self {
-            rom: vec![0; ROM_MAX_SIZE],
-            rom_bank_sel: 0,
+            rom: vec![0; rom_banks * ROM_BANK_SIZE],
 
-            ram: vec![0; RAM_MAX_SIZE],
-            ram_bank_sel: 0,
+            ram: vec![0; ram_banks * RAM_BANK_SIZE],
             ram_enable: false,
 
-            mode_sel: Mode::RomBanking,
+            bank_sel_lower_5: 0,
+            bank_sel_upper_2: 0,
+
+            mode_sel: Mode::RamBanking,
         }
+    }
+
+    pub fn rom_bank_sel(&self) -> u8 {
+        let mut lower = bits8(&self.bank_sel_upper_2, 4, 0);
+        if lower % 0x20 == 0 {
+            lower += 1;
+        }
+        let upper = bits8(&self.bank_sel_upper_2, 1, 0);
+        return (upper << 5) | lower;
+    }
+
+    pub fn ram_bank_sel(&self) -> u8 {
+        return bits8(&self.bank_sel_upper_2, 1, 0);
     }
 }
 
@@ -66,14 +84,14 @@ impl CartHw for HwMbc1 {
             0x4000..=0x7FFF => {
                 // ROM Bank 01-7F
                 let rel_addr = addr - 0x4000;
-                let bank_offs = (self.rom_bank_sel as usize) * 0x4000;
+                let bank_offs = (self.rom_bank_sel() as usize) * 0x4000;
                 let addr = bank_offs + (rel_addr as usize);
                 self.rom[addr]
             }
             0xA000..=0xBFFF => {
                 // RAM Bank 00-03
                 let rel_addr = addr - 0xA000;
-                let bank_offs = (self.ram_bank_sel as usize) * 0x2000;
+                let bank_offs = (self.ram_bank_sel() as usize) * 0x2000;
                 let addr = bank_offs + (rel_addr as usize);
                 self.ram[addr]
             }
@@ -90,26 +108,23 @@ impl CartHw for HwMbc1 {
                 self.ram_enable = bits8(&data, 3, 0) == 0xA;
             }
             0x2000..=0x3FFF => {
-                let mut bank_lower = bits8(&data, 4, 0);
-                if bank_lower % 0x20 == 0 {
-                    bank_lower += 1;
-                }
-                set_bits8(&mut self.rom_bank_sel, 4, 0, bank_lower);
+                self.bank_sel_lower_5 = data;
             }
             0x4000..=0x5FFF => {
-                let bits = bits8(&data, 1, 0);
-                match self.mode_sel {
-                    Mode::RomBanking => {
-                        set_bits8(&mut self.rom_bank_sel, 6, 5, bits);
-                    }
-                    Mode::RamBanking => {
-                        self.ram_bank_sel = bits;
-                    }
-                }
+                self.bank_sel_upper_2 = data;
             }
             0x6000..=0x7FFF => {
                 self.mode_sel = Mode::from_u8(bit8(&data, 0))
                     .expect(&format!("Invalid MBC1 banking mode value: {}.", data));
+            }
+            0xA000..=0xBFFF => {
+                if self.ram_enable {
+                    // RAM Bank 00-03
+                    let rel_addr = addr - 0xA000;
+                    let bank_offs = (self.ram_bank_sel() as usize) * 0x2000;
+                    let addr = bank_offs + (rel_addr as usize);
+                    self.ram[addr] = data;
+                }
             }
             _ => {
                 panic!("Invalid MBC1 write address");

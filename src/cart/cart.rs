@@ -8,6 +8,7 @@ use std::{
 use num::FromPrimitive;
 
 use crate::{
+    cart::header::CartHeader,
     mem::sections::Addr,
     util::{slice::copy_from_safe, string::slice_to_hex_string},
 };
@@ -41,13 +42,13 @@ impl Cart {
             panic!("Couldnt load gb rom. Expected a \".gb\" file.");
         }
 
-        let program = fs::read(file_path).expect(&format!("Unable to read file {}.", file_path));
+        let rom = fs::read(file_path).expect(&format!("Unable to read file {}.", file_path));
         println!(
             "loaded rom: {}",
             path.file_name().unwrap().to_str().unwrap()
         );
 
-        let cart_type_id = program[0x0147];
+        let cart_type_id = rom[0x0147];
         let cart_type = CartType::from_u8(cart_type_id).unwrap();
         if !cart_type.is_supported_by_emu() {
             panic!(
@@ -56,20 +57,23 @@ impl Cart {
             );
         }
 
-        self.hw = Self::create_hw(cart_type, program);
+        let header = CartHeader::parse(&rom);
+        header.print();
 
-        self.print_header_info();
+        self.hw = Self::create_hw(&header, rom);
     }
 
-    fn create_hw(cart_type: CartType, program: Vec<u8>) -> Box<dyn CartHw> {
-        let mut cart_hw: Box<dyn CartHw> = match cart_type.mbc_type() {
-            Some(MbcType::Mbc1) => Box::new(HwMbc1::new()),
+    fn create_hw(header: &CartHeader, program: Vec<u8>) -> Box<dyn CartHw> {
+        let mut cart_hw: Box<dyn CartHw> = match header.cart_type.mbc_type() {
+            Some(MbcType::Mbc1) => {
+                Box::new(HwMbc1::new(header.rom_bank_count, header.ram_bank_count))
+            }
             Some(MbcType::Mbc2) => todo!(),
             Some(MbcType::Mbc3) => todo!(),
             Some(MbcType::Mbc5) => todo!(),
             Some(MbcType::Mbc6) => todo!(),
             Some(MbcType::Mbc7) => todo!(),
-            None => Box::new(HwRomOnly::new()),
+            None => Box::new(HwRomOnly::new(header.rom_bank_count)),
         };
 
         copy_from_safe(cart_hw.rom_mut(), &program);
@@ -93,30 +97,6 @@ impl Cart {
         self.hw.ram()
     }
 
-    pub fn print_header_info(&self) {
-        println!("Cartridge:");
-
-        println!("  Logo Matches: {}", self.check_nintendo_logo());
-
-        let title = &self.hw.rom()[0x134..0x144];
-        println!("  Title bytes: {}", slice_to_hex_string(title));
-
-        if let Ok(title) = std::str::from_utf8(title) {
-            println!("  Title: {}", title);
-        }
-
-        let cart_type_id = self.hw.rom()[0x0147];
-        let cart_type = CartType::from_u8(cart_type_id).unwrap();
-        println!("  Type: {:?} ({})", cart_type, cart_type as u8);
-
-        let (checksum, is_matching) = self.check_header_checksum();
-        println!("  Checksum ({:#02x}) Matches: {}", checksum, is_matching);
-
-        println!("  Total rom size: {}", self.hw.rom().len());
-
-        println!();
-    }
-
     pub fn check_nintendo_logo(&self) -> bool {
         let logo_path = ".\\assets\\files\\nintendo_logo.txt";
         let logo_text = fs::read_to_string(logo_path)
@@ -136,24 +116,5 @@ impl Cart {
         }
 
         return true;
-    }
-
-    pub fn check_header_checksum(&self) -> (u8, bool) {
-        /*
-        uint8_t checksum = 0;
-        for (uint16_t address = 0x0134; address <= 0x014C; address++) {
-            checksum = checksum - rom[address] - 1;
-        }
-         */
-        let mut checksum = 0;
-
-        for byte in self.hw.rom()[0x134..=0x14C].iter() {
-            checksum = u8::wrapping_sub(checksum, *byte);
-            checksum = u8::wrapping_sub(checksum, 1);
-        }
-
-        let is_matching = checksum == self.hw.rom()[0x14D];
-
-        return (checksum, is_matching);
     }
 }

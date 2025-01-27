@@ -3,16 +3,16 @@ use crate::{
     mem::{array::Array, sections::Addr},
 };
 
-use super::cart_hw::CartHw;
+use super::{cart_hw::CartHw, consts::ROM_BANK_SIZE};
 
 pub struct HwRomOnly {
     rom: Array,
 }
 
 impl HwRomOnly {
-    pub fn new() -> Self {
+    pub fn new(rom_banks: usize) -> Self {
         Self {
-            rom: Array::new(0, KB_32 as u16),
+            rom: Array::new(0, (rom_banks * ROM_BANK_SIZE) as u16),
         }
     }
 }
