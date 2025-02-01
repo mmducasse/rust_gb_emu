@@ -327,6 +327,7 @@ fn inc_r8(sys: &mut Sys, operand: R8) -> u8 {
     let h = bits8(&data, 3, 0) == 0b1111;
 
     data = u8::wrapping_add(data, 1);
+    //let res = add_2_u8(data, 1);
 
     set_r8_data(sys, operand, data);
     sys.regs.set_flag(CpuFlag::Z, data == 0);
@@ -337,15 +338,14 @@ fn inc_r8(sys: &mut Sys, operand: R8) -> u8 {
 }
 
 fn dec_r8(sys: &mut Sys, operand: R8) -> u8 {
-    let mut data = get_r8_data(sys, operand);
-    let h = bits8(&data, 4, 0) == 0b1_0000;
+    let data = get_r8_data(sys, operand);
 
-    data = u8::wrapping_sub(data, 1);
+    let res = sub_2_u8(data, 1);
+    set_r8_data(sys, operand, res.ans);
 
-    set_r8_data(sys, operand, data);
-    sys.regs.set_flag(CpuFlag::Z, data == 0);
+    sys.regs.set_flag(CpuFlag::Z, res.ans == 0);
     sys.regs.set_flag(CpuFlag::N, true);
-    sys.regs.set_flag(CpuFlag::H, h);
+    sys.regs.set_flag(CpuFlag::H, res.h);
 
     return if operand == R8::HlMem { 3 } else { 1 };
 }
