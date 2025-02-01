@@ -49,7 +49,7 @@ async fn main() {
     initialize_debug(DebugConfig {
         enable_debug_print: false,
         kill_after_cpu_ticks: None, // Some(90),
-        kill_after_nop_count: Some(64),
+        kill_after_nop_count: Some(16),
         last_instr_count: 3,
     });
 
@@ -60,7 +60,7 @@ async fn main() {
     //let path = ".\\assets\\files\\custom_roms\\ld_r8_r8\\rom.gb";
     //let path = ".\\assets\\gb_microtest\\000-write_to_x8000.gb";
 
-    //let path = ".\\assets\\blaargs\\cpu_instrs\\cpu_instrs.gb";
+    let path = ".\\assets\\blaargs\\cpu_instrs\\cpu_instrs.gb";
     //let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\01-special.gb";
     //let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\02-interrupts.gb";
     //let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\03-op sp,hl.gb";
@@ -87,7 +87,7 @@ async fn main() {
     //let path = ".\\assets\\homebrew_roms\\64boy-opcode-scroll.gb";
     //let path = ".\\assets\\homebrew_roms\\life.gb";
 
-    let path = ".\\assets\\other\\hello_world\\rom.gb";
+    //let path = ".\\assets\\other\\hello_world\\rom.gb";
 
     //emp_tests::draw_vram_tile_data_test(path).await;
     //temp_tests::draw_vram_tile_map_test(path).await;
@@ -116,15 +116,6 @@ async fn run_normal(path: &str) {
         }
         sys.run_one_m_cycle();
 
-        // blarggs test - serial output
-        if sys.mem.io_regs.get(mem::io_regs::IoReg::Sc) == 0x81 {
-            let data = sys.mem.io_regs.get(mem::io_regs::IoReg::Sb);
-            let c = data as char;
-            println!("> {}", c);
-
-            sys.mem.io_regs.set(mem::io_regs::IoReg::Sc, 0x00);
-        }
-
         if sys.is_render_pending {
             window.render_pass(|| {
                 render_screen(&mut sys);
@@ -133,6 +124,8 @@ async fn run_normal(path: &str) {
             sys.is_render_pending = false;
         }
     }
+
+    //debug::print_system_state(&sys);
 
     while !is_key_pressed(KeyCode::Escape) {
         window.render_pass(|| {});

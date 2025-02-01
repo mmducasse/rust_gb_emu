@@ -9,6 +9,7 @@ use crate::{
 };
 
 use super::{
+    exec_math::{add_3_u8, sub_3_u8},
     instr::{decode, Cond, Instr, R16Mem, R16Stk, R16, R8},
     regs::{CpuFlag, CpuReg16, CpuReg8, CpuRegs},
 };
@@ -162,7 +163,7 @@ fn print_if_ld_a_a(sys: &mut Sys, instr: Instr) {
     }
 }
 
-fn take_imm8(sys: &mut Sys) -> u8 {
+fn take_imm_u8(sys: &mut Sys) -> u8 {
     let imm8 = sys.mem.read(sys.get_pc());
     sys.inc_pc();
 
@@ -173,7 +174,12 @@ fn take_imm8(sys: &mut Sys) -> u8 {
     return imm8;
 }
 
-fn take_imm16(sys: &mut Sys) -> u16 {
+fn take_imm_i8(sys: &mut Sys) -> i8 {
+    let imm8 = take_imm_u8(sys);
+    return unsafe { transmute(imm8) };
+}
+
+fn take_imm_u16(sys: &mut Sys) -> u16 {
     let lo = sys.mem.read(sys.get_pc());
     sys.inc_pc();
     let hi = sys.mem.read(sys.get_pc());
@@ -249,7 +255,7 @@ fn nop(sys: &mut Sys) -> u8 {
 }
 
 fn ld_r16_imm16(sys: &mut Sys, dst: R16) -> u8 {
-    let imm16 = take_imm16(sys);
+    let imm16 = take_imm_u16(sys);
     let reg = dst.get_reg();
     sys.regs.set_16(reg, imm16);
 
@@ -280,7 +286,7 @@ fn ld_a_r16memp(sys: &mut Sys, src: R16Mem) -> u8 {
 }
 
 fn ld_imm16_sp(sys: &mut Sys) -> u8 {
-    let imm16 = take_imm16(sys);
+    let imm16 = take_imm_u16(sys);
     let addr = imm16;
     let data = sys.regs.get_16(CpuReg16::SP);
     let (hi, lo) = split_16(data);
@@ -342,7 +348,7 @@ fn dec_r8(sys: &mut Sys, operand: R8) -> u8 {
 }
 
 fn ld_r8_imm8(sys: &mut Sys, dst: R8) -> u8 {
-    let imm8 = take_imm8(sys);
+    let imm8 = take_imm_u8(sys);
     set_r8_data(sys, dst, imm8);
 
     return if dst == R8::HlMem { 3 } else { 2 };
@@ -450,8 +456,7 @@ fn ccf(sys: &mut Sys) -> u8 {
 }
 
 fn jr_imm8(sys: &mut Sys) -> u8 {
-    let imm8 = take_imm8(sys);
-    let rel: i8 = unsafe { transmute(imm8) };
+    let rel = take_imm_i8(sys);
     let mut pc = sys.get_pc();
 
     pc = add16_ui(pc, rel as i16);
@@ -462,9 +467,8 @@ fn jr_imm8(sys: &mut Sys) -> u8 {
 }
 
 fn jr_cond_imm8(sys: &mut Sys, cond: Cond) -> u8 {
-    let imm8 = take_imm8(sys);
+    let rel = take_imm_i8(sys);
     if is_condition_met(sys, cond) {
-        let rel: i8 = unsafe { transmute(imm8) };
         let mut pc = sys.get_pc();
 
         pc = add16_ui(pc, rel as i16);
@@ -534,16 +538,13 @@ fn adc_a_r8(sys: &mut Sys, operand: R8) -> u8 {
     let data = get_r8_data(sys, operand);
     let carry = if sys.regs.get_flag(CpuFlag::C) { 1 } else { 0 };
 
-    let a_ = u8::wrapping_add(a, data);
-    let a_ = u8::wrapping_add(a_, carry);
-    sys.regs.set_8(CpuReg8::A, a_);
+    let res = add_3_u8(a, data, carry);
+    sys.regs.set_8(CpuReg8::A, res.ans);
 
-    let h = bits8(&a_, 3, 0) < bits8(&a, 3, 0);
-    let c = a_ < a;
-    sys.regs.set_flag(CpuFlag::Z, a_ == 0);
+    sys.regs.set_flag(CpuFlag::Z, res.ans == 0);
     sys.regs.set_flag(CpuFlag::N, false);
-    sys.regs.set_flag(CpuFlag::H, h);
-    sys.regs.set_flag(CpuFlag::C, c);
+    sys.regs.set_flag(CpuFlag::H, res.h);
+    sys.regs.set_flag(CpuFlag::C, res.c);
 
     return if operand == R8::HlMem { 2 } else { 1 };
 }
@@ -570,16 +571,13 @@ fn sbc_a_r8(sys: &mut Sys, operand: R8) -> u8 {
     let data = get_r8_data(sys, operand);
     let carry = if sys.regs.get_flag(CpuFlag::C) { 1 } else { 0 };
 
-    let a_ = u8::wrapping_sub(a, data);
-    let a_ = u8::wrapping_sub(a_, carry);
-    sys.regs.set_8(CpuReg8::A, a_);
+    let res = sub_3_u8(a, data, carry);
+    sys.regs.set_8(CpuReg8::A, res.ans);
 
-    let h = bits8(&a_, 3, 0) > bits8(&a, 3, 0);
-    let c = a_ > a;
-    sys.regs.set_flag(CpuFlag::Z, a_ == 0);
+    sys.regs.set_flag(CpuFlag::Z, res.ans == 0);
     sys.regs.set_flag(CpuFlag::N, true);
-    sys.regs.set_flag(CpuFlag::H, h);
-    sys.regs.set_flag(CpuFlag::C, c);
+    sys.regs.set_flag(CpuFlag::H, res.h);
+    sys.regs.set_flag(CpuFlag::C, res.c);
 
     return if operand == R8::HlMem { 2 } else { 1 };
 }
@@ -647,7 +645,7 @@ fn cp_a_r8(sys: &mut Sys, operand: R8) -> u8 {
 
 // Block 3 functions.
 fn add_a_imm8(sys: &mut Sys) -> u8 {
-    let imm8 = take_imm8(sys);
+    let imm8 = take_imm_u8(sys);
     let a = sys.regs.get_8(CpuReg8::A);
 
     let a_ = u8::wrapping_add(a, imm8);
@@ -664,26 +662,23 @@ fn add_a_imm8(sys: &mut Sys) -> u8 {
 }
 
 fn adc_a_imm8(sys: &mut Sys) -> u8 {
-    let imm8 = take_imm8(sys);
+    let imm8 = take_imm_u8(sys);
     let a = sys.regs.get_8(CpuReg8::A);
     let carry = if sys.regs.get_flag(CpuFlag::C) { 1 } else { 0 };
 
-    let a_ = u8::wrapping_add(a, imm8);
-    let a_ = u8::wrapping_add(a_, carry);
-    sys.regs.set_8(CpuReg8::A, a_);
+    let res = add_3_u8(a, imm8, carry);
+    sys.regs.set_8(CpuReg8::A, res.ans);
 
-    let h = bits8(&a_, 3, 0) < bits8(&a, 3, 0);
-    let c = a_ < a;
-    sys.regs.set_flag(CpuFlag::Z, a_ == 0);
+    sys.regs.set_flag(CpuFlag::Z, res.ans == 0);
     sys.regs.set_flag(CpuFlag::N, false);
-    sys.regs.set_flag(CpuFlag::H, h);
-    sys.regs.set_flag(CpuFlag::C, c);
+    sys.regs.set_flag(CpuFlag::H, res.h);
+    sys.regs.set_flag(CpuFlag::C, res.c);
 
     return 2;
 }
 
 fn sub_a_imm8(sys: &mut Sys) -> u8 {
-    let imm8 = take_imm8(sys);
+    let imm8 = take_imm_u8(sys);
     let a = sys.regs.get_8(CpuReg8::A);
 
     let a_ = u8::wrapping_sub(a, imm8);
@@ -700,26 +695,23 @@ fn sub_a_imm8(sys: &mut Sys) -> u8 {
 }
 
 fn sbc_a_imm8(sys: &mut Sys) -> u8 {
-    let imm8 = take_imm8(sys);
+    let imm8 = take_imm_u8(sys);
     let a = sys.regs.get_8(CpuReg8::A);
     let carry = if sys.regs.get_flag(CpuFlag::C) { 1 } else { 0 };
 
-    let a_ = u8::wrapping_sub(a, imm8);
-    let a_ = u8::wrapping_sub(a_, carry);
-    sys.regs.set_8(CpuReg8::A, a_);
+    let res = sub_3_u8(a, imm8, carry);
+    sys.regs.set_8(CpuReg8::A, res.ans);
 
-    let h = bits8(&a_, 3, 0) > bits8(&a, 3, 0);
-    let c = a_ > a;
-    sys.regs.set_flag(CpuFlag::Z, a_ == 0);
+    sys.regs.set_flag(CpuFlag::Z, res.ans == 0);
     sys.regs.set_flag(CpuFlag::N, true);
-    sys.regs.set_flag(CpuFlag::H, h);
-    sys.regs.set_flag(CpuFlag::C, c);
+    sys.regs.set_flag(CpuFlag::H, res.h);
+    sys.regs.set_flag(CpuFlag::C, res.c);
 
     return 2;
 }
 
 fn and_a_imm8(sys: &mut Sys) -> u8 {
-    let imm8 = take_imm8(sys);
+    let imm8 = take_imm_u8(sys);
     let a = sys.regs.get_8(CpuReg8::A);
 
     let a_ = a & imm8;
@@ -734,7 +726,7 @@ fn and_a_imm8(sys: &mut Sys) -> u8 {
 }
 
 fn xor_a_imm8(sys: &mut Sys) -> u8 {
-    let imm8 = take_imm8(sys);
+    let imm8 = take_imm_u8(sys);
     let a = sys.regs.get_8(CpuReg8::A);
 
     let a_ = a ^ imm8;
@@ -749,7 +741,7 @@ fn xor_a_imm8(sys: &mut Sys) -> u8 {
 }
 
 fn or_a_imm8(sys: &mut Sys) -> u8 {
-    let imm8 = take_imm8(sys);
+    let imm8 = take_imm_u8(sys);
     let a = sys.regs.get_8(CpuReg8::A);
 
     let a_ = a | imm8;
@@ -764,7 +756,7 @@ fn or_a_imm8(sys: &mut Sys) -> u8 {
 }
 
 fn cp_a_imm8(sys: &mut Sys) -> u8 {
-    let imm8 = take_imm8(sys);
+    let imm8 = take_imm_u8(sys);
     let a = sys.regs.get_8(CpuReg8::A);
 
     let a_ = u8::wrapping_sub(a, imm8);
@@ -806,7 +798,7 @@ fn reti(sys: &mut Sys) -> u8 {
 }
 
 fn jp_cond_imm16(sys: &mut Sys, cond: Cond) -> u8 {
-    let imm16 = take_imm16(sys);
+    let imm16 = take_imm_u16(sys);
     if is_condition_met(sys, cond) {
         sys.set_pc(imm16);
 
@@ -817,7 +809,7 @@ fn jp_cond_imm16(sys: &mut Sys, cond: Cond) -> u8 {
 }
 
 fn jp_imm16(sys: &mut Sys) -> u8 {
-    let imm16 = take_imm16(sys);
+    let imm16 = take_imm_u16(sys);
     sys.set_pc(imm16);
 
     return 4;
@@ -831,7 +823,7 @@ fn jp_hl(sys: &mut Sys) -> u8 {
 }
 
 fn call_cond_imm16(sys: &mut Sys, cond: Cond) -> u8 {
-    let imm16 = take_imm16(sys);
+    let imm16 = take_imm_u16(sys);
     if is_condition_met(sys, cond) {
         let pc = sys.get_pc();
         call(sys, pc, imm16);
@@ -844,7 +836,7 @@ fn call_cond_imm16(sys: &mut Sys, cond: Cond) -> u8 {
 
 fn call_imm16(sys: &mut Sys) -> u8 {
     let pc = sys.get_pc();
-    let imm16 = take_imm16(sys);
+    let imm16 = take_imm_u16(sys);
     call(sys, pc, imm16);
 
     return 6;
@@ -885,7 +877,7 @@ fn ldh_cp_a(sys: &mut Sys) -> u8 {
 }
 
 fn ldh_imm8p_a(sys: &mut Sys) -> u8 {
-    let imm8 = take_imm8(sys);
+    let imm8 = take_imm_u8(sys);
     let data = sys.regs.get_8(CpuReg8::A);
     let addr = join_16(0xFF, imm8);
 
@@ -895,7 +887,7 @@ fn ldh_imm8p_a(sys: &mut Sys) -> u8 {
 }
 
 fn ld_imm16p_a(sys: &mut Sys) -> u8 {
-    let imm16 = take_imm16(sys);
+    let imm16 = take_imm_u16(sys);
     let data = sys.regs.get_8(CpuReg8::A);
     let addr = imm16;
 
@@ -915,7 +907,7 @@ fn ldh_a_cp(sys: &mut Sys) -> u8 {
 }
 
 fn ldh_a_imm8p(sys: &mut Sys) -> u8 {
-    let imm8 = take_imm8(sys);
+    let imm8 = take_imm_u8(sys);
     let addr = join_16(0xFF, imm8);
     let data = sys.mem.read(addr);
 
@@ -925,7 +917,7 @@ fn ldh_a_imm8p(sys: &mut Sys) -> u8 {
 }
 
 fn ld_a_imm16p(sys: &mut Sys) -> u8 {
-    let imm16 = take_imm16(sys);
+    let imm16 = take_imm_u16(sys);
     let addr = imm16;
     let data = sys.mem.read(addr);
 
@@ -936,8 +928,9 @@ fn ld_a_imm16p(sys: &mut Sys) -> u8 {
 
 fn add_sp_imm8(sys: &mut Sys) -> u8 {
     let sp = sys.get_sp();
-    let imm8 = take_imm8(sys);
-    let s_imm8 = unsafe { transmute(imm8) };
+    // let imm8 = take_imm_u8(sys);
+    // let s_imm8 = unsafe { transmute(imm8) };
+    let s_imm8 = take_imm_i8(sys);
     let sp_ = add_u16_i8(sp, s_imm8);
     sys.set_sp(sp_);
 
@@ -958,8 +951,9 @@ fn add_sp_imm8(sys: &mut Sys) -> u8 {
 
 fn ld_hl_spimm8(sys: &mut Sys) -> u8 {
     let sp = sys.get_sp();
-    let imm8 = take_imm8(sys);
-    let s_imm8 = unsafe { transmute(imm8) };
+    // let imm8 = take_imm_u8(sys);
+    // let s_imm8 = unsafe { transmute(imm8) };
+    let s_imm8 = take_imm_i8(sys);
     let sp_ = add_u16_i8(sp, s_imm8);
     sys.regs.set_16(CpuReg16::HL, sp_);
 

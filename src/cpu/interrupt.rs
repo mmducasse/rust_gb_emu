@@ -2,6 +2,7 @@ use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 
 use crate::{
+    debug,
     mem::{io_regs::IoReg, sections::Addr},
     sys::Sys,
     util::math::{bit8, set_bit8},
@@ -55,7 +56,9 @@ pub fn try_handle_interrupts(sys: &mut Sys) {
         let is_int_enabled = bit8(&ie, flag_idx) == 1;
         let is_int_requested = bit8(&if_, flag_idx) == 1;
 
-        if is_int_enabled && is_int_requested {
+        let force = type_ == InterruptType::VBlank;
+
+        if (is_int_enabled && is_int_requested) || force {
             handle_interrupt(sys, type_);
             return; // Only handle highest priority requested interrupt.
         }
@@ -80,4 +83,6 @@ fn handle_interrupt(sys: &mut Sys, type_: InterruptType) {
     call(sys, prev_pc, next_pc); // 3 cycles
 
     sys.cpu_delay_ticks += 3;
+
+    debug::debug_state().print_instrs = 10;
 }

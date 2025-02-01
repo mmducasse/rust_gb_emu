@@ -99,20 +99,11 @@ impl IoRegs {
 
     /// Reads from the readable bits in the IO register.
     pub fn user_read(&self, addr: Addr) -> u8 {
-        let mut data = if addr == IoReg::Ie.as_addr() {
+        let data = if addr == IoReg::Ie.as_addr() {
             self.ie.rd(addr)
         } else {
             self.mem.rd(addr)
         };
-
-        if let Some(reg) = IoReg::from_u16(addr) {
-            debug::record_io_reg_usage(reg, false, 0x00);
-            let Some(reg_data) = self.reg_datas.get(&reg) else {
-                unreachable!();
-            };
-
-            data &= reg_data.read_mask();
-        }
 
         return data;
     }
@@ -136,9 +127,10 @@ impl IoRegs {
                 unreachable!();
             };
 
-            // if reg == IoReg::Sc {
-            //     println!("% {}", value as char);
-            // }
+            if reg == IoReg::Sc {
+                let serial_data = self.get(IoReg::Sb);
+                println!("> {}", serial_data as char);
+            }
 
             if reg_data.reset_on_write() {
                 self.mem.wr(addr, 0x00);

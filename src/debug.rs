@@ -11,7 +11,10 @@ use crate::{
         instr::{decode, ImmType, Instr},
         regs::CpuRegs,
     },
-    mem::{io_regs::IoReg, sections::MemSection},
+    mem::{
+        io_regs::IoReg,
+        sections::{Addr, MemSection},
+    },
     sys::Sys,
     util::{math::join_16, ring_buffer::RingBuffer},
 };
@@ -36,6 +39,7 @@ pub struct DebugState {
     used_instrs: HashMap<Instr, u64>,
     used_instr_variants: HashMap<String, u64>,
     used_io_regs: HashMap<IoReg, IoRegRecord>,
+    pub print_instrs: u16,
 }
 
 pub fn initialize_debug(config: DebugConfig) {
@@ -52,13 +56,14 @@ pub fn initialize_debug(config: DebugConfig) {
             used_instrs: HashMap::new(),
             used_instr_variants: HashMap::new(),
             used_io_regs: HashMap::new(),
+            print_instrs: 0,
         });
     }
 }
 
-pub fn debug_state() -> &'static DebugState {
+pub fn debug_state() -> &'static mut DebugState {
     unsafe {
-        let Some(debug) = &DEBUG_STATE else {
+        let Some(debug) = &mut DEBUG_STATE else {
             unreachable!();
         };
         return debug;
@@ -100,6 +105,14 @@ struct InstrRecord {
     instr: Instr,
     imm: ImmValue,
     regs: CpuRegs,
+
+    stack_record: StackRecord,
+}
+
+struct StackRecord {
+    pub offset: Addr,
+    pub sp: Addr,
+    pub items: Vec<u8>,
 }
 
 enum ImmValue {
@@ -170,12 +183,33 @@ pub fn record_curr_instr(sys: &Sys) {
         }
     };
 
+    let stack_record = {
+        let sp = sys.get_sp();
+        let range_min = u16::saturating_sub(sp, 2);
+        let range_max = u16::saturating_add(sp, 2);
+        let offset = range_min;
+        let mut items = vec![];
+        for addr in range_min..=range_max {
+            let data = sys.mem.read(addr);
+            items.push(data);
+        }
+
+        StackRecord { offset, sp, items }
+    };
+
     let record = InstrRecord {
         addr,
         instr,
         imm: imm_value,
         regs: sys.regs.clone(),
+
+        stack_record,
     };
+
+    if debug_state().print_instrs > 0 {
+        print_instr_record(&record);
+        debug_state().print_instrs -= 1;
+    }
 
     unsafe {
         let Some(debug) = &mut DEBUG_STATE else {
@@ -252,7 +286,8 @@ const PRINT_LAST_INSTRS: bool = true;
 const PRINT_TOTAL_INSTRS: bool = true;
 const PRINT_IO_REG_USAGE: bool = true;
 const PRINT_SYS_STATE: bool = true;
-const PRINT_MEM_SUMS: bool = false;
+const PRINT_MEM_SUMS: bool = true;
+const PRINT_STACK_RECORDS: bool = true;
 
 pub fn print_system_state(sys: &Sys) {
     unsafe {
@@ -326,6 +361,7 @@ fn print_instr_record(record: &InstrRecord) {
         instr,
         imm,
         regs,
+        stack_record,
     } = record;
 
     println!("  [${:0>4X}] {:?}", addr, instr);
@@ -341,4 +377,17 @@ fn print_instr_record(record: &InstrRecord) {
         }
     };
     regs.print();
+
+    if PRINT_STACK_RECORDS {
+        let sp = stack_record.sp;
+        let mut addr = stack_record.offset;
+
+        for item in &stack_record.items {
+            let prefix = if sp == addr { "sp>" } else { "   " };
+            println!("{} | 0x{:0>4X} | {:0>2x} |", prefix, addr, *item);
+
+            addr = u16::saturating_add(addr, 1);
+        }
+        println!();
+    }
 }
