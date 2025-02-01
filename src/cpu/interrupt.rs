@@ -56,7 +56,7 @@ pub fn try_handle_interrupts(sys: &mut Sys) {
         let is_int_enabled = bit8(&ie, flag_idx) == 1;
         let is_int_requested = bit8(&if_, flag_idx) == 1;
 
-        let force = type_ == InterruptType::VBlank;
+        let force = false;
 
         if (is_int_enabled && is_int_requested) || force {
             handle_interrupt(sys, type_);

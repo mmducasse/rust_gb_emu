@@ -100,9 +100,9 @@ impl IoRegs {
     /// Reads from the readable bits in the IO register.
     pub fn user_read(&self, addr: Addr) -> u8 {
         let data = if addr == IoReg::Ie.as_addr() {
-            self.ie.rd(addr)
+            self.ie.read(addr)
         } else {
-            self.mem.rd(addr)
+            self.mem.read(addr)
         };
 
         return data;
@@ -110,9 +110,9 @@ impl IoRegs {
 
     pub fn get(&self, reg: IoReg) -> u8 {
         return if reg == IoReg::Ie {
-            self.ie.rd(reg)
+            self.ie.read(reg)
         } else {
-            self.mem.rd(reg)
+            self.mem.read(reg)
         };
     }
 
@@ -120,7 +120,7 @@ impl IoRegs {
     pub fn user_write(&mut self, addr: Addr, value: u8) {
         if addr == IoReg::Ie.as_addr() {
             debug::record_io_reg_usage(IoReg::Ie, true, value);
-            self.ie.wr(addr, value);
+            self.ie.write(addr, value);
         } else if let Some(reg) = IoReg::from_u16(addr) {
             debug::record_io_reg_usage(reg, true, value);
             let Some(reg_data) = self.reg_datas.get(&reg) else {
@@ -133,22 +133,22 @@ impl IoRegs {
             }
 
             if reg_data.reset_on_write() {
-                self.mem.wr(addr, 0x00);
+                self.mem.write(addr, 0x00);
             } else {
                 let data = self.mem.mut_(addr);
                 let mask = reg_data.write_mask();
                 set_bits8_masked(data, mask, value);
             }
         } else {
-            self.mem.wr(addr, value);
+            self.mem.write(addr, value);
         }
     }
 
     pub fn set(&mut self, reg: IoReg, data: u8) {
         return if reg == IoReg::Ie {
-            self.ie.wr(reg, data)
+            self.ie.write(reg, data)
         } else {
-            self.mem.wr(reg, data)
+            self.mem.write(reg, data)
         };
     }
 

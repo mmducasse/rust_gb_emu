@@ -28,13 +28,13 @@ impl Array {
             && (((addr - self.start_addr) as usize) < self.memory.len());
     }
 
-    pub fn rd(&self, abs_addr: impl Into<Addr>) -> u8 {
+    pub fn read(&self, abs_addr: impl Into<Addr>) -> u8 {
         let abs_addr: Addr = abs_addr.into();
         let rel_addr = abs_addr - self.start_addr;
         return self.memory[rel_addr as usize];
     }
 
-    pub fn wr(&mut self, abs_addr: impl Into<Addr>, data: u8) {
+    pub fn write(&mut self, abs_addr: impl Into<Addr>, data: u8) {
         let abs_addr: Addr = abs_addr.into();
         let rel_addr = abs_addr - self.start_addr;
         self.memory[rel_addr as usize] = data;

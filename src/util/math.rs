@@ -124,6 +124,17 @@ mod tests {
     }
 
     #[test]
+    fn test_set_bit8() {
+        let mut x = 0b0000_0000;
+        set_bit8(&mut x, 5, 1);
+        assert_eq!(x, 0b0010_0000);
+
+        let mut x = 0b1111_1111;
+        set_bit8(&mut x, 5, 0);
+        assert_eq!(x, 0b1101_1111);
+    }
+
+    #[test]
     fn test_set_bits8() {
         let mut x = 0b0000_0000;
         set_bits8(&mut x, 5, 2, 0b1111);

@@ -48,8 +48,8 @@ async fn main() {
 
     initialize_debug(DebugConfig {
         enable_debug_print: false,
-        kill_after_cpu_ticks: None, // Some(90),
-        kill_after_nop_count: Some(16),
+        kill_after_cpu_ticks: Some(250_000),
+        kill_after_nop_count: None, // Some(16),
         last_instr_count: 3,
     });
 
@@ -130,5 +130,26 @@ async fn run_normal(path: &str) {
     while !is_key_pressed(KeyCode::Escape) {
         window.render_pass(|| {});
         next_frame().await;
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    // Note this useful idiom: importing names from outer (for mod tests) scope.
+    use super::*;
+
+    #[test]
+    fn test_() {
+        let x = 0xFF;
+        let y = u8::wrapping_shr(x, 1);
+        assert_eq!(y, 0x7F);
+
+        let x = 0b1011_1111;
+        let y = u8::rotate_right(x, 2);
+        assert_eq!(y, 0b1110_1111);
+
+        let x = 0b1110_1000;
+        let y = 0b0111_0011;
+        assert_eq!(x ^ y, 0b1001_1011);
     }
 }

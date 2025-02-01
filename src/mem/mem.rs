@@ -34,16 +34,16 @@ impl Mem {
 
         match section {
             MemSection::CartRom => self.cart.read(addr),
-            MemSection::Vram => self.vram.rd(addr),
+            MemSection::Vram => self.vram.read(addr),
             MemSection::ExtRam => self.cart.read(addr), // sys.ext_ram.rd(abs_addr),
-            MemSection::Wram => self.wram.rd(addr),
+            MemSection::Wram => self.wram.read(addr),
             MemSection::EchoRam => {
                 if FAIL_ON_BAD_RW {
                     debug::fail("Attempted to read from Echo RAM");
                 }
                 0x00
             }
-            MemSection::Oam => self.oam.rd(addr),
+            MemSection::Oam => self.oam.read(addr),
             MemSection::UnusableMemory => {
                 if FAIL_ON_BAD_RW {
                     debug::fail("Attempted to read from unusable memory");
@@ -51,7 +51,7 @@ impl Mem {
                 0x00
             }
             MemSection::IoRegs => self.io_regs.user_read(addr),
-            MemSection::Hram => self.hram.rd(addr),
+            MemSection::Hram => self.hram.read(addr),
             MemSection::IeReg => self.io_regs.user_read(addr),
         }
     }
@@ -64,13 +64,13 @@ impl Mem {
                 self.cart.write(addr, data);
             }
             MemSection::Vram => {
-                self.vram.wr(addr, data);
+                self.vram.write(addr, data);
             }
             MemSection::ExtRam => {
                 self.cart.write(addr, data);
             }
             MemSection::Wram => {
-                self.wram.wr(addr, data);
+                self.wram.write(addr, data);
             }
             MemSection::EchoRam => {
                 if FAIL_ON_BAD_RW {
@@ -78,7 +78,7 @@ impl Mem {
                 }
             }
             MemSection::Oam => {
-                self.oam.wr(addr, data);
+                self.oam.write(addr, data);
             }
             MemSection::UnusableMemory => {
                 if FAIL_ON_BAD_RW {
@@ -89,7 +89,7 @@ impl Mem {
                 self.io_regs.user_write(addr, data);
             }
             MemSection::Hram => {
-                self.hram.wr(addr, data);
+                self.hram.write(addr, data);
             }
             MemSection::IeReg => {
                 self.io_regs.user_write(addr, data);

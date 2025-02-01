@@ -133,7 +133,7 @@ const DO_RECORD_NOP: bool = false;
 pub fn record_curr_instr(sys: &Sys) {
     unsafe {
         let Some(debug) = &mut DEBUG_STATE else {
-            unreachable!();
+            return;
         };
         debug.total_instrs_executed += 1;
     }

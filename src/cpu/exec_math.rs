@@ -4,6 +4,10 @@ pub struct Result<T> {
     pub c: bool,
 }
 
+pub fn add_2_u8(a: u8, b: u8) -> Result<u8> {
+    return add_3_u8(a, b, 0);
+}
+
 pub fn add_3_u8(a: u8, b: u8, c: u8) -> Result<u8> {
     let a = a as i16;
     let b = b as i16;
@@ -15,6 +19,10 @@ pub fn add_3_u8(a: u8, b: u8, c: u8) -> Result<u8> {
         h: (a & 0xF) + (b & 0xF) + (c & 0xF) > 0xF,
         c: y > 0xFF,
     };
+}
+
+pub fn sub_2_u8(a: u8, b: u8) -> Result<u8> {
+    return sub_3_u8(a, b, 0);
 }
 
 pub fn sub_3_u8(a: u8, b: u8, c: u8) -> Result<u8> {
