@@ -145,6 +145,11 @@ pub fn execute_next_instr(sys: &mut Sys) -> u32 {
 
     //print_if_ld_a_a(sys, instr);
 
+    if debug::debug_state().request_print_last_instr > 0 {
+        debug::print_last_instr();
+        debug::debug_state().request_print_last_instr -= 1;
+    }
+
     return cycles as u32;
 }
 
@@ -396,7 +401,6 @@ fn rla(sys: &mut Sys) -> u8 {
 }
 
 fn rra(sys: &mut Sys) -> u8 {
-
     rr_r8(sys, R8::A);
 
     sys.regs.set_flag(CpuFlag::Z, false);
@@ -741,8 +745,6 @@ fn cp_a_imm8(sys: &mut Sys) -> u8 {
     let imm8 = take_imm_u8(sys);
     let a_data = sys.regs.get_8(CpuReg8::A);
 
-
-
     let res = sub_2_u8(a_data, imm8);
 
     sys.regs.set_flag(CpuFlag::Z, res.ans == 0);
@@ -754,6 +756,8 @@ fn cp_a_imm8(sys: &mut Sys) -> u8 {
 }
 
 fn ret_cond(sys: &mut Sys, cond: Cond) -> u8 {
+    debug::debug_state().request_print_last_instr = 2;
+
     if is_condition_met(sys, cond) {
         ret(sys);
 
@@ -764,6 +768,8 @@ fn ret_cond(sys: &mut Sys, cond: Cond) -> u8 {
 }
 
 fn ret(sys: &mut Sys) -> u8 {
+    debug::debug_state().request_print_last_instr = 2;
+
     let addr = pop_16(sys);
     sys.set_pc(addr);
 
@@ -771,6 +777,8 @@ fn ret(sys: &mut Sys) -> u8 {
 }
 
 fn reti(sys: &mut Sys) -> u8 {
+    debug::debug_state().request_print_last_instr = 2;
+
     let addr = pop_16(sys);
     sys.set_pc(addr);
 
@@ -805,6 +813,8 @@ fn jp_hl(sys: &mut Sys) -> u8 {
 }
 
 fn call_cond_imm16(sys: &mut Sys, cond: Cond) -> u8 {
+    debug::debug_state().request_print_last_instr = 2;
+
     let imm16 = take_imm_u16(sys);
     if is_condition_met(sys, cond) {
         let pc = sys.get_pc();
@@ -820,6 +830,8 @@ fn call_imm16(sys: &mut Sys) -> u8 {
     let pc = sys.get_pc();
     let imm16 = take_imm_u16(sys);
     call(sys, pc, imm16);
+
+    debug::debug_state().request_print_last_instr = 2;
 
     return 6;
 }

@@ -40,6 +40,7 @@ pub struct DebugState {
     used_instr_variants: HashMap<String, u64>,
     used_io_regs: HashMap<IoReg, IoRegRecord>,
     pub print_instrs: u16,
+    pub request_print_last_instr: u64,
 }
 
 pub fn initialize_debug(config: DebugConfig) {
@@ -57,6 +58,7 @@ pub fn initialize_debug(config: DebugConfig) {
             used_instr_variants: HashMap::new(),
             used_io_regs: HashMap::new(),
             print_instrs: 0,
+            request_print_last_instr: 0,
         });
     }
 }
