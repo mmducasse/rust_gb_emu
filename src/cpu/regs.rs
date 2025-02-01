@@ -25,6 +25,20 @@ pub enum CpuReg16 {
     PC,
 }
 
+impl CpuReg16 {
+    pub fn get_parts(self) -> (CpuReg8, CpuReg8) {
+        match self {
+            CpuReg16::AF => (CpuReg8::A, CpuReg8::F),
+            CpuReg16::BC => (CpuReg8::B, CpuReg8::C),
+            CpuReg16::DE => (CpuReg8::D, CpuReg8::E),
+            CpuReg16::HL => (CpuReg8::H, CpuReg8::L),
+            _ => {
+                panic!("Cannot split {:?} into 8-bit registers.", self);
+            }
+        }
+    }
+}
+
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub enum CpuFlag {
     /// Zero flag.
@@ -62,14 +76,12 @@ impl CpuRegs {
         self.regs8[idx]
     }
 
-    pub fn set_8(&mut self, reg: CpuReg8, data: u8) {
+    pub fn set_8(&mut self, reg: CpuReg8, mut data: u8) {
+        if reg == CpuReg8::F {
+            data &= 0xF0;
+        }
         let idx = reg as usize;
         self.regs8[idx] = data;
-    }
-
-    pub fn mut_8(&mut self, reg: CpuReg8) -> &mut u8 {
-        let idx = reg as usize;
-        &mut self.regs8[idx]
     }
 
     pub fn get_16(&self, reg: CpuReg16) -> u16 {
@@ -77,9 +89,9 @@ impl CpuRegs {
             CpuReg16::SP => self.sp,
             CpuReg16::PC => self.pc,
             _ => {
-                let idx = (reg as usize) * 2;
-                let hi = self.regs8[idx];
-                let lo = self.regs8[idx + 1];
+                let (reg_hi, reg_lo) = reg.get_parts();
+                let hi = self.get_8(reg_hi);
+                let lo = self.get_8(reg_lo);
                 let data = join_16(hi, lo);
                 data
             }
@@ -92,9 +104,9 @@ impl CpuRegs {
             CpuReg16::PC => self.pc = data,
             _ => {
                 let (hi, lo) = split_16(data);
-                let idx = (reg as usize) * 2;
-                self.regs8[idx] = hi;
-                self.regs8[idx + 1] = lo;
+                let (reg_hi, reg_lo) = reg.get_parts();
+                self.set_8(reg_hi, hi);
+                self.set_8(reg_lo, lo);
             }
         }
     }
@@ -106,7 +118,9 @@ impl CpuRegs {
 
     pub fn set_flag(&mut self, flag: CpuFlag, value: bool) {
         let idx = flag as u8;
-        return set_bit8(self.mut_8(CpuReg8::F), idx, value.into());
+        let mut f_data = self.get_8(CpuReg8::F);
+        set_bit8(&mut f_data, idx, value.into());
+        self.set_8(CpuReg8::F, f_data);
     }
 
     pub fn print(&self) {

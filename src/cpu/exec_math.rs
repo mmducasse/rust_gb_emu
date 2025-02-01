@@ -38,6 +38,27 @@ pub fn sub_3_u8(a: u8, b: u8, c: u8) -> Result<u8> {
     };
 }
 
+pub fn add_u16_i8(a: u16, b: i8) -> Result<u16> {
+    let a = a as i32;
+    let b = b as i32;
+    let y = a + b;
+    let mut h = false;
+    let mut c = false;
+    if b > 0 {
+        h = (a & 0xFFF) + b > 0xFFF;
+        c = y > 0xFFFF;
+    } else if b < 0 {
+        h = (a & 0xFFF) + b < 0;
+        c = y < 0;
+    }
+
+    return Result {
+        ans: (y & 0xFFFF) as u16,
+        h,
+        c,
+    };
+}
+
 #[cfg(test)]
 mod tests {
     // Note this useful idiom: importing names from outer (for mod tests) scope.

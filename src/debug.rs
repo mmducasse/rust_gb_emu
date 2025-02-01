@@ -62,7 +62,7 @@ pub fn initialize_debug(config: DebugConfig) {
             print_instrs: 0,
             request_print_last_instr: 0,
             print_count: 0,
-            max_print_count: 40,
+            max_print_count: 5,
         });
     }
 }
@@ -107,6 +107,7 @@ pub fn take_pending_breakpoint() -> bool {
 }
 
 struct InstrRecord {
+    cpu_tick_num: u64,
     addr: u16,
     instr: Instr,
     imm: ImmValue,
@@ -204,6 +205,7 @@ pub fn record_curr_instr(sys: &Sys) {
     };
 
     let record = InstrRecord {
+        cpu_tick_num: sys.cpu_clock.debug_total_ticks,
         addr,
         instr,
         imm: imm_value,
@@ -368,6 +370,7 @@ pub fn print_system_state(sys: &Sys) {
 
 fn print_instr_record(record: &InstrRecord) {
     let InstrRecord {
+        cpu_tick_num,
         addr,
         instr,
         imm,
@@ -375,7 +378,7 @@ fn print_instr_record(record: &InstrRecord) {
         stack_record,
     } = record;
 
-    println!("  [${:0>4X}] {:?}", addr, instr);
+    println!("  [${:0>4X} ({})] {:?}", addr, cpu_tick_num, instr);
     match imm {
         ImmValue::None => {}
         ImmValue::Imm8(imm8) => println!("     imm8 = {:#02x} (u{}) (s{})", imm8, imm8, unsafe {

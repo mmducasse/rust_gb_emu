@@ -3,13 +3,11 @@ use std::mem::transmute;
 use crate::{
     debug::{self, debug_state},
     sys::Sys,
-    util::math::{
-        add16_ui, add16_uu, add_u16_i8, bit8, bits16, bits8, join_16, set_bit8, split_16,
-    },
+    util::math::{add16_ui, add16_uu, bit8, bits16, bits8, join_16, set_bit8, split_16},
 };
 
 use super::{
-    exec_math::{add_3_u8, sub_2_u8, sub_3_u8},
+    exec_math::{add_2_u8, add_3_u8, add_u16_i8, sub_2_u8, sub_3_u8},
     instr::{decode, Cond, Instr, R16Mem, R16Stk, R16, R8},
     regs::{CpuFlag, CpuReg16, CpuReg8, CpuRegs},
 };
@@ -506,15 +504,13 @@ fn add_a_r8(sys: &mut Sys, operand: R8) -> u8 {
     let a = sys.regs.get_8(CpuReg8::A);
     let data = get_r8_data(sys, operand);
 
-    let a_ = u8::wrapping_add(a, data);
-    sys.regs.set_8(CpuReg8::A, a_);
+    let res = add_2_u8(a, data);
+    sys.regs.set_8(CpuReg8::A, res.ans);
 
-    let h = bits8(&a_, 3, 0) < bits8(&a, 3, 0);
-    let c = a_ < a;
-    sys.regs.set_flag(CpuFlag::Z, a_ == 0);
+    sys.regs.set_flag(CpuFlag::Z, res.ans == 0);
     sys.regs.set_flag(CpuFlag::N, false);
-    sys.regs.set_flag(CpuFlag::H, h);
-    sys.regs.set_flag(CpuFlag::C, c);
+    sys.regs.set_flag(CpuFlag::H, res.h);
+    sys.regs.set_flag(CpuFlag::C, res.c);
 
     return if operand == R8::HlMem { 2 } else { 1 };
 }
@@ -539,15 +535,13 @@ fn sub_a_r8(sys: &mut Sys, operand: R8) -> u8 {
     let a = sys.regs.get_8(CpuReg8::A);
     let data = get_r8_data(sys, operand);
 
-    let a_ = u8::wrapping_sub(a, data);
-    sys.regs.set_8(CpuReg8::A, a_);
+    let res = sub_2_u8(a, data);
+    sys.regs.set_8(CpuReg8::A, res.ans);
 
-    let h = bits8(&a_, 3, 0) > bits8(&a, 3, 0);
-    let c = a_ > a;
-    sys.regs.set_flag(CpuFlag::Z, a_ == 0);
+    sys.regs.set_flag(CpuFlag::Z, res.ans == 0);
     sys.regs.set_flag(CpuFlag::N, true);
-    sys.regs.set_flag(CpuFlag::H, h);
-    sys.regs.set_flag(CpuFlag::C, c);
+    sys.regs.set_flag(CpuFlag::H, res.h);
+    sys.regs.set_flag(CpuFlag::C, res.c);
 
     return if operand == R8::HlMem { 2 } else { 1 };
 }
@@ -911,46 +905,29 @@ fn ld_a_imm16p(sys: &mut Sys) -> u8 {
 
 fn add_sp_imm8(sys: &mut Sys) -> u8 {
     let sp = sys.get_sp();
-    // let imm8 = take_imm_u8(sys);
-    // let s_imm8 = unsafe { transmute(imm8) };
     let s_imm8 = take_imm_i8(sys);
-    let sp_ = add_u16_i8(sp, s_imm8);
-    sys.set_sp(sp_);
+    let res = add_u16_i8(sp, s_imm8);
+    sys.set_sp(res.ans);
 
-    let h;
-    let c;
-    if s_imm8 >= 0 {
-        h = bits16(&sp_, 11, 0) < bits16(&sp, 11, 0); // todo correct??
-        c = sp_ < sp;
-    } else {
-        h = bits16(&sp_, 11, 0) > bits16(&sp, 11, 0);
-        c = sp_ > sp;
-    }
-    sys.regs.set_flag(CpuFlag::H, h);
-    sys.regs.set_flag(CpuFlag::C, c);
+    sys.regs.set_flag(CpuFlag::Z, false);
+    sys.regs.set_flag(CpuFlag::N, false);
+    sys.regs.set_flag(CpuFlag::H, res.h);
+    sys.regs.set_flag(CpuFlag::C, res.c);
 
     return 4;
 }
 
 fn ld_hl_spimm8(sys: &mut Sys) -> u8 {
     let sp = sys.get_sp();
-    // let imm8 = take_imm_u8(sys);
-    // let s_imm8 = unsafe { transmute(imm8) };
     let s_imm8 = take_imm_i8(sys);
-    let sp_ = add_u16_i8(sp, s_imm8);
-    sys.regs.set_16(CpuReg16::HL, sp_);
+    let res = add_u16_i8(sp, s_imm8);
 
-    let h;
-    let c;
-    if s_imm8 >= 0 {
-        h = bits16(&sp_, 11, 0) < bits16(&sp, 11, 0); // todo correct??
-        c = sp_ < sp;
-    } else {
-        h = bits16(&sp_, 11, 0) > bits16(&sp, 11, 0);
-        c = sp_ > sp;
-    }
-    sys.regs.set_flag(CpuFlag::H, h);
-    sys.regs.set_flag(CpuFlag::C, c);
+    sys.regs.set_16(CpuReg16::HL, res.ans);
+
+    sys.regs.set_flag(CpuFlag::Z, false);
+    sys.regs.set_flag(CpuFlag::N, false);
+    sys.regs.set_flag(CpuFlag::H, res.h);
+    sys.regs.set_flag(CpuFlag::C, res.c);
 
     return 3;
 }

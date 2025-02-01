@@ -65,7 +65,7 @@ async fn main() {
     //let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\02-interrupts.gb";
     //let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\03-op sp,hl.gb";
     //let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\04-op r,imm.gb";
-    let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\05-op rp.gb";
+    //let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\05-op rp.gb";
     //let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\06-ld r,r.gb";
     //let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\07-jr,jp,call,ret,rst.gb";
     //let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\08-misc instrs.gb";
@@ -87,7 +87,7 @@ async fn main() {
     //let path = ".\\assets\\homebrew_roms\\64boy-opcode-scroll.gb";
     //let path = ".\\assets\\homebrew_roms\\life.gb";
 
-    //let path = ".\\assets\\other\\hello_world\\rom.gb";
+    let path = ".\\assets\\other\\hello_world\\rom.gb";
 
     //emp_tests::draw_vram_tile_data_test(path).await;
     //temp_tests::draw_vram_tile_map_test(path).await;
