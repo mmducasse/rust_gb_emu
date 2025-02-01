@@ -315,7 +315,7 @@ fn add_hl_r16(sys: &mut Sys, operand: R16) -> u8 {
 
     let hl_ = add16_uu(hl, operand);
     sys.regs.set_16(CpuReg16::HL, hl_);
-    let h = bits16(&hl_, 11, 0) < bits16(&hl, 11, 0); // todo correct??
+    let h = (hl & 0xFFF) + (operand & 0xFFF) > 0xFFF;
     let c = hl_ < hl;
     sys.regs.set_flag(CpuFlag::N, false);
     sys.regs.set_flag(CpuFlag::H, h);
@@ -756,8 +756,6 @@ fn cp_a_imm8(sys: &mut Sys) -> u8 {
 }
 
 fn ret_cond(sys: &mut Sys, cond: Cond) -> u8 {
-    debug::debug_state().request_print_last_instr = 2;
-
     if is_condition_met(sys, cond) {
         ret(sys);
 
@@ -768,8 +766,6 @@ fn ret_cond(sys: &mut Sys, cond: Cond) -> u8 {
 }
 
 fn ret(sys: &mut Sys) -> u8 {
-    debug::debug_state().request_print_last_instr = 2;
-
     let addr = pop_16(sys);
     sys.set_pc(addr);
 
@@ -777,8 +773,6 @@ fn ret(sys: &mut Sys) -> u8 {
 }
 
 fn reti(sys: &mut Sys) -> u8 {
-    debug::debug_state().request_print_last_instr = 2;
-
     let addr = pop_16(sys);
     sys.set_pc(addr);
 
@@ -813,8 +807,6 @@ fn jp_hl(sys: &mut Sys) -> u8 {
 }
 
 fn call_cond_imm16(sys: &mut Sys, cond: Cond) -> u8 {
-    debug::debug_state().request_print_last_instr = 2;
-
     let imm16 = take_imm_u16(sys);
     if is_condition_met(sys, cond) {
         let pc = sys.get_pc();
@@ -827,11 +819,9 @@ fn call_cond_imm16(sys: &mut Sys, cond: Cond) -> u8 {
 }
 
 fn call_imm16(sys: &mut Sys) -> u8 {
-    let pc = sys.get_pc();
     let imm16 = take_imm_u16(sys);
+    let pc = sys.get_pc();
     call(sys, pc, imm16);
-
-    debug::debug_state().request_print_last_instr = 2;
 
     return 6;
 }

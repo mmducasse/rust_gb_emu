@@ -48,7 +48,7 @@ async fn main() {
 
     initialize_debug(DebugConfig {
         enable_debug_print: false,
-        kill_after_cpu_ticks: Some(250_000),
+        kill_after_cpu_ticks: Some(25_000_000),
         kill_after_nop_count: None, // Some(16),
         last_instr_count: 3,
     });
@@ -64,14 +64,14 @@ async fn main() {
     //let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\01-special.gb";
     //let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\02-interrupts.gb";
     //let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\03-op sp,hl.gb";
-    let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\04-op r,imm.gb";
-    //let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\05-op rp.gb";
+    //let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\04-op r,imm.gb";
+    let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\05-op rp.gb";
     //let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\06-ld r,r.gb";
-    // let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\07-jr,jp,call,ret,rst.gb";
-    // let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\08-misc instrs.gb";
-    // let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\09-op r,r.gb";
-    // let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\10-bit ops.gb";
-    // let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\11-op a,(hl).gb";
+    //let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\07-jr,jp,call,ret,rst.gb";
+    //let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\08-misc instrs.gb";
+    //let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\09-op r,r.gb";
+    //let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\10-bit ops.gb";
+    //let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\11-op a,(hl).gb";
 
     //let path = ".\\assets\\mooneye\\acceptance\\add_sp_e_timing.gb";
     //let path = ".\\assets\\mooneye\\acceptance\\bits\\reg_f.gb";

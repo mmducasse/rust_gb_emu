@@ -172,4 +172,16 @@ mod tests {
         assert_eq!(hi, 0x12);
         assert_eq!(lo, 0xAD);
     }
+
+    #[test]
+    fn test_add16_ui() {
+        let y = add16_ui(0xFFFF, 0);
+        assert_eq!(y, 0xFFFF);
+
+        let y = add16_ui(0xFFFF, 1);
+        assert_eq!(y, 0);
+
+        let y = add16_ui(0, -1);
+        assert_eq!(y, 0xFFFF);
+    }
 }

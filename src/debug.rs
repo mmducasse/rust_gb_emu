@@ -41,6 +41,8 @@ pub struct DebugState {
     used_io_regs: HashMap<IoReg, IoRegRecord>,
     pub print_instrs: u16,
     pub request_print_last_instr: u64,
+    pub print_count: u64,
+    pub max_print_count: u64,
 }
 
 pub fn initialize_debug(config: DebugConfig) {
@@ -59,6 +61,8 @@ pub fn initialize_debug(config: DebugConfig) {
             used_io_regs: HashMap::new(),
             print_instrs: 0,
             request_print_last_instr: 0,
+            print_count: 0,
+            max_print_count: 40,
         });
     }
 }
@@ -242,6 +246,11 @@ pub fn print_last_instr() {
 
         if let Some(last) = debug.instr_ring_buffer.iter().last() {
             print_instr_record(last);
+
+            debug.print_count += 1;
+            if debug.print_count >= debug.max_print_count {
+                fail("Exceeded max print count.");
+            }
         };
     }
 }
@@ -284,11 +293,11 @@ pub fn fail(msg: impl Into<String>) {
     }
 }
 
-const PRINT_LAST_INSTRS: bool = true;
-const PRINT_TOTAL_INSTRS: bool = true;
+const PRINT_LAST_INSTRS: bool = false;
+const PRINT_TOTAL_INSTRS: bool = false;
 const PRINT_IO_REG_USAGE: bool = true;
 const PRINT_SYS_STATE: bool = true;
-const PRINT_MEM_SUMS: bool = true;
+const PRINT_MEM_SUMS: bool = false;
 const PRINT_STACK_RECORDS: bool = true;
 
 pub fn print_system_state(sys: &Sys) {
