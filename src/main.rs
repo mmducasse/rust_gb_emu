@@ -76,7 +76,7 @@ async fn main() {
     //let path = ".\\assets\\mooneye\\acceptance\\add_sp_e_timing.gb";
     //let path = ".\\assets\\mooneye\\acceptance\\bits\\reg_f.gb";
 
-    //let path = ".\\assets\\real_gb_roms\\tetris.gb";
+    let path = ".\\assets\\real_gb_roms\\tetris.gb";
     //let path = ".\\assets\\real_gb_roms\\Dr_Mario.gb";
     //let path = ".\\assets\\real_gb_roms\\Pokemon.gb";
     //let path = ".\\assets\\real_gb_roms\\Zelda.gb";

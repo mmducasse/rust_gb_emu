@@ -31,18 +31,20 @@ pub fn update_timer_regs(sys: &mut Sys) {
 
     let div_ticked = sys.div_timer_clock.update_and_check();
 
-    sys.mem.io_regs.mut_(IoReg::Div, |div| {
-        let div_ = u8::wrapping_add(*div, 1);
-        if div_ < *div {
-            // DIV overflow
-            //println!("DIV overflow");
-        }
-        *div = div_;
-    });
+    if div_ticked {
+        sys.mem.io_regs.mut_(IoReg::Div, |div| {
+            let div_ = u8::wrapping_add(*div, 1);
+            if div_ == 0 {
+                // DIV overflow
+                //println!("DIV overflow");
+            }
+            *div = div_;
+        });
+    }
 
     // Update TIMA
     let tac = sys.mem.io_regs.get(IoReg::Tac);
-    let enable = bit8(&tac, 2); // todo unused
+    let enable = bit8(&tac, 2) == 1; // todo unused
     let clock_sel = bits8(&tac, 1, 0);
     let tima_clk_period = match clock_sel {
         0 => TAC_CLK_0_PERIOD_DOTS,
@@ -54,19 +56,20 @@ pub fn update_timer_regs(sys: &mut Sys) {
 
     sys.tima_timer_clock.set_period_dots(tima_clk_period);
 
-    let tima_ticked = sys.tima_timer_clock.update_and_check();
+    if enable {
+        let tima_ticked = sys.tima_timer_clock.update_and_check();
 
-    if tima_ticked {
-        let tima = sys.mem.io_regs.get(IoReg::Tima);
-        let tima_ = u8::wrapping_add(tima, 1);
-        if tima_ < tima {
-            // TIMA overflow
-            println!("TIMA overflow");
-            let tma = sys.mem.io_regs.get(IoReg::Tma);
-            sys.mem.io_regs.set(IoReg::Div, tma);
-            request_interrupt(sys, InterruptType::Timer);
-        } else {
-            sys.mem.io_regs.set(IoReg::Div, tima_);
+        if tima_ticked {
+            let tima = sys.mem.io_regs.get(IoReg::Tima);
+            let tima_ = u8::wrapping_add(tima, 1);
+            if tima_ == 0 {
+                // TIMA overflow
+                let tma = sys.mem.io_regs.get(IoReg::Tma);
+                sys.mem.io_regs.set(IoReg::Tima, tma);
+                request_interrupt(sys, InterruptType::Timer);
+                //println!("TIMA overflow. Reset to TMA = {:0>2X}", tma);
+            }
+            sys.mem.io_regs.set(IoReg::Tima, tima_);
         }
     }
 }

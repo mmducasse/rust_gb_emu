@@ -122,16 +122,18 @@ impl Sys {
     pub fn run_one_m_cycle(&mut self) -> bool {
         let mut did_run_cpu_instr = false;
 
-        self.sys_clock.update_and_check();
+        for i in 0..4 {
+            self.sys_clock.update_and_check();
 
-        update_timer_regs(self);
+            update_timer_regs(self);
+        }
 
         if self.cpu_clock.update_and_check() {
             self.cpu_delay_ticks = u32::saturating_sub(self.cpu_delay_ticks, 1);
         }
         if self.cpu_delay_ticks == 0 {
-            self.cpu_delay_ticks = execute_next_instr(self);
             try_handle_interrupts(self);
+            self.cpu_delay_ticks = execute_next_instr(self);
             did_run_cpu_instr = true;
         }
 
