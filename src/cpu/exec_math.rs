@@ -1,3 +1,5 @@
+use std::mem::transmute;
+
 pub struct Result<T> {
     pub ans: T,
     pub h: bool,
@@ -57,6 +59,16 @@ pub fn add_u16_i8(a: u16, b: i8) -> Result<u16> {
         h,
         c,
     };
+}
+
+pub fn add_sp_i8(sp: u16, b: i8) -> Result<u16> {
+    let ans = add_u16_i8(sp, b).ans;
+
+    let lo = (sp & 0xFF) as u8;
+    let b = unsafe { transmute(b) };
+    let Result { ans: _, h, c } = add_2_u8(lo, b);
+
+    return Result { ans, h, c };
 }
 
 #[cfg(test)]

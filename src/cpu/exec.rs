@@ -7,7 +7,7 @@ use crate::{
 };
 
 use super::{
-    exec_math::{add_2_u8, add_3_u8, add_u16_i8, sub_2_u8, sub_3_u8},
+    exec_math::{add_2_u8, add_3_u8, add_sp_i8, add_u16_i8, sub_2_u8, sub_3_u8},
     instr::{decode, Cond, Instr, R16Mem, R16Stk, R16, R8},
     regs::{CpuFlag, CpuReg16, CpuReg8, CpuRegs},
 };
@@ -933,7 +933,8 @@ fn ld_a_imm16p(sys: &mut Sys) -> u8 {
 fn add_sp_imm8(sys: &mut Sys) -> u8 {
     let sp = sys.get_sp();
     let s_imm8 = take_imm_i8(sys);
-    let res = add_u16_i8(sp, s_imm8);
+    let res = add_sp_i8(sp, s_imm8);
+    
     sys.set_sp(res.ans);
 
     sys.regs.set_flag(CpuFlag::Z, false);
@@ -941,21 +942,14 @@ fn add_sp_imm8(sys: &mut Sys) -> u8 {
     sys.regs.set_flag(CpuFlag::H, res.h);
     sys.regs.set_flag(CpuFlag::C, res.c);
 
-    // if res.h || res.c {
-    //     println!(
-    //         "add_sp_{} {:0>2X} -> {:0>2X}    H={}, C={}",
-    //         s_imm8, sp, res.ans, res.h as u8, res.c as u8
-    //     );
-    // }
-
     return 4;
 }
 
 fn ld_hl_spimm8(sys: &mut Sys) -> u8 {
     let sp = sys.get_sp();
     let s_imm8 = take_imm_i8(sys);
-    let res = add_u16_i8(sp, s_imm8);
-
+    let res = add_sp_i8(sp, s_imm8);
+    
     sys.regs.set_16(CpuReg16::HL, res.ans);
 
     sys.regs.set_flag(CpuFlag::Z, false);
