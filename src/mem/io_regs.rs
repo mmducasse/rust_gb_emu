@@ -138,7 +138,8 @@ impl IoRegs {
 
             if reg == IoReg::Sc {
                 let serial_data = self.get(IoReg::Sb);
-                println!("> {}", serial_data as char);
+                //println!("> {}", serial_data as char);
+                debug::push_serial_char(serial_data as char);
             }
 
             if reg_data.reset_on_write() {

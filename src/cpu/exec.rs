@@ -472,6 +472,7 @@ fn jr_imm8(sys: &mut Sys) -> u8 {
     let rel = take_imm_i8(sys);
     if rel == -2 {
         //debug::fail("Ininite loop.");
+        sys.hard_lock = true;
     }
     let mut pc = sys.get_pc();
 
@@ -942,12 +943,12 @@ fn add_sp_imm8(sys: &mut Sys) -> u8 {
     sys.regs.set_flag(CpuFlag::H, res.h);
     sys.regs.set_flag(CpuFlag::C, res.c);
 
-    if res.h || res.c {
-        println!(
-            "add_sp_{} {:0>2X} -> {:0>2X}    H={}, C={}",
-            s_imm8, sp, res.ans, res.h as u8, res.c as u8
-        );
-    }
+    // if res.h || res.c {
+    //     println!(
+    //         "add_sp_{} {:0>2X} -> {:0>2X}    H={}, C={}",
+    //         s_imm8, sp, res.ans, res.h as u8, res.c as u8
+    //     );
+    // }
 
     return 4;
 }

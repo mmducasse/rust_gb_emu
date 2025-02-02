@@ -18,10 +18,7 @@ use ppu::{
     tile_map_test::{self, draw_bg_tile_map},
 };
 use sys::Sys;
-use test::{
-    blargg::run_blargg_test, gb_microtest::run_gb_microtest, instr::test_all_opcodes,
-    mooneye::run_simple_test, temp_tests,
-};
+use test::instr::test_all_opcodes;
 use xf::{
     mq::window::{Window, WindowParams},
     num::ivec2::{i2, IVec2},
@@ -46,6 +43,11 @@ mod util;
 async fn main() {
     println!("*** RUST GAMEBOY EMU (Matthew Ducasse 2025) ***");
 
+    //test().await;
+    run_blaargs_suite().await;
+}
+
+async fn test() {
     initialize_debug(DebugConfig {
         enable_debug_print: false,
         kill_after_cpu_ticks: None, //Some(1__000),
@@ -108,7 +110,7 @@ async fn run_normal(path: &str) {
 
     let mut sys = Sys::new();
     Sys::initialize(&mut sys);
-    sys.mem.cart.load(path);
+    sys.mem.cart.load(path, true);
 
     while !sys.hard_lock {
         if is_key_pressed(KeyCode::Escape) {
@@ -130,6 +132,67 @@ async fn run_normal(path: &str) {
     while !is_key_pressed(KeyCode::Escape) {
         window.render_pass(|| {});
         next_frame().await;
+    }
+}
+
+async fn run_blaargs_suite() {
+    initialize_debug(DebugConfig {
+        enable_debug_print: false,
+        kill_after_cpu_ticks: None, //Some(1__000),
+        kill_after_nop_count: None, // Some(16),
+        last_instr_count: 5,
+    });
+
+    let window = Window::new(WindowParams {
+        resolution: SCREEN_SIZE,
+        scale: PIXEL_SCALE,
+    });
+
+    window.render_pass(|| {});
+    next_frame().await;
+
+    let rom_paths = [
+        ".\\assets\\blaargs\\cpu_instrs\\individual\\01-special.gb",
+        ".\\assets\\blaargs\\cpu_instrs\\individual\\02-interrupts.gb",
+        ".\\assets\\blaargs\\cpu_instrs\\individual\\03-op sp,hl.gb",
+        ".\\assets\\blaargs\\cpu_instrs\\individual\\04-op r,imm.gb",
+        ".\\assets\\blaargs\\cpu_instrs\\individual\\05-op rp.gb",
+        ".\\assets\\blaargs\\cpu_instrs\\individual\\06-ld r,r.gb",
+        ".\\assets\\blaargs\\cpu_instrs\\individual\\07-jr,jp,call,ret,rst.gb",
+        ".\\assets\\blaargs\\cpu_instrs\\individual\\08-misc instrs.gb",
+        ".\\assets\\blaargs\\cpu_instrs\\individual\\09-op r,r.gb",
+        ".\\assets\\blaargs\\cpu_instrs\\individual\\10-bit ops.gb",
+        ".\\assets\\blaargs\\cpu_instrs\\individual\\11-op a,(hl).gb",
+    ];
+
+    for path in rom_paths {
+        let mut sys = Sys::new();
+        Sys::initialize(&mut sys);
+        sys.mem.cart.load(path, false);
+
+        let rom_name = std::path::Path::new(path)
+            .file_name()
+            .unwrap()
+            .to_str()
+            .unwrap();
+        println!("{}: ", rom_name);
+
+        while !sys.hard_lock {
+            if is_key_pressed(KeyCode::Escape) {
+                sys.hard_lock = true;
+            }
+            sys.run_one_m_cycle();
+
+            if sys.is_render_pending {
+                window.render_pass(|| {
+                    render_screen(&mut sys);
+                });
+                next_frame().await;
+                sys.is_render_pending = false;
+            }
+        }
+
+        debug::flush_serial_char();
     }
 }
 

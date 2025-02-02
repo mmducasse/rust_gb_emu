@@ -1,7 +1,7 @@
 use std::{
     collections::{HashMap, HashSet},
     fmt::format,
-    mem::transmute,
+    mem::{self, transmute},
 };
 
 use strum::IntoEnumIterator;
@@ -42,6 +42,7 @@ pub struct DebugState {
     pub request_print_last_instr: u64,
     pub print_count: u64,
     pub max_print_count: u64,
+    serial_out_log: String,
 }
 
 pub fn initialize_debug(config: DebugConfig) {
@@ -61,6 +62,7 @@ pub fn initialize_debug(config: DebugConfig) {
             request_print_last_instr: 0,
             print_count: 0,
             max_print_count: 5,
+            serial_out_log: String::new(),
         });
     }
 }
@@ -101,6 +103,27 @@ pub fn take_pending_breakpoint() -> bool {
         debug.pending_breakpoint = false;
 
         return pending_breakpoint;
+    }
+}
+
+pub fn push_serial_char(c: char) {
+    unsafe {
+        let Some(debug) = &mut DEBUG_STATE else {
+            unreachable!();
+        };
+
+        debug.serial_out_log.push(c);
+    }
+}
+
+pub fn flush_serial_char() {
+    unsafe {
+        let Some(debug) = &mut DEBUG_STATE else {
+            unreachable!();
+        };
+
+        let s = mem::replace(&mut debug.serial_out_log, String::new());
+        println!("{}", s);
     }
 }
 

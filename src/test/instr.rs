@@ -46,7 +46,7 @@ mod tests {
         let mut sys = Sys::new();
         sys.mem
             .cart
-            .load(".\\assets\\files\\custom_roms\\ld_r8_r8\\rom.gb");
+            .load(".\\assets\\files\\custom_roms\\ld_r8_r8\\rom.gb", true);
         sys.run();
 
         assert_eq!(sys.regs.get_8(CpuReg8::B), 1);

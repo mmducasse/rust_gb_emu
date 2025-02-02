@@ -32,7 +32,7 @@ impl Cart {
         }
     }
 
-    pub fn load(&mut self, file_path: &str) {
+    pub fn load(&mut self, file_path: &str, verbose: bool) {
         let path = Path::new(file_path);
         let Some(ext) = path.extension() else {
             panic!("File extension for file {} wasn't specified.", file_path);
@@ -43,10 +43,12 @@ impl Cart {
         }
 
         let rom = fs::read(file_path).expect(&format!("Unable to read file {}.", file_path));
-        println!(
-            "loaded rom: {}",
-            path.file_name().unwrap().to_str().unwrap()
-        );
+        if verbose {
+            println!(
+                "loaded rom: {}",
+                path.file_name().unwrap().to_str().unwrap()
+            );
+        }
 
         let cart_type_id = rom[0x0147];
         let cart_type = CartType::from_u8(cart_type_id).unwrap();
@@ -58,7 +60,9 @@ impl Cart {
         }
 
         let header = CartHeader::parse(&rom);
-        header.print();
+        if verbose {
+            header.print();
+        }
 
         self.hw = Self::create_hw(&header, rom);
     }
