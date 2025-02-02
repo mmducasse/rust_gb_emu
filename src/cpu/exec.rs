@@ -934,7 +934,7 @@ fn add_sp_imm8(sys: &mut Sys) -> u8 {
     let sp = sys.get_sp();
     let s_imm8 = take_imm_i8(sys);
     let res = add_sp_i8(sp, s_imm8);
-    
+
     sys.set_sp(res.ans);
 
     sys.regs.set_flag(CpuFlag::Z, false);
@@ -949,7 +949,7 @@ fn ld_hl_spimm8(sys: &mut Sys) -> u8 {
     let sp = sys.get_sp();
     let s_imm8 = take_imm_i8(sys);
     let res = add_sp_i8(sp, s_imm8);
-    
+
     sys.regs.set_16(CpuReg16::HL, res.ans);
 
     sys.regs.set_flag(CpuFlag::Z, false);

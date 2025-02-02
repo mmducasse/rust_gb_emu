@@ -18,7 +18,9 @@ use crate::{
     time::{
         real_clock::RealClock,
         simple_clock::SimpleClock,
-        timers::{update_timer_regs, CPU_PERIOD_DOTS, DIV_PERIOD_DOTS, TAC_CLK_0_PERIOD_DOTS},
+        timers::{
+            update_timer_regs, CPU_PERIOD_MCYCLES, DIV_PERIOD_MCYCLES, TAC_CLK_0_PERIOD_MCYCLES,
+        },
     },
     util::math::{bit8, set_bit8},
 };
@@ -30,7 +32,6 @@ pub struct Sys {
 
     pub regs: CpuRegs,
 
-    pub sys_clock: SimpleClock,
     pub cpu_clock: SimpleClock,
     pub div_timer_clock: SimpleClock,
     pub tima_timer_clock: SimpleClock,
@@ -54,10 +55,9 @@ impl Sys {
 
             regs: CpuRegs::new(),
 
-            sys_clock: SimpleClock::new("SYS", 1),
-            cpu_clock: SimpleClock::new("CPU", CPU_PERIOD_DOTS),
-            div_timer_clock: SimpleClock::new("DIV", DIV_PERIOD_DOTS),
-            tima_timer_clock: SimpleClock::new("TIMA", TAC_CLK_0_PERIOD_DOTS),
+            cpu_clock: SimpleClock::new("CPU", CPU_PERIOD_MCYCLES),
+            div_timer_clock: SimpleClock::new("DIV", DIV_PERIOD_MCYCLES),
+            tima_timer_clock: SimpleClock::new("TIMA", TAC_CLK_0_PERIOD_MCYCLES),
 
             cpu_delay_ticks: 0,
 
@@ -122,11 +122,7 @@ impl Sys {
     pub fn run_one_m_cycle(&mut self) -> bool {
         let mut did_run_cpu_instr = false;
 
-        for i in 0..4 {
-            self.sys_clock.update_and_check();
-
-            update_timer_regs(self);
-        }
+        update_timer_regs(self);
 
         if self.cpu_clock.update_and_check() {
             self.cpu_delay_ticks = u32::saturating_sub(self.cpu_delay_ticks, 1);
