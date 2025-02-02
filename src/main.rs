@@ -48,7 +48,7 @@ async fn main() {
 
     initialize_debug(DebugConfig {
         enable_debug_print: false,
-        kill_after_cpu_ticks: Some(1_00_000),
+        kill_after_cpu_ticks: None, //Some(1__000),
         kill_after_nop_count: None, // Some(16),
         last_instr_count: 5,
     });
@@ -60,10 +60,10 @@ async fn main() {
     //let path = ".\\assets\\files\\custom_roms\\ld_r8_r8\\rom.gb";
     //let path = ".\\assets\\gb_microtest\\000-write_to_x8000.gb";
 
-    let path = ".\\assets\\blaargs\\cpu_instrs\\cpu_instrs.gb";
+    //let path = ".\\assets\\blaargs\\cpu_instrs\\cpu_instrs.gb";
     //let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\01-special.gb";
     //let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\02-interrupts.gb";
-    //let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\03-op sp,hl.gb";
+    let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\03-op sp,hl.gb";
     //let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\04-op r,imm.gb";
     //let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\05-op rp.gb";
     //let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\06-ld r,r.gb";
@@ -84,7 +84,7 @@ async fn main() {
 
     //let path = ".\\assets\\homebrew_roms\\porklike.gb";
     //let path = ".\\assets\\homebrew_roms\\20y.gb";
-    let path = ".\\assets\\homebrew_roms\\64boy-opcode-scroll.gb";
+    //let path = ".\\assets\\homebrew_roms\\64boy-opcode-scroll.gb";
     //let path = ".\\assets\\homebrew_roms\\life.gb";
 
     //let path = ".\\assets\\other\\hello_world\\rom.gb";

@@ -2,6 +2,7 @@ use num::FromPrimitive;
 
 use crate::{
     consts::{KB_32, MB_2},
+    debug,
     mem::sections::Addr,
     util::math::{bit8, bits8, set_bits8},
 };
@@ -49,11 +50,13 @@ impl HwMbc1 {
 
     pub fn rom_bank_sel(&self) -> u8 {
         let mut lower = bits8(&self.bank_sel_upper_2, 4, 0);
-        if lower % 0x20 == 0 {
-            lower += 1;
+        if lower == 0 {
+            lower = 1;
         }
         let upper = bits8(&self.bank_sel_upper_2, 1, 0);
-        return (upper << 5) | lower;
+
+        let bank = (upper << 5) | lower;
+        return bank;
     }
 
     pub fn ram_bank_sel(&self) -> u8 {
@@ -84,15 +87,26 @@ impl CartHw for HwMbc1 {
             0x4000..=0x7FFF => {
                 // ROM Bank 01-7F
                 let rel_addr = addr - 0x4000;
-                let bank_offs = (self.rom_bank_sel() as usize) * 0x4000;
+                let bank_sel = self.rom_bank_sel() as usize;
+                let bank_offs = bank_sel * ROM_BANK_SIZE;
                 let addr = bank_offs + (rel_addr as usize);
                 self.rom[addr]
             }
             0xA000..=0xBFFF => {
                 // RAM Bank 00-03
                 let rel_addr = addr - 0xA000;
-                let bank_offs = (self.ram_bank_sel() as usize) * 0x2000;
+                let bank_offs = (self.ram_bank_sel() as usize) * RAM_BANK_SIZE;
                 let addr = bank_offs + (rel_addr as usize);
+
+                if addr >= self.ram.len() {
+                    debug::fail(format!(
+                        "Attempted to read MCB1 RAM address {:0>4X} (len = {:0>8X})",
+                        addr,
+                        self.ram.len()
+                    ));
+                    return 0;
+                }
+
                 self.ram[addr]
             }
             _ => {

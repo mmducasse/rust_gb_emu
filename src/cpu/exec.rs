@@ -611,10 +611,10 @@ fn xor_a_r8(sys: &mut Sys, operand: R8) -> u8 {
     let a = sys.regs.get_8(CpuReg8::A);
     let data = get_r8_data(sys, operand);
 
-    let a_ = a ^ data;
-    sys.regs.set_8(CpuReg8::A, a_);
+    let ans = a ^ data;
+    sys.regs.set_8(CpuReg8::A, ans);
 
-    sys.regs.set_flag(CpuFlag::Z, a_ == 0);
+    sys.regs.set_flag(CpuFlag::Z, ans == 0);
     sys.regs.set_flag(CpuFlag::N, false);
     sys.regs.set_flag(CpuFlag::H, false);
     sys.regs.set_flag(CpuFlag::C, false);
@@ -626,10 +626,10 @@ fn or_a_r8(sys: &mut Sys, operand: R8) -> u8 {
     let a = sys.regs.get_8(CpuReg8::A);
     let data = get_r8_data(sys, operand);
 
-    let a_ = a | data;
-    sys.regs.set_8(CpuReg8::A, a_);
+    let ans = a | data;
+    sys.regs.set_8(CpuReg8::A, ans);
 
-    sys.regs.set_flag(CpuFlag::Z, a_ == 0);
+    sys.regs.set_flag(CpuFlag::Z, ans == 0);
     sys.regs.set_flag(CpuFlag::N, false);
     sys.regs.set_flag(CpuFlag::H, false);
     sys.regs.set_flag(CpuFlag::C, false);
@@ -641,14 +641,12 @@ fn cp_a_r8(sys: &mut Sys, operand: R8) -> u8 {
     let a = sys.regs.get_8(CpuReg8::A);
     let data = get_r8_data(sys, operand);
 
-    let a_ = u8::wrapping_sub(a, data);
+    let res = sub_2_u8(a, data);
 
-    let h = bits8(&a_, 3, 0) > bits8(&a, 3, 0);
-    let c = a_ > a;
-    sys.regs.set_flag(CpuFlag::Z, a_ == 0);
+    sys.regs.set_flag(CpuFlag::Z, res.ans == 0);
     sys.regs.set_flag(CpuFlag::N, true);
-    sys.regs.set_flag(CpuFlag::H, h);
-    sys.regs.set_flag(CpuFlag::C, c);
+    sys.regs.set_flag(CpuFlag::H, res.h);
+    sys.regs.set_flag(CpuFlag::C, res.c);
 
     return if operand == R8::HlMem { 2 } else { 1 };
 }
@@ -658,15 +656,13 @@ fn add_a_imm8(sys: &mut Sys) -> u8 {
     let imm8 = take_imm_u8(sys);
     let a = sys.regs.get_8(CpuReg8::A);
 
-    let a_ = u8::wrapping_add(a, imm8);
-    sys.regs.set_8(CpuReg8::A, a_);
+    let res = add_2_u8(a, imm8);
+    sys.regs.set_8(CpuReg8::A, res.ans);
 
-    let h = bits8(&a_, 3, 0) < bits8(&a, 3, 0);
-    let c = a_ < a;
-    sys.regs.set_flag(CpuFlag::Z, a_ == 0);
+    sys.regs.set_flag(CpuFlag::Z, res.ans == 0);
     sys.regs.set_flag(CpuFlag::N, false);
-    sys.regs.set_flag(CpuFlag::H, h);
-    sys.regs.set_flag(CpuFlag::C, c);
+    sys.regs.set_flag(CpuFlag::H, res.h);
+    sys.regs.set_flag(CpuFlag::C, res.c);
 
     return 2;
 }
@@ -691,15 +687,13 @@ fn sub_a_imm8(sys: &mut Sys) -> u8 {
     let imm8 = take_imm_u8(sys);
     let a = sys.regs.get_8(CpuReg8::A);
 
-    let a_ = u8::wrapping_sub(a, imm8);
-    sys.regs.set_8(CpuReg8::A, a_);
+    let res = sub_2_u8(a, imm8);
+    sys.regs.set_8(CpuReg8::A, res.ans);
 
-    let h = bits8(&a_, 3, 0) > bits8(&a, 3, 0);
-    let c = a_ > a;
-    sys.regs.set_flag(CpuFlag::Z, a_ == 0);
+    sys.regs.set_flag(CpuFlag::Z, res.ans == 0);
     sys.regs.set_flag(CpuFlag::N, true);
-    sys.regs.set_flag(CpuFlag::H, h);
-    sys.regs.set_flag(CpuFlag::C, c);
+    sys.regs.set_flag(CpuFlag::H, res.h);
+    sys.regs.set_flag(CpuFlag::C, res.c);
 
     return 2;
 }
@@ -707,7 +701,7 @@ fn sub_a_imm8(sys: &mut Sys) -> u8 {
 fn sbc_a_imm8(sys: &mut Sys) -> u8 {
     let imm8 = take_imm_u8(sys);
     let a = sys.regs.get_8(CpuReg8::A);
-    let carry = if sys.regs.get_flag(CpuFlag::C) { 1 } else { 0 };
+    let carry = sys.regs.get_flag(CpuFlag::C).into();
 
     let res = sub_3_u8(a, imm8, carry);
     sys.regs.set_8(CpuReg8::A, res.ans);

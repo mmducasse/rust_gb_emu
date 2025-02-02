@@ -3,6 +3,7 @@ use super::io_regs::IoReg;
 /// Describes special behavior for a given IO register.
 pub struct IoRegData {
     reg: IoReg,
+    read_mask: u8,
     write_mask: u8,
     reset_on_write: bool,
 }
@@ -11,9 +12,14 @@ impl IoRegData {
     fn new(reg: IoReg) -> Self {
         Self {
             reg,
+            read_mask: 0xFF,
             write_mask: 0x00,
             reset_on_write: false,
         }
+    }
+
+    pub fn read_mask(&self) -> u8 {
+        self.read_mask
     }
 
     pub fn write_mask(&self) -> u8 {
@@ -22,6 +28,11 @@ impl IoRegData {
 
     pub fn reset_on_write(&self) -> bool {
         self.reset_on_write
+    }
+
+    fn with_read_mask(mut self, read_mask: u8) -> Self {
+        self.read_mask = read_mask;
+        self
     }
 
     fn with_write_mask(mut self, write_mask: u8) -> Self {
@@ -46,7 +57,7 @@ impl IoRegData {
             IoReg::Tima => rw,
             IoReg::Tma => rw,
             IoReg::Tac => rw,
-            IoReg::If => rw,
+            IoReg::If => rw.with_read_mask(0b0001_1111).with_write_mask(0b0001_1111),
             // todo: Sound regs...
             IoReg::Lcdc => rw,
             IoReg::Stat => rw.with_write_mask(0b1111_1000),
