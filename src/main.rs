@@ -43,8 +43,8 @@ mod util;
 async fn main() {
     println!("*** RUST GAMEBOY EMU (Matthew Ducasse 2025) ***");
 
-    //test().await;
-    run_blaargs_suite().await;
+    test().await;
+    //run_blaargs_suite().await;
 }
 
 async fn test() {
@@ -64,8 +64,8 @@ async fn test() {
 
     //let path = ".\\assets\\blaargs\\cpu_instrs\\cpu_instrs.gb";
     //let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\01-special.gb";
-    let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\02-interrupts.gb";
-    //let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\03-op sp,hl.gb";
+    //let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\02-interrupts.gb";
+    let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\03-op sp,hl.gb";
     //let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\04-op r,imm.gb";
     //let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\05-op rp.gb";
     //let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\06-ld r,r.gb";
@@ -78,7 +78,7 @@ async fn test() {
     //let path = ".\\assets\\mooneye\\acceptance\\add_sp_e_timing.gb";
     //let path = ".\\assets\\mooneye\\acceptance\\bits\\reg_f.gb";
 
-    let path = ".\\assets\\real_gb_roms\\tetris.gb";
+    //let path = ".\\assets\\real_gb_roms\\tetris.gb";
     //let path = ".\\assets\\real_gb_roms\\Dr_Mario.gb";
     //let path = ".\\assets\\real_gb_roms\\Pokemon.gb";
     //let path = ".\\assets\\real_gb_roms\\Zelda.gb";
@@ -128,6 +128,8 @@ async fn run_normal(path: &str) {
     }
 
     //debug::print_system_state(&sys);
+
+    debug::flush_serial_char();
 
     while !is_key_pressed(KeyCode::Escape) {
         window.render_pass(|| {});

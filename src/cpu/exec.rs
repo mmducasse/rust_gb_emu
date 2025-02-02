@@ -930,8 +930,6 @@ fn ld_a_imm16p(sys: &mut Sys) -> u8 {
     return 3;
 }
 
-static mut CTR: u64 = 0;
-
 fn add_sp_imm8(sys: &mut Sys) -> u8 {
     let sp = sys.get_sp();
     let s_imm8 = take_imm_i8(sys);
