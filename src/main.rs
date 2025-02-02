@@ -62,8 +62,8 @@ async fn main() {
 
     //let path = ".\\assets\\blaargs\\cpu_instrs\\cpu_instrs.gb";
     //let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\01-special.gb";
-    //let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\02-interrupts.gb";
-    let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\03-op sp,hl.gb";
+    let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\02-interrupts.gb";
+    //let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\03-op sp,hl.gb";
     //let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\04-op r,imm.gb";
     //let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\05-op rp.gb";
     //let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\06-ld r,r.gb";

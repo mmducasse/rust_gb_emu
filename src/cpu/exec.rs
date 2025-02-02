@@ -423,7 +423,7 @@ fn daa(sys: &mut Sys) -> u8 {
         should_carry = true;
     }
 
-    let res = if !subtraction {
+    let ans = if !subtraction {
         //add_2_u8(a, offset)
         u8::wrapping_add(a, offset)
     } else {
@@ -431,7 +431,9 @@ fn daa(sys: &mut Sys) -> u8 {
         u8::wrapping_sub(a, offset)
     };
 
-    sys.regs.set_flag(CpuFlag::Z, res == 0);
+    sys.regs.set_8(CpuReg8::A, ans);
+
+    sys.regs.set_flag(CpuFlag::Z, ans == 0);
     sys.regs.set_flag(CpuFlag::H, false);
     sys.regs.set_flag(CpuFlag::C, should_carry);
     return 1;
@@ -469,7 +471,7 @@ fn ccf(sys: &mut Sys) -> u8 {
 fn jr_imm8(sys: &mut Sys) -> u8 {
     let rel = take_imm_i8(sys);
     if rel == -2 {
-        debug::fail("Ininite loop.");
+        //debug::fail("Ininite loop.");
     }
     let mut pc = sys.get_pc();
 
