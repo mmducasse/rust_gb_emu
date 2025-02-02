@@ -32,14 +32,16 @@ impl CartHw for HwRomOnly {
 
     fn read(&self, addr: Addr) -> u8 {
         if !self.rom.contains_addr(addr) {
-            panic!("Bad Rom-only cart read address: {}", addr);
+            //panic!("Bad Rom-only cart read address: {}", addr);
+            return 0;
         }
         return self.rom.read(addr);
     }
 
     fn write(&mut self, addr: Addr, data: u8) {
         if !self.rom.contains_addr(addr) {
-            panic!("Bad Rom-only cart write address: {}", addr);
+            //panic!("Bad Rom-only cart write address: {}", addr);
+            return;
         }
         self.rom.write(addr, data);
     }

@@ -144,7 +144,7 @@ pub fn execute_next_instr(sys: &mut Sys) -> u32 {
     //print_if_ld_a_a(sys, instr);
 
     if debug::debug_state().request_print_last_instr > 0 {
-        debug::print_last_instr();
+        //debug::print_last_instr();
         debug::debug_state().request_print_last_instr -= 1;
     }
 
@@ -407,7 +407,34 @@ fn rra(sys: &mut Sys) -> u8 {
 }
 
 fn daa(sys: &mut Sys) -> u8 {
-    todo!("todo DAA");
+    let subtraction = sys.regs.get_flag(CpuFlag::N);
+    let half_carry = sys.regs.get_flag(CpuFlag::H);
+    let carry = sys.regs.get_flag(CpuFlag::C);
+
+    let a = sys.regs.get_8(CpuReg8::A);
+    let mut should_carry = false;
+    let mut offset = 0;
+
+    if (!subtraction && (a & 0xF) > 0x9) || half_carry {
+        offset |= 0x06;
+    }
+    if (!subtraction && a > 0x99) || carry {
+        offset |= 0x60;
+        should_carry = true;
+    }
+
+    let res = if !subtraction {
+        //add_2_u8(a, offset)
+        u8::wrapping_add(a, offset)
+    } else {
+        //sub_2_u8(a, offset)
+        u8::wrapping_sub(a, offset)
+    };
+
+    sys.regs.set_flag(CpuFlag::Z, res == 0);
+    sys.regs.set_flag(CpuFlag::H, false);
+    sys.regs.set_flag(CpuFlag::C, should_carry);
+    return 1;
 }
 
 fn cpl(sys: &mut Sys) -> u8 {
@@ -441,6 +468,9 @@ fn ccf(sys: &mut Sys) -> u8 {
 
 fn jr_imm8(sys: &mut Sys) -> u8 {
     let rel = take_imm_i8(sys);
+    if rel == -2 {
+        debug::fail("Ininite loop.");
+    }
     let mut pc = sys.get_pc();
 
     pc = add16_ui(pc, rel as i16);
@@ -903,6 +933,8 @@ fn ld_a_imm16p(sys: &mut Sys) -> u8 {
     return 3;
 }
 
+static mut CTR: u64 = 0;
+
 fn add_sp_imm8(sys: &mut Sys) -> u8 {
     let sp = sys.get_sp();
     let s_imm8 = take_imm_i8(sys);
@@ -913,6 +945,13 @@ fn add_sp_imm8(sys: &mut Sys) -> u8 {
     sys.regs.set_flag(CpuFlag::N, false);
     sys.regs.set_flag(CpuFlag::H, res.h);
     sys.regs.set_flag(CpuFlag::C, res.c);
+
+    if res.h || res.c {
+        println!(
+            "add_sp_{} {:0>2X} -> {:0>2X}    H={}, C={}",
+            s_imm8, sp, res.ans, res.h as u8, res.c as u8
+        );
+    }
 
     return 4;
 }

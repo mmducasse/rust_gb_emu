@@ -119,4 +119,47 @@ mod tests {
         assert_eq!(res.h, true);
         assert_eq!(res.c, false);
     }
+
+    #[test]
+    fn test_add_u16_i8() {
+        let res = add_u16_i8(0xFFFF, 1);
+        assert_eq!(res.ans, 0x0000);
+        assert_eq!(res.h, true);
+        assert_eq!(res.c, true);
+
+        let res = add_u16_i8(0xFFFF, -1);
+        assert_eq!(res.ans, 0xFFFE);
+        assert_eq!(res.h, false);
+        assert_eq!(res.c, false);
+
+        let res = add_u16_i8(0, 1);
+        assert_eq!(res.ans, 0x0001);
+        assert_eq!(res.h, false);
+        assert_eq!(res.c, false);
+
+        let res = add_u16_i8(0, -1);
+        assert_eq!(res.ans, 0xFFFF);
+        assert_eq!(res.h, true);
+        assert_eq!(res.c, true);
+
+        let res = add_u16_i8(0x0FFF, 1);
+        assert_eq!(res.ans, 0x1000);
+        assert_eq!(res.h, true);
+        assert_eq!(res.c, false);
+
+        let res = add_u16_i8(0x1000, 1);
+        assert_eq!(res.ans, 0x1001);
+        assert_eq!(res.h, false);
+        assert_eq!(res.c, false);
+
+        let res = add_u16_i8(0x1000, -1);
+        assert_eq!(res.ans, 0x0FFF);
+        assert_eq!(res.h, true);
+        assert_eq!(res.c, false);
+
+        let res = add_u16_i8(0x0FFF, -1);
+        assert_eq!(res.ans, 0x0FFE);
+        assert_eq!(res.h, false);
+        assert_eq!(res.c, false);
+    }
 }

@@ -39,7 +39,6 @@ pub struct DebugState {
     used_instrs: HashMap<Instr, u64>,
     used_instr_variants: HashMap<String, u64>,
     used_io_regs: HashMap<IoReg, IoRegRecord>,
-    pub print_instrs: u16,
     pub request_print_last_instr: u64,
     pub print_count: u64,
     pub max_print_count: u64,
@@ -59,7 +58,6 @@ pub fn initialize_debug(config: DebugConfig) {
             used_instrs: HashMap::new(),
             used_instr_variants: HashMap::new(),
             used_io_regs: HashMap::new(),
-            print_instrs: 0,
             request_print_last_instr: 0,
             print_count: 0,
             max_print_count: 5,
@@ -214,11 +212,6 @@ pub fn record_curr_instr(sys: &Sys) {
         stack_record,
     };
 
-    if debug_state().print_instrs > 0 {
-        print_instr_record(&record);
-        debug_state().print_instrs -= 1;
-    }
-
     unsafe {
         let Some(debug) = &mut DEBUG_STATE else {
             unreachable!();
@@ -295,11 +288,11 @@ pub fn fail(msg: impl Into<String>) {
     }
 }
 
-const PRINT_LAST_INSTRS: bool = false;
-const PRINT_TOTAL_INSTRS: bool = false;
+const PRINT_LAST_INSTRS: bool = true;
+const PRINT_TOTAL_INSTRS: bool = true;
 const PRINT_IO_REG_USAGE: bool = true;
 const PRINT_SYS_STATE: bool = true;
-const PRINT_MEM_SUMS: bool = false;
+const PRINT_MEM_SUMS: bool = true;
 const PRINT_STACK_RECORDS: bool = true;
 
 pub fn print_system_state(sys: &Sys) {

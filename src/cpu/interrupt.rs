@@ -83,6 +83,4 @@ fn handle_interrupt(sys: &mut Sys, type_: InterruptType) {
     call(sys, prev_pc, next_pc); // 3 cycles
 
     sys.cpu_delay_ticks += 3;
-
-    debug::debug_state().print_instrs = 10;
 }
