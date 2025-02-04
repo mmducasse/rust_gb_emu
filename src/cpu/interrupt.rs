@@ -45,12 +45,16 @@ pub fn request_interrupt(sys: &mut Sys, type_: InterruptType) {
 }
 
 pub fn try_handle_interrupts(sys: &mut Sys) {
+    let ie = sys.mem.io_regs.get(IoReg::Ie);
+    let if_ = sys.mem.io_regs.get(IoReg::If);
+    if ie & if_ != 0 {
+        sys.cpu_enable = true;
+    }
+
     if !sys.interrupt_master_enable {
         return;
     }
 
-    let ie = sys.mem.io_regs.get(IoReg::Ie);
-    let if_ = sys.mem.io_regs.get(IoReg::If);
     for type_ in InterruptType::iter() {
         let flag_idx = type_.flag_idx();
         let is_int_enabled = bit8(&ie, flag_idx) == 1;
@@ -69,6 +73,7 @@ fn handle_interrupt(sys: &mut Sys, type_: InterruptType) {
     println!("Handling INT: {:?}", type_);
 
     sys.interrupt_master_enable = false;
+    sys.cpu_enable = true;
 
     let flag_idx = type_.flag_idx();
     sys.mem.io_regs.mut_(IoReg::If, |if_| {

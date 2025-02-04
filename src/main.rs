@@ -17,7 +17,7 @@ use ppu::{
     tile_data_test::{self, draw_vram_tile_data},
     tile_map_test::{self, draw_bg_tile_map},
 };
-use sys::Sys;
+use sys::{Options, Sys};
 use test::instr::test_all_opcodes;
 use xf::{
     mq::window::{Window, WindowParams},
@@ -50,7 +50,7 @@ async fn main() {
 async fn test() {
     initialize_debug(DebugConfig {
         enable_debug_print: false,
-        kill_after_cpu_ticks: None, //Some(1__000),
+        kill_after_cpu_ticks: Some(25_000_000),
         kill_after_nop_count: None, // Some(16),
         last_instr_count: 5,
     });
@@ -64,7 +64,7 @@ async fn test() {
 
     //let path = ".\\assets\\blaargs\\cpu_instrs\\cpu_instrs.gb";
     //let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\01-special.gb";
-    let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\02-interrupts.gb";
+    //let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\02-interrupts.gb";
     //let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\03-op sp,hl.gb";
     //let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\04-op r,imm.gb";
     //let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\05-op rp.gb";
@@ -98,7 +98,7 @@ async fn test() {
     //let path = ".\\assets\\homebrew_roms\\64boy-opcode-scroll.gb";
     //let path = ".\\assets\\homebrew_roms\\life.gb";
 
-    //let path = ".\\assets\\other\\hello_world\\rom.gb";
+    let path = ".\\assets\\other\\hello_world\\rom.gb";
 
     //emp_tests::draw_vram_tile_data_test(path).await;
     //temp_tests::draw_vram_tile_map_test(path).await;
@@ -117,7 +117,9 @@ async fn run_normal(path: &str) {
     window.render_pass(|| {});
     next_frame().await;
 
-    let mut sys = Sys::new();
+    let mut sys = Sys::new(Options {
+        kill_on_infinite_loop: false,
+    });
     Sys::initialize(&mut sys);
     sys.mem.cart.load(path, true);
 
@@ -177,7 +179,9 @@ async fn run_blaargs_suite() {
     ];
 
     for path in rom_paths {
-        let mut sys = Sys::new();
+        let mut sys = Sys::new(Options {
+            kill_on_infinite_loop: true,
+        });
         Sys::initialize(&mut sys);
         sys.mem.cart.load(path, false);
 

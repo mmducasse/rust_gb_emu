@@ -470,7 +470,7 @@ fn ccf(sys: &mut Sys) -> u8 {
 
 fn jr_imm8(sys: &mut Sys) -> u8 {
     let rel = take_imm_i8(sys);
-    if rel == -2 {
+    if (rel == -2) && sys.options.kill_on_infinite_loop {
         //debug::fail("Ininite loop.");
         sys.hard_lock = true;
     }
@@ -524,10 +524,7 @@ fn ld_r8_r8(sys: &mut Sys, dst: R8, src: R8) -> u8 {
 }
 
 fn halt(sys: &mut Sys) -> u8 {
-    if sys.interrupt_master_enable {
-        sys.cpu_enable = false;
-    }
-    // todo is there more to do here?
+    sys.cpu_enable = false;
 
     return 1;
 }

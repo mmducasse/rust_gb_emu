@@ -25,7 +25,13 @@ use crate::{
     util::math::{bit8, set_bit8},
 };
 
+pub struct Options {
+    pub kill_on_infinite_loop: bool,
+}
+
 pub struct Sys {
+    pub options: Options,
+
     pub mem: Mem,
 
     pub ppu: Ppu,
@@ -47,8 +53,10 @@ pub struct Sys {
 }
 
 impl Sys {
-    pub fn new() -> Self {
+    pub fn new(options: Options) -> Self {
         Self {
+            options,
+
             mem: Mem::new(),
 
             ppu: Ppu::new(),
@@ -119,21 +127,19 @@ impl Sys {
         }
     }
 
-    pub fn run_one_m_cycle(&mut self) -> bool {
-        let mut did_run_cpu_instr = false;
-
-        update_timer_regs(self);
-
+    pub fn run_one_m_cycle(&mut self) {
         if self.cpu_clock.update_and_check() {
             self.cpu_delay_ticks = u32::saturating_sub(self.cpu_delay_ticks, 1);
-        }
-        if self.cpu_delay_ticks == 0 {
-            try_handle_interrupts(self);
-            self.cpu_delay_ticks = execute_next_instr(self);
-            did_run_cpu_instr = true;
+            if self.cpu_delay_ticks == 0 {
+                try_handle_interrupts(self);
+                if self.cpu_enable {
+                    self.cpu_delay_ticks = execute_next_instr(self);
+                }
+            }
         }
 
         Ppu::update_ppu(self);
+        update_timer_regs(self);
 
         ///////// DEBUG //////////////////////////////////////////////
         if let Some(kill_after_nop_count) = debug_state().config.kill_after_nop_count {
@@ -152,14 +158,14 @@ impl Sys {
             println!("FAILURE: {}", failure);
             debug::print_system_state(&self);
             self.hard_lock = true;
-            return did_run_cpu_instr;
+            return;
         }
 
         // self.test_code();
 
         //////////////////////////////////////////////////////////////
 
-        return did_run_cpu_instr;
+        return;
     }
 
     fn test_code(&mut self) {

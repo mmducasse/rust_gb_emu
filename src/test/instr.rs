@@ -38,12 +38,14 @@ pub fn test_all_opcodes() {
 mod tests {
     use crate::{
         cpu::regs::{CpuReg16, CpuReg8},
-        sys::Sys,
+        sys::{Options, Sys},
     };
 
     #[test]
     fn test_ld() {
-        let mut sys = Sys::new();
+        let mut sys = Sys::new(Options {
+            kill_on_infinite_loop: true,
+        });
         sys.mem
             .cart
             .load(".\\assets\\files\\custom_roms\\ld_r8_r8\\rom.gb", true);
