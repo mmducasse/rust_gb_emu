@@ -10,7 +10,7 @@ use crate::{
 
 use super::exec::call;
 
-#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, EnumIter, Debug)]
+#[derive(Hash, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, EnumIter, Debug)]
 pub enum InterruptType {
     VBlank,
     Stat,
@@ -70,7 +70,7 @@ pub fn try_handle_interrupts(sys: &mut Sys) {
 }
 
 fn handle_interrupt(sys: &mut Sys, type_: InterruptType) {
-    println!("Handling INT: {:?}", type_);
+    debug::record_handled_interrupt(type_);
 
     sys.interrupt_master_enable = false;
     sys.cpu_enable = true;

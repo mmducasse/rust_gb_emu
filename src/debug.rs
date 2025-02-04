@@ -9,6 +9,7 @@ use strum::IntoEnumIterator;
 use crate::{
     cpu::{
         instr::{decode, ImmType, Instr},
+        interrupt::InterruptType,
         regs::CpuRegs,
     },
     mem::{
@@ -43,6 +44,7 @@ pub struct DebugState {
     pub print_count: u64,
     pub max_print_count: u64,
     serial_out_log: String,
+    interrupt_counts: HashMap<InterruptType, u64>,
 }
 
 pub fn initialize_debug(config: DebugConfig) {
@@ -63,6 +65,7 @@ pub fn initialize_debug(config: DebugConfig) {
             print_count: 0,
             max_print_count: 5,
             serial_out_log: String::new(),
+            interrupt_counts: HashMap::new(),
         });
     }
 }
@@ -124,6 +127,19 @@ pub fn flush_serial_char() {
 
         let s = mem::replace(&mut debug.serial_out_log, String::new());
         println!("{}", s);
+    }
+}
+
+pub fn record_handled_interrupt(type_: InterruptType) {
+    unsafe {
+        let Some(debug) = &mut DEBUG_STATE else {
+            unreachable!();
+        };
+
+        //println!("Handling INT: {:?}", type_);
+
+        let count = *debug.interrupt_counts.get(&type_).unwrap_or(&0);
+        debug.interrupt_counts.insert(type_, count + 1);
     }
 }
 
@@ -315,6 +331,7 @@ const PRINT_LAST_INSTRS: bool = true;
 const PRINT_TOTAL_INSTRS: bool = true;
 const PRINT_IO_REG_USAGE: bool = true;
 const PRINT_SYS_STATE: bool = true;
+const PRINT_INTERRUPT_COUNTS: bool = true;
 const PRINT_MEM_SUMS: bool = true;
 const PRINT_STACK_RECORDS: bool = true;
 
@@ -359,6 +376,14 @@ pub fn print_system_state(sys: &Sys) {
                         reg, record.reads, record.writes, record.last_write_data
                     );
                 }
+            }
+        }
+
+        if PRINT_INTERRUPT_COUNTS {
+            // Print interrupt counts.
+            println!("\nInterrupts:");
+            for (type_, count) in debug.interrupt_counts.iter() {
+                println!("  {:?}: ran {} times", *type_, *count);
             }
         }
 

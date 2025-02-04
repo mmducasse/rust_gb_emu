@@ -64,7 +64,7 @@ async fn test() {
 
     //let path = ".\\assets\\blaargs\\cpu_instrs\\cpu_instrs.gb";
     //let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\01-special.gb";
-    //let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\02-interrupts.gb";
+    let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\02-interrupts.gb";
     //let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\03-op sp,hl.gb";
     //let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\04-op r,imm.gb";
     //let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\05-op rp.gb";
@@ -98,7 +98,7 @@ async fn test() {
     //let path = ".\\assets\\homebrew_roms\\64boy-opcode-scroll.gb";
     //let path = ".\\assets\\homebrew_roms\\life.gb";
 
-    let path = ".\\assets\\other\\hello_world\\rom.gb";
+    //let path = ".\\assets\\other\\hello_world\\rom.gb";
 
     //emp_tests::draw_vram_tile_data_test(path).await;
     //temp_tests::draw_vram_tile_map_test(path).await;
@@ -138,13 +138,16 @@ async fn run_normal(path: &str) {
         }
     }
 
-    //debug::print_system_state(&sys);
+    //debug::flush_serial_char();
 
-    debug::flush_serial_char();
+    debug::print_system_state(&sys);
 
-    while !is_key_pressed(KeyCode::Escape) {
+    loop {
         window.render_pass(|| {});
         next_frame().await;
+        if is_key_pressed(KeyCode::Escape) {
+            return;
+        }
     }
 }
 
