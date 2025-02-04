@@ -80,67 +80,32 @@ pub fn debug_state() -> &'static mut DebugState {
 }
 
 pub fn get_failure() -> Option<String> {
-    unsafe {
-        let Some(debug) = &DEBUG_STATE else {
-            unreachable!();
-        };
-        return debug.failure.clone();
-    }
+    debug_state().failure.clone()
 }
 
 pub fn request_breakpoint() {
-    unsafe {
-        let Some(debug) = &mut DEBUG_STATE else {
-            unreachable!();
-        };
-        debug.pending_breakpoint = true;
-    }
+    debug_state().pending_breakpoint = true;
 }
 
 pub fn take_pending_breakpoint() -> bool {
-    unsafe {
-        let Some(debug) = &mut DEBUG_STATE else {
-            unreachable!();
-        };
-        let pending_breakpoint = debug.pending_breakpoint;
-        debug.pending_breakpoint = false;
+    let pending_breakpoint = debug_state().pending_breakpoint;
+    debug_state().pending_breakpoint = false;
 
-        return pending_breakpoint;
-    }
+    return pending_breakpoint;
 }
 
 pub fn push_serial_char(c: char) {
-    unsafe {
-        let Some(debug) = &mut DEBUG_STATE else {
-            unreachable!();
-        };
-
-        debug.serial_out_log.push(c);
-    }
+    debug_state().serial_out_log.push(c);
 }
 
 pub fn flush_serial_char() {
-    unsafe {
-        let Some(debug) = &mut DEBUG_STATE else {
-            unreachable!();
-        };
-
-        let s = mem::replace(&mut debug.serial_out_log, String::new());
-        println!("{}", s);
-    }
+    let s = mem::replace(&mut debug_state().serial_out_log, String::new());
+    println!("{}", s);
 }
 
 pub fn record_handled_interrupt(type_: InterruptType) {
-    unsafe {
-        let Some(debug) = &mut DEBUG_STATE else {
-            unreachable!();
-        };
-
-        //println!("Handling INT: {:?}", type_);
-
-        let count = *debug.interrupt_counts.get(&type_).unwrap_or(&0);
-        debug.interrupt_counts.insert(type_, count + 1);
-    }
+    let count = *debug_state().interrupt_counts.get(&type_).unwrap_or(&0);
+    debug_state().interrupt_counts.insert(type_, count + 1);
 }
 
 struct InstrRecord {
@@ -175,12 +140,7 @@ struct IoRegRecord {
 const DO_RECORD_NOP: bool = false;
 
 pub fn record_curr_instr(sys: &Sys) {
-    unsafe {
-        let Some(debug) = &mut DEBUG_STATE else {
-            return;
-        };
-        debug.total_instrs_executed += 1;
-    }
+    debug_state().total_instrs_executed += 1;
 
     let mut pc = sys.get_pc();
     let addr = pc;
@@ -198,19 +158,14 @@ pub fn record_curr_instr(sys: &Sys) {
         }
     };
 
-    unsafe {
-        let Some(debug) = &mut DEBUG_STATE else {
-            unreachable!();
-        };
-        if let Instr::Nop = instr {
-            // Don't record NOPs.
-            debug.nop_count += 1;
-            if !DO_RECORD_NOP {
-                return;
-            }
-        } else {
-            debug.nop_count = 0;
+    if let Instr::Nop = instr {
+        // Don't record NOPs.
+        debug_state().nop_count += 1;
+        if !DO_RECORD_NOP {
+            return;
         }
+    } else {
+        debug_state().nop_count = 0;
     }
 
     let imm_value = match instr.imm_type() {
@@ -251,80 +206,66 @@ pub fn record_curr_instr(sys: &Sys) {
         stack_record,
     };
 
-    unsafe {
-        let Some(debug) = &mut DEBUG_STATE else {
-            unreachable!();
-        };
-        debug.instr_ring_buffer.add(record);
+    debug_state().instr_ring_buffer.add(record);
 
-        if debug.used_instrs.get(&instr).is_none() {
-            debug.used_instrs.insert(instr, 0);
-        }
-        let count = debug.used_instrs.get(&instr).unwrap();
-        debug.used_instrs.insert(instr, count + 1);
-
-        let variant_str = format!("{:?}", instr).split("{").collect::<Vec<_>>()[0].to_owned();
-        if debug.used_instr_variants.get(&variant_str).is_none() {
-            debug.used_instr_variants.insert(variant_str.clone(), 0);
-        }
-        let count = debug.used_instr_variants.get(&variant_str).unwrap();
-        debug.used_instr_variants.insert(variant_str, count + 1);
+    if debug_state().used_instrs.get(&instr).is_none() {
+        debug_state().used_instrs.insert(instr, 0);
     }
+    let count = debug_state().used_instrs.get(&instr).unwrap();
+    debug_state().used_instrs.insert(instr, count + 1);
+
+    let variant_str = format!("{:?}", instr).split("{").collect::<Vec<_>>()[0].to_owned();
+    if debug_state()
+        .used_instr_variants
+        .get(&variant_str)
+        .is_none()
+    {
+        debug_state()
+            .used_instr_variants
+            .insert(variant_str.clone(), 0);
+    }
+    let count = debug_state().used_instr_variants.get(&variant_str).unwrap();
+    debug_state()
+        .used_instr_variants
+        .insert(variant_str, count + 1);
 }
 
 pub fn print_last_instr() {
-    unsafe {
-        let Some(debug) = &mut DEBUG_STATE else {
-            unreachable!()
-        };
+    if let Some(last) = debug_state().instr_ring_buffer.iter().last() {
+        print_instr_record(last);
 
-        if let Some(last) = debug.instr_ring_buffer.iter().last() {
-            print_instr_record(last);
-
-            debug.print_count += 1;
-            if debug.print_count >= debug.max_print_count {
-                fail("Exceeded max print count.");
-            }
-        };
-    }
+        debug_state().print_count += 1;
+        if debug_state().print_count >= debug_state().max_print_count {
+            fail("Exceeded max print count.");
+        }
+    };
 }
 
 /// is_write: false for read, true for write.
 pub fn record_io_reg_usage(reg: IoReg, is_write: bool, data: u8) {
-    unsafe {
-        let Some(debug) = &mut DEBUG_STATE else {
-            unreachable!()
-        };
-
-        if !debug.used_io_regs.contains_key(&reg) {
-            debug.used_io_regs.insert(
+    if !debug_state().used_io_regs.contains_key(&reg) {
+        debug_state().used_io_regs.insert(
+            reg,
+            IoRegRecord {
                 reg,
-                IoRegRecord {
-                    reg,
-                    reads: 0,
-                    writes: 0,
-                    last_write_data: 0,
-                },
-            );
-        }
-        let record = debug.used_io_regs.get_mut(&reg).unwrap();
-        if is_write == false {
-            record.reads += 1;
-        }
-        if is_write == true {
-            record.writes += 1;
-            record.last_write_data = data;
-        }
+                reads: 0,
+                writes: 0,
+                last_write_data: 0,
+            },
+        );
+    }
+    let record = debug_state().used_io_regs.get_mut(&reg).unwrap();
+    if is_write == false {
+        record.reads += 1;
+    }
+    if is_write == true {
+        record.writes += 1;
+        record.last_write_data = data;
     }
 }
 
 pub fn fail(msg: impl Into<String>) {
-    unsafe {
-        let Some(debug) = &mut DEBUG_STATE else {
-            unreachable!()
-        };
-        debug.failure = Some(msg.into());
-    }
+    debug_state().failure = Some(msg.into());
 }
 
 const PRINT_LAST_INSTRS: bool = true;
@@ -336,77 +277,80 @@ const PRINT_MEM_SUMS: bool = true;
 const PRINT_STACK_RECORDS: bool = true;
 
 pub fn print_system_state(sys: &Sys) {
-    unsafe {
-        let Some(debug) = &mut DEBUG_STATE else {
-            unreachable!()
-        };
-
-        if PRINT_LAST_INSTRS {
-            // Print Instr record
-            println!("last {} instrs executed:", debug.instr_ring_buffer.len());
-            for record in debug.instr_ring_buffer.iter() {
-                print_instr_record(record);
-            }
+    if PRINT_LAST_INSTRS {
+        // Print Instr record
+        println!(
+            "last {} instrs executed:",
+            debug_state().instr_ring_buffer.len()
+        );
+        for record in debug_state().instr_ring_buffer.iter() {
+            print_instr_record(record);
         }
-
-        if PRINT_TOTAL_INSTRS {
-            println!("  total instrs executed: {}", debug.total_instrs_executed);
-
-            // Print all used instructions and counts.
-            println!("\n  unique instrs executed: {}", debug.used_instrs.len());
-            for (instr, count) in &debug.used_instrs {
-                println!("    {:?}: {}", instr, count);
-            }
-            println!(
-                "\n  unique instr variants executed: {}",
-                debug.used_instr_variants.len()
-            );
-            for (variant_str, count) in &debug.used_instr_variants {
-                println!("    {}: {}", variant_str, count);
-            }
-        }
-
-        if PRINT_IO_REG_USAGE {
-            // Print all IO reg usage.
-            println!("\nIO Reg usage:");
-            for reg in IoReg::iter() {
-                if let Some(record) = debug.used_io_regs.get(&reg) {
-                    println!(
-                        "  {:?}: {} reads, {} writes, [last write = 0b{:0>8b}]",
-                        reg, record.reads, record.writes, record.last_write_data
-                    );
-                }
-            }
-        }
-
-        if PRINT_INTERRUPT_COUNTS {
-            // Print interrupt counts.
-            println!("\nInterrupts:");
-            for (type_, count) in debug.interrupt_counts.iter() {
-                println!("  {:?}: ran {} times", *type_, *count);
-            }
-        }
-
-        if PRINT_SYS_STATE {
-            // System state.
-            println!("\nFinal state:");
-            sys.print();
-        }
-
-        if PRINT_MEM_SUMS {
-            // Sample of each memory section.
-            println!("\nMemory section sums:");
-            for section in MemSection::iter() {
-                let mut sum = 0;
-                for data in sys.mem.get_section_slice(section) {
-                    sum += *data as u64;
-                }
-                println!("  {:?} data sum: {}", section, sum);
-            }
-        }
-
-        println!();
     }
+
+    if PRINT_TOTAL_INSTRS {
+        println!(
+            "  total instrs executed: {}",
+            debug_state().total_instrs_executed
+        );
+
+        // Print all used instructions and counts.
+        println!(
+            "\n  unique instrs executed: {}",
+            debug_state().used_instrs.len()
+        );
+        for (instr, count) in &debug_state().used_instrs {
+            println!("    {:?}: {}", instr, count);
+        }
+        println!(
+            "\n  unique instr variants executed: {}",
+            debug_state().used_instr_variants.len()
+        );
+        for (variant_str, count) in &debug_state().used_instr_variants {
+            println!("    {}: {}", variant_str, count);
+        }
+    }
+
+    if PRINT_IO_REG_USAGE {
+        // Print all IO reg usage.
+        println!("\nIO Reg usage:");
+        for reg in IoReg::iter() {
+            if let Some(record) = debug_state().used_io_regs.get(&reg) {
+                println!(
+                    "  {:?}: {} reads, {} writes, [last write = 0b{:0>8b}]",
+                    reg, record.reads, record.writes, record.last_write_data
+                );
+            }
+        }
+    }
+
+    if PRINT_INTERRUPT_COUNTS {
+        // Print interrupt counts.
+        println!("\nInterrupts:");
+        for (type_, count) in debug_state().interrupt_counts.iter() {
+            println!("  {:?}: ran {} times", *type_, *count);
+        }
+    }
+
+    if PRINT_SYS_STATE {
+        // System state.
+        println!("\nFinal state:");
+        sys.print();
+    }
+
+    if PRINT_MEM_SUMS {
+        // Sample of each memory section.
+        println!("\nMemory section sums:");
+        for section in MemSection::iter() {
+            let mut sum = 0;
+            for data in sys.mem.get_section_slice(section) {
+                sum += *data as u64;
+            }
+            println!("  {:?} data sum: {}", section, sum);
+        }
+    }
+
+    println!();
 }
 
 fn print_instr_record(record: &InstrRecord) {
