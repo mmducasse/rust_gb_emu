@@ -15,8 +15,9 @@ use crate::{
         io_regs::IoReg,
         sections::{Addr, MemSection},
     },
+    other::joypad::{draw_joypad_state, DRAW_INPUTS_ORG},
     sys::Sys,
-    util::math::bit8,
+    util::{draw::draw_empty_rect, math::bit8},
 };
 
 use super::consts::*;
@@ -28,6 +29,14 @@ pub fn render_screen(sys: &mut Sys) {
     // Render objects
 
     // Render window
+
+    draw_joypad_state(DRAW_INPUTS_ORG);
+
+    // Draw moving dot to indicate frame rate.
+    let frame = sys.ppu.debug_frames_drawn() as i32;
+    let x = frame % TILE_MAP_SIZE.x;
+    let y = (frame % TILE_MAP_SIZE.y) / TILE_MAP_SIZE.x;
+    draw_rect(ir(i2(x, y), i2(1, 1)), BLUE)
 }
 
 pub fn render_tile_data(sys: &Sys, org: IVec2) {
@@ -129,13 +138,6 @@ fn draw_tile(bytes: &[u8], org: IVec2) {
 
         draw_pixel(pos + org, color_id);
     }
-}
-
-fn draw_empty_rect(rect: IRect, color: Color) {
-    draw_rect(ir(rect.pos, i2(rect.w(), 1)), color);
-    draw_rect(ir(rect.pos, i2(1, rect.h())), color);
-    draw_rect(ir(rect.pos + i2(0, rect.h()), i2(rect.w(), 1)), color);
-    draw_rect(ir(rect.pos + i2(rect.w(), 0), i2(1, rect.h())), color);
 }
 
 fn draw_pixel(pos: IVec2, color_id: u8) {

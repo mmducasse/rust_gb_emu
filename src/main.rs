@@ -33,6 +33,7 @@ mod consts;
 mod cpu;
 mod debug;
 mod mem;
+mod other;
 mod ppu;
 mod sys;
 mod test;

@@ -41,6 +41,10 @@ impl Ppu {
         }
     }
 
+    pub fn debug_frames_drawn(&self) -> u64 {
+        self.debug_frames_drawn
+    }
+
     pub fn update_ppu(sys: &mut Sys) {
         let mut ly = sys.mem.io_regs.get(IoReg::Ly);
 
@@ -52,6 +56,7 @@ impl Ppu {
             ly += 1;
             if ly >= SCANLINES_PER_FRAME as u8 {
                 ly = 0;
+                sys.ppu.debug_frames_drawn += 1;
             }
 
             sys.mem.io_regs.set(IoReg::Ly, ly);

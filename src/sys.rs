@@ -14,6 +14,7 @@ use crate::{
         mem::Mem,
         sections::{self, Addr, MemSection},
     },
+    other::joypad::handle_joypad_inputs,
     ppu::ppu::Ppu,
     time::{
         real_clock::RealClock,
@@ -142,6 +143,7 @@ impl Sys {
             Ppu::update_ppu(self);
         }
         update_timer_regs(self);
+        handle_joypad_inputs(self);
 
         ///////// DEBUG //////////////////////////////////////////////
         if let Some(kill_after_nop_count) = debug_state().config.kill_after_nop_count {
