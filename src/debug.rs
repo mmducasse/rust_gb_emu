@@ -269,7 +269,7 @@ pub fn fail(msg: impl Into<String>) {
 }
 
 const PRINT_LAST_INSTRS: bool = true;
-const PRINT_TOTAL_INSTRS: bool = false;
+const PRINT_TOTAL_INSTRS: bool = true;
 const PRINT_IO_REG_USAGE: bool = true;
 const PRINT_SYS_STATE: bool = true;
 const PRINT_INTERRUPT_COUNTS: bool = true;

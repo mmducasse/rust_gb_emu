@@ -1,6 +1,6 @@
 use std::mem::transmute;
 
-use macroquad::color::{Color, BLACK, BLUE, DARKGRAY, LIGHTGRAY, RED, WHITE, YELLOW};
+use macroquad::color::{Color, BLACK, BLUE, DARKGRAY, GREEN, LIGHTGRAY, RED, WHITE, YELLOW};
 use xf::{
     mq::draw::draw_rect,
     num::{
@@ -22,13 +22,57 @@ use crate::{
 
 use super::consts::*;
 
+struct LcdcState {
+    pub ppu_enable: bool,
+    pub window_tile_map_area_is_9c00: bool,
+    pub window_enable: bool,
+    pub bg_window_tile_data_area_is_8000: bool,
+    pub bg_tile_map_area_is_9c00: bool,
+    pub obj_size_is_8x16: bool,
+    pub obj_enable: bool,
+    pub bg_window_enable: bool,
+}
+
+impl LcdcState {
+    pub fn from(sys: &Sys) -> Self {
+        let lcdc = sys.mem.io_regs.get(IoReg::Lcdc);
+
+        Self {
+            ppu_enable: bit8(&lcdc, 7) == 1,
+            window_tile_map_area_is_9c00: bit8(&lcdc, 6) == 1,
+            window_enable: bit8(&lcdc, 5) == 1,
+            bg_window_tile_data_area_is_8000: bit8(&lcdc, 4) == 1,
+            bg_tile_map_area_is_9c00: bit8(&lcdc, 3) == 1,
+            obj_size_is_8x16: bit8(&lcdc, 2) == 1,
+            obj_enable: bit8(&lcdc, 1) == 1,
+            bg_window_enable: bit8(&lcdc, 0) == 1,
+        }
+    }
+}
+
 pub fn render_screen(sys: &mut Sys) {
+    let lcdc = LcdcState::from(&sys);
+
+    if !lcdc.ppu_enable {
+        return;
+    }
+
     render_tile_data(sys, i2(TILE_MAP_P8_SIZE.x * 8, 0));
-    render_background(sys, IVec2::ZERO);
+
+    // Render background
+    if lcdc.bg_window_enable {
+        render_background(sys, IVec2::ZERO);
+    }
 
     // Render objects
+    if lcdc.obj_enable {
+
+    }
 
     // Render window
+    if lcdc.bg_window_enable && lcdc.window_enable {
+        render_window(sys, IVec2::ZERO);
+    }
 
     draw_joypad_state(DRAW_INPUTS_ORG);
 
@@ -85,12 +129,47 @@ pub fn render_tile_data(sys: &Sys, org: IVec2) {
 }
 
 pub fn render_background(sys: &Sys, org: IVec2) {
-    let tile_map_1 = TILE_MAP_1_ADDR..TILE_MAP_2_ADDR;
+    let lcdc = LcdcState::from(sys);
+    let tile_map_start_addr = if lcdc.bg_tile_map_area_is_9c00 {
+        TILE_MAP_ADDR_9C00
+    } else {
+        TILE_MAP_ADDR_9800
+    };
+
 
     for i in 0..TILE_MAP_P8_SIZE.product() {
         let x = i % TILE_MAP_P8_SIZE.x;
         let y = i / TILE_MAP_P8_SIZE.x;
-        let addr = (i as u16) + TILE_MAP_1_ADDR;
+        let addr = (i as u16) + tile_map_start_addr;
+
+        // if (x + y) % 2 == 0 {
+        //     draw_rect(rect(x * 8, y * 8, 8, 8), YELLOW);
+        // }
+        draw_tile_from_map(sys, i2(x, y), addr);
+    }
+
+    // Draw viewport outline.
+    let scx = sys.mem.io_regs.get(IoReg::Scx);
+    let scy = sys.mem.io_regs.get(IoReg::Scy);
+    let viewport_pos = i2(scx as i32, scy as i32);
+    let viewport_bounds = ir(viewport_pos, VIEWPORT_P8_SIZE * P8);
+    draw_empty_rect(viewport_bounds, YELLOW);
+    draw_empty_rect(viewport_bounds.offset_by(TILE_MAP_P8_SIZE * -8), YELLOW);
+}
+
+pub fn render_window(sys: &Sys, org: IVec2) {
+    let lcdc = LcdcState::from(sys);
+    let tile_map_start_addr = if lcdc.window_tile_map_area_is_9c00 {
+        TILE_MAP_ADDR_9C00
+    } else {
+        TILE_MAP_ADDR_9800
+    };
+
+
+    for i in 0..TILE_MAP_P8_SIZE.product() {
+        let x = i % TILE_MAP_P8_SIZE.x;
+        let y = i / TILE_MAP_P8_SIZE.x;
+        let addr = (i as u16) + tile_map_start_addr;
 
         // if (x + y) % 2 == 0 {
         //     draw_rect(rect(x * 8, y * 8, 8, 8), YELLOW);
@@ -99,13 +178,13 @@ pub fn render_background(sys: &Sys, org: IVec2) {
     }
 
     // Draw window outline.
-    let wx = sys.mem.io_regs.get(IoReg::Wx);
-    let wy = sys.mem.io_regs.get(IoReg::Wy);
+    let wx = sys.mem.io_regs.get(IoReg::Scx);
+    let wy = sys.mem.io_regs.get(IoReg::Scy);
     let window_pos = i2(wx as i32, wy as i32);
-    let window_bounds = ir(window_pos, WINDOW_P8_SIZE * P8);
-    draw_empty_rect(window_bounds, YELLOW);
-    draw_empty_rect(window_bounds.offset_by(TILE_MAP_P8_SIZE * -8), YELLOW);
+    let window_bounds = ir(window_pos, VIEWPORT_P8_SIZE * P8);
+    draw_empty_rect(window_bounds, GREEN);
 }
+
 
 fn draw_tile_from_map(sys: &Sys, pos: IVec2, map_addr: Addr) {
     let lcdc = sys.mem.io_regs.get(IoReg::Lcdc);
