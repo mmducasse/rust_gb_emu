@@ -23,27 +23,30 @@ impl Array {
         self.start_addr
     }
 
-    pub fn contains_addr(&self, addr: Addr) -> bool {
-        return (self.start_addr <= addr)
-            && (((addr - self.start_addr) as usize) < self.memory.len());
+    pub fn contains_addr(&self, abs_addr: Addr) -> bool {
+        return self.to_idx(abs_addr) < self.memory.len();
     }
 
     pub fn read(&self, abs_addr: impl Into<Addr>) -> u8 {
-        let abs_addr: Addr = abs_addr.into();
-        let rel_addr = abs_addr - self.start_addr;
-        return self.memory[rel_addr as usize];
+        let idx = self.to_idx(abs_addr);
+        return self.memory[idx];
     }
 
     pub fn write(&mut self, abs_addr: impl Into<Addr>, data: u8) {
-        let abs_addr: Addr = abs_addr.into();
-        let rel_addr = abs_addr - self.start_addr;
-        self.memory[rel_addr as usize] = data;
+        let idx = self.to_idx(abs_addr);
+        self.memory[idx] = data;
     }
 
     pub fn mut_(&mut self, abs_addr: impl Into<Addr>) -> &mut u8 {
+        let idx = self.to_idx(abs_addr);
+        return &mut self.memory[idx];
+    }
+
+    #[inline]
+    fn to_idx(&self, abs_addr: impl Into<Addr>) -> usize {
         let abs_addr: Addr = abs_addr.into();
         let rel_addr = abs_addr - self.start_addr;
-        return &mut self.memory[rel_addr as usize];
+        return rel_addr as usize;
     }
 
     pub fn as_slice(&self) -> &[u8] {
@@ -52,5 +55,32 @@ impl Array {
 
     pub fn as_mut_slice(&mut self) -> &mut [u8] {
         return self.memory.as_mut_slice();
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_rw() {
+        let start_addr = 0x1234;
+        let mut array = Array::new(start_addr, 0x0200);
+
+        for addr in 0..0x0200u16 {
+            let addr = start_addr + addr;
+
+            let write_value = ((addr * 3) & 0xFF) as u8;
+            array.write(addr, write_value);
+            let read_value = array.read(addr);
+
+            assert_eq!(write_value, read_value);
+
+            let mut_value = ((addr * 7) & 0xFF) as u8;
+            *array.mut_(addr) = mut_value;
+            let read_value = array.read(addr);
+
+            assert_eq!(mut_value, read_value);
+        }
     }
 }

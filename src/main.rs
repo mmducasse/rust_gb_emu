@@ -52,7 +52,7 @@ async fn test() {
         enable_debug_print: false,
         kill_after_cpu_ticks: None, //Some(2_000_000),
         kill_after_nop_count: None, // Some(16),
-        last_instr_count: 5,
+        last_instr_count: 15,
     });
 
     //std::env::set_var("RUST_BACKTRACE", "1");
@@ -92,9 +92,9 @@ async fn test() {
     //let path = ".\\assets\\mooneye\\acceptance\\ppu\\hblank_ly_scx_timing-GS.gb";
     //let path = ".\\assets\\mooneye\\acceptance\\timer\\div_write.gb";
     //let path = ".\\assets\\mooneye\\emulator-only\\mbc1\\bits_bank1.gb";
-    let path = ".\\assets\\mooneye\\emulator-only\\mbc1\\rom_1Mb.gb";
+    //let path = ".\\assets\\mooneye\\emulator-only\\mbc1\\rom_1Mb.gb";
 
-    //let path = ".\\assets\\real_gb_roms\\tetris.gb";
+    let path = ".\\assets\\real_gb_roms\\tetris.gb";
     //let path = ".\\assets\\real_gb_roms\\Dr_Mario.gb";
     //let path = ".\\assets\\real_gb_roms\\Pokemon.gb";
     //let path = ".\\assets\\real_gb_roms\\Zelda.gb";
@@ -125,7 +125,7 @@ async fn run_normal(path: &str) {
     next_frame().await;
 
     let mut sys = Sys::new(Options {
-        kill_on_infinite_loop: false,
+        kill_on_infinite_loop: true,
     });
     Sys::initialize(&mut sys);
     sys.mem.cart.load(path, true);

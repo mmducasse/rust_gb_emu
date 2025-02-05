@@ -501,8 +501,7 @@ fn jr_cond_imm8(sys: &mut Sys, cond: Cond) -> u8 {
 }
 
 fn stop(sys: &mut Sys) -> u8 {
-    sys.cpu_enable = false;
-    sys.lcd_enable = false;
+    //sys.cpu_enable = false;
 
     return 1;
 }

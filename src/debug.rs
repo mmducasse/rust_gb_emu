@@ -269,11 +269,11 @@ pub fn fail(msg: impl Into<String>) {
 }
 
 const PRINT_LAST_INSTRS: bool = true;
-const PRINT_TOTAL_INSTRS: bool = true;
+const PRINT_TOTAL_INSTRS: bool = false;
 const PRINT_IO_REG_USAGE: bool = true;
 const PRINT_SYS_STATE: bool = true;
 const PRINT_INTERRUPT_COUNTS: bool = true;
-const PRINT_MEM_SUMS: bool = true;
+const PRINT_MEM_SUMS: bool = false;
 const PRINT_STACK_RECORDS: bool = true;
 
 pub fn print_system_state(sys: &Sys) {
