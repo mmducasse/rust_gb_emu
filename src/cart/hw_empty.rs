@@ -18,6 +18,10 @@ impl CartHw for HwEmpty {
         todo!()
     }
 
+    fn ram_mut(&mut self) -> &mut [u8] {
+        todo!()
+    }
+
     fn read(&self, addr: Addr) -> u8 {
         todo!()
     }

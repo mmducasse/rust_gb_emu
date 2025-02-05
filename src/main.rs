@@ -50,7 +50,7 @@ async fn main() {
 async fn test() {
     initialize_debug(DebugConfig {
         enable_debug_print: false,
-        kill_after_cpu_ticks: Some(25_000_000),
+        kill_after_cpu_ticks: None, //Some(2_000_000),
         kill_after_nop_count: None, // Some(16),
         last_instr_count: 5,
     });
@@ -64,7 +64,7 @@ async fn test() {
 
     //let path = ".\\assets\\blaargs\\cpu_instrs\\cpu_instrs.gb";
     //let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\01-special.gb";
-    let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\02-interrupts.gb";
+    //let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\02-interrupts.gb";
     //let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\03-op sp,hl.gb";
     //let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\04-op r,imm.gb";
     //let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\05-op rp.gb";
@@ -77,6 +77,8 @@ async fn test() {
 
     //let path = ".\\assets\\blaargs\\instr_timing\\instr_timing.gb";
 
+    //let path = ".\\assets\\blaargs\\interrupt_time\\interrupt_time.gb";
+
     //let path = ".\\assets\\blaargs\\mem_timing\\mem_timing\\mem_timing.gb";
 
     //let path = ".\\assets\\blaargs\\mem_timing-2\\mem_timing-2\\mem_timing.gb";
@@ -86,6 +88,11 @@ async fn test() {
 
     //let path = ".\\assets\\mooneye\\acceptance\\add_sp_e_timing.gb";
     //let path = ".\\assets\\mooneye\\acceptance\\bits\\reg_f.gb";
+    //let path = ".\\assets\\mooneye\\acceptance\\interrupts\\ie_push.gb";
+    //let path = ".\\assets\\mooneye\\acceptance\\ppu\\hblank_ly_scx_timing-GS.gb";
+    //let path = ".\\assets\\mooneye\\acceptance\\timer\\div_write.gb";
+    //let path = ".\\assets\\mooneye\\emulator-only\\mbc1\\bits_bank1.gb";
+    let path = ".\\assets\\mooneye\\emulator-only\\mbc1\\rom_1Mb.gb";
 
     //let path = ".\\assets\\real_gb_roms\\tetris.gb";
     //let path = ".\\assets\\real_gb_roms\\Dr_Mario.gb";
@@ -138,7 +145,7 @@ async fn run_normal(path: &str) {
         }
     }
 
-    //debug::flush_serial_char();
+    debug::flush_serial_char();
 
     debug::print_system_state(&sys);
 

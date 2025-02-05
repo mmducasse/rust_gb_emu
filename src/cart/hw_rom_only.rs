@@ -30,6 +30,10 @@ impl CartHw for HwRomOnly {
         &[]
     }
 
+    fn ram_mut(&mut self) -> &mut [u8] {
+        &mut []
+    }
+
     fn read(&self, addr: Addr) -> u8 {
         if !self.rom.contains_addr(addr) {
             //panic!("Bad Rom-only cart read address: {}", addr);

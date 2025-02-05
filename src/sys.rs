@@ -71,7 +71,7 @@ impl Sys {
 
             cpu_enable: true,
             lcd_enable: true,
-            interrupt_master_enable: true,
+            interrupt_master_enable: false,
 
             hard_lock: false,
             is_render_pending: false,
