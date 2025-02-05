@@ -2,13 +2,14 @@ use crate::{
     cpu::interrupt::{request_interrupt, InterruptType},
     mem::io_regs::IoReg,
     sys::Sys,
-    util::math::{bit8, set_bit8},
+    util::math::bit8,
 };
 
-use super::draw::render_screen;
+pub const DOTS_PER_SCANLINE: u32 = 456;
+pub const SCANLINES_PER_FRAME: u8 = 154;
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
-pub enum PpuMode {
+enum PpuMode {
     HBlank,
     VBlank,
     OamScan,
@@ -27,72 +28,55 @@ impl PpuMode {
     }
 }
 
-// "Dot" = 1 system clock period ~ 1 / 4MHz.
-// For 144 scanlines
-//   Mode 2: OAM Scan: 80 dots
-//   Mode 3: Drawing: 172-289 dots
-//   Mode 0: HBlank: 376 - (mode 3's duration) dots
-// For 10 scanlines
-//   Mode 1: VBlank: 4560 dots
-
 pub struct Ppu {
-    curr_mode: PpuMode,
-    dots_since_mode_start: u32,
-    debug_frames_drawn: u32,
+    curr_scanline_dot: u32,
+    debug_frames_drawn: u64,
 }
 
 impl Ppu {
     pub fn new() -> Self {
         Self {
-            curr_mode: PpuMode::VBlank,
-            dots_since_mode_start: 0,
+            curr_scanline_dot: 0,
             debug_frames_drawn: 0,
         }
     }
 
     pub fn update_ppu(sys: &mut Sys) {
-        let dots = 1;
-        let dots_since_mode_start = sys.ppu.dots_since_mode_start + dots;
-        if dots_since_mode_start < sys.ppu.curr_mode.typical_duration() {
-            // Stay in current mode.
-            sys.ppu.dots_since_mode_start = dots_since_mode_start;
-            return;
-        } else {
-            // Advance to next mode.
-            let excess_dots = dots_since_mode_start - sys.ppu.curr_mode.typical_duration();
-            sys.ppu.dots_since_mode_start = excess_dots;
+        let mut ly = sys.mem.io_regs.get(IoReg::Ly);
 
-            let curr_scanline = sys.mem.io_regs.get(IoReg::Ly);
+        let prev_mode = Self::get_mode(sys.ppu.curr_scanline_dot, ly);
 
-            match sys.ppu.curr_mode {
-                PpuMode::HBlank => {
-                    Self::set_scanline(sys, curr_scanline + 1);
-                    if curr_scanline == 143 {
-                        Self::enter_mode(sys, PpuMode::VBlank);
-                        request_interrupt(sys, InterruptType::VBlank);
-                    } else {
-                        Self::enter_mode(sys, PpuMode::OamScan);
-                    }
-                }
-                PpuMode::VBlank => {
-                    Self::set_scanline(sys, 0);
-                    Self::enter_mode(sys, PpuMode::OamScan);
-                    sys.ppu.debug_frames_drawn += 1;
-                }
-                PpuMode::OamScan => {
-                    Self::enter_mode(sys, PpuMode::Draw);
-                }
-                PpuMode::Draw => {
-                    Self::enter_mode(sys, PpuMode::HBlank);
-                }
+        sys.ppu.curr_scanline_dot += 1;
+        if sys.ppu.curr_scanline_dot >= DOTS_PER_SCANLINE {
+            sys.ppu.curr_scanline_dot = 0;
+            ly += 1;
+            if ly >= SCANLINES_PER_FRAME as u8 {
+                ly = 0;
             }
+
+            sys.mem.io_regs.set(IoReg::Ly, ly);
+        }
+
+        let next_mode = Self::get_mode(sys.ppu.curr_scanline_dot, ly);
+
+        if prev_mode != next_mode {
+            Self::enter_mode(sys, next_mode);
+        }
+    }
+
+    fn get_mode(dot: u32, scanline: u8) -> PpuMode {
+        if scanline >= 144 {
+            return PpuMode::VBlank;
+        } else if dot < 80 {
+            return PpuMode::OamScan;
+        } else if dot - 80 < 172 {
+            return PpuMode::Draw;
+        } else {
+            return PpuMode::HBlank;
         }
     }
 
     fn enter_mode(sys: &mut Sys, mode: PpuMode) {
-        //println!("Enter PPU mode: {:?}", mode);
-        sys.ppu.curr_mode = mode;
-
         // Perform specific actions for mode.
         match mode {
             PpuMode::VBlank => {
@@ -123,33 +107,14 @@ impl Ppu {
         }
     }
 
-    fn set_scanline(sys: &mut Sys, next: u8) {
-        let ly = sys.mem.io_regs.mut_(IoReg::Ly, |ly| {
-            *ly = next;
-        });
-
-        let lyc = sys.mem.io_regs.get(IoReg::Lyc);
-        let eq = ly == lyc;
-
-        let stat = sys.mem.io_regs.mut_(IoReg::Stat, |stat| {
-            set_bit8(stat, 2, eq.into());
-        });
-
-        let is_lyc_req_flag_set = bit8(&stat, 6) == 1;
-        if is_lyc_req_flag_set && eq {
-            request_interrupt(sys, InterruptType::Stat);
-        }
-    }
-
     pub fn print(sys: &Sys) {
+        let dot = sys.ppu.curr_scanline_dot;
         let ly = sys.mem.io_regs.get(IoReg::Ly);
+        let mode = Self::get_mode(dot, ly);
 
         println!("PPU:");
-        println!("  curr mode = {:?}", sys.ppu.curr_mode);
-        println!(
-            "  dots since mode start = {}",
-            sys.ppu.dots_since_mode_start
-        );
+        println!("  curr mode = {:?}", mode);
+        println!("  scanline dots = {}", dot);
         println!("  LY = {}", ly);
         println!("  frames drawn = {}", sys.ppu.debug_frames_drawn);
     }

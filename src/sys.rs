@@ -138,7 +138,9 @@ impl Sys {
             }
         }
 
-        Ppu::update_ppu(self);
+        for _ in 0..4 {
+            Ppu::update_ppu(self);
+        }
         update_timer_regs(self);
 
         ///////// DEBUG //////////////////////////////////////////////

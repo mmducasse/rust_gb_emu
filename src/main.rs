@@ -112,6 +112,7 @@ async fn test() {
     //run_blargg_test(path).await;
     //run_gb_microtest(&path).await;
     //run_simple_test(&path);
+
     run_normal(&path).await;
 }
 
