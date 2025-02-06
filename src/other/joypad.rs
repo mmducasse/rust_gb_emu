@@ -88,15 +88,15 @@ pub fn handle_joypad_inputs(sys: &mut Sys) {
     if select_btns {
         read_button(&mut lo_4, 0, Button::A);
         read_button(&mut lo_4, 1, Button::B);
-        read_button(&mut lo_4, 2, Button::Up);
-        read_button(&mut lo_4, 3, Button::Down);
+        read_button(&mut lo_4, 2, Button::Select);
+        read_button(&mut lo_4, 3, Button::Start);
     }
 
     if select_dpad {
         read_button(&mut lo_4, 0, Button::Right);
         read_button(&mut lo_4, 1, Button::Left);
-        read_button(&mut lo_4, 2, Button::Select);
-        read_button(&mut lo_4, 3, Button::Start);
+        read_button(&mut lo_4, 2, Button::Up);
+        read_button(&mut lo_4, 3, Button::Down);
     }
 
     sys.mem.io_regs.mut_(IoReg::P1, |p1| {
