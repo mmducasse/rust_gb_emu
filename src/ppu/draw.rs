@@ -57,8 +57,6 @@ pub fn render_screen(sys: &mut Sys) {
         return;
     }
 
-    render_tile_data(sys, i2(TILE_MAP_P8_SIZE.x * 8, 0));
-
     // Render background
     if lcdc.bg_window_enable {
         render_background(sys, IVec2::ZERO);
@@ -72,12 +70,14 @@ pub fn render_screen(sys: &mut Sys) {
         render_window(sys, IVec2::ZERO);
     }
 
+    // Render debugging info.
+    render_tile_data(sys, i2(TILE_MAP_P8_SIZE.x * 8, 0));
     draw_joypad_state(DRAW_INPUTS_ORG);
 
     // Draw moving dot to indicate frame rate.
     let frame = sys.ppu.debug_frames_drawn() as i32;
     let x = frame % TILE_MAP_SIZE.x;
-    let y = (frame % TILE_MAP_SIZE.y) / TILE_MAP_SIZE.x;
+    let y = (frame % TILE_MAP_SIZE.product()) / TILE_MAP_SIZE.x;
     draw_rect(ir(i2(x, y), i2(1, 1)), BLUE)
 }
 
@@ -151,7 +151,9 @@ pub fn render_background(sys: &Sys, org: IVec2) {
     let viewport_pos = i2(scx as i32, scy as i32);
     let viewport_bounds = ir(viewport_pos, VIEWPORT_P8_SIZE * P8);
     draw_empty_rect(viewport_bounds, YELLOW);
-    draw_empty_rect(viewport_bounds.offset_by(TILE_MAP_P8_SIZE * -8), YELLOW);
+    draw_empty_rect(viewport_bounds.offset_by(i2(-TILE_MAP_SIZE.x, 0)), YELLOW);
+    draw_empty_rect(viewport_bounds.offset_by(i2(0, -TILE_MAP_SIZE.y)), YELLOW);
+    draw_empty_rect(viewport_bounds.offset_by(i2(-TILE_MAP_SIZE.x, -TILE_MAP_SIZE.y)), YELLOW);
 }
 
 pub fn render_window(sys: &Sys, org: IVec2) {
