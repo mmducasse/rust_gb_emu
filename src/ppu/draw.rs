@@ -65,9 +65,7 @@ pub fn render_screen(sys: &mut Sys) {
     }
 
     // Render objects
-    if lcdc.obj_enable {
-        
-    }
+    if lcdc.obj_enable {}
 
     // Render window
     if lcdc.bg_window_enable && lcdc.window_enable {

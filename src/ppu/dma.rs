@@ -38,7 +38,7 @@ fn start_dma(sys: &mut Sys) {
     //
     let dma_val = sys.mem.io_regs.get(IoReg::Dma) as u16;
     let src_addr = dma_val * 0x100;
-    println!("Start DMA transfer from: {:0>4X} ", src_addr);
+    //println!("Start DMA transfer from: {:0>4X} ", src_addr);
 }
 
 fn transfer_one_byte(sys: &mut Sys) {
@@ -49,7 +49,7 @@ fn transfer_one_byte(sys: &mut Sys) {
     let src_addr = (dma_val * 0x100) + idx;
     let dst_addr = 0xFE00 + idx;
 
-    println!("Transfer from {:0>4X} to {:0>4X}", src_addr, dst_addr);
+    //println!("Transfer from {:0>4X} to {:0>4X}", src_addr, dst_addr);
 
     let data = sys.mem.read(src_addr);
     sys.mem.write(dst_addr, data);

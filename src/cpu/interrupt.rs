@@ -75,9 +75,8 @@ fn handle_interrupt(sys: &mut Sys, type_: InterruptType) {
     sys.interrupt_master_enable = false;
     sys.cpu_enable = true;
 
-    let flag_idx = type_.flag_idx();
     sys.mem.io_regs.mut_(IoReg::If, |if_| {
-        set_bit8(if_, flag_idx, 0);
+        set_bit8(if_, type_.flag_idx(), 0);
     });
 
     // 2 NOP cycles

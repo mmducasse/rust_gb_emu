@@ -88,7 +88,7 @@ impl IoRegs {
             mem: Array::from_mem_section(MemSection::IoRegs),
             ie: Array::from_mem_section(MemSection::IeReg),
             reg_datas,
-            
+
             dma_requested: false,
         };
     }

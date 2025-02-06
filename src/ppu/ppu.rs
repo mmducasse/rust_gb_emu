@@ -2,7 +2,7 @@ use crate::{
     cpu::interrupt::{request_interrupt, InterruptType},
     mem::io_regs::IoReg,
     sys::Sys,
-    util::math::bit8,
+    util::math::{bit8, bits8, set_bit8},
 };
 
 use super::dma::{update_dma, Dma};
@@ -75,7 +75,7 @@ impl Ppu {
                 sys.ppu.debug_frames_drawn += 1;
             }
 
-            sys.mem.io_regs.set(IoReg::Ly, ly);
+            Self::enter_scanline(sys, ly);
         }
 
         let next_mode = Self::get_mode(sys.ppu.curr_scanline_dot, ly);
@@ -97,12 +97,33 @@ impl Ppu {
         }
     }
 
+    fn enter_scanline(sys: &mut Sys, scanline: u8) {
+        // Update LY
+        let ly = scanline;
+        sys.mem.io_regs.set(IoReg::Ly, ly);
+
+        // Update STAT.LYC==LY flag.
+        let lyc = sys.mem.io_regs.get(IoReg::Lyc);
+        let stat = sys.mem.io_regs.mut_(IoReg::Stat, |stat| {
+            let lyc_ly: u8 = (lyc == ly).into();
+            set_bit8(stat, 2, lyc_ly);
+        });
+
+        let lyc_ly_sel = bit8(&stat, 6) == 1;
+        let lyc_ly = bit8(&stat, 2) == 1;
+
+        if lyc_ly_sel && lyc_ly {
+            request_interrupt(sys, InterruptType::Stat);
+        }
+    }
+
     fn enter_mode(sys: &mut Sys, mode: PpuMode) {
         // Perform specific actions for mode.
         match mode {
             PpuMode::VBlank => {
                 //render_screen(sys);
                 sys.is_render_pending = true;
+                request_interrupt(sys, InterruptType::VBlank);
             }
             _ => {}
         }
@@ -113,8 +134,8 @@ impl Ppu {
             *stat |= mode as u8;
         });
 
-        // Request an interrupt, if mode request condition is met.
-        let mode_req_flag_idx = match mode {
+        // Request an interrupt if mode request condition is met.
+        let stat_mode_flag_idx = match mode {
             PpuMode::HBlank => 3,
             PpuMode::VBlank => 4,
             PpuMode::OamScan => 5,
@@ -122,8 +143,8 @@ impl Ppu {
                 return;
             }
         };
-        let is_req_flag_set = bit8(&stat, mode_req_flag_idx) == 1;
-        if is_req_flag_set {
+        let is_stat_mode_flag_set = bit8(&stat, stat_mode_flag_idx) == 1;
+        if is_stat_mode_flag_set {
             request_interrupt(sys, InterruptType::Stat);
         }
     }
