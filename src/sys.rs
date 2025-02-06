@@ -139,9 +139,7 @@ impl Sys {
             }
         }
 
-        for _ in 0..4 {
-            Ppu::update_ppu(self);
-        }
+        Ppu::update_ppu(self);
         update_timer_regs(self);
         handle_joypad_inputs(self);
 

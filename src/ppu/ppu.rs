@@ -5,6 +5,8 @@ use crate::{
     util::math::bit8,
 };
 
+use super::dma::{update_dma, Dma};
+
 pub const DOTS_PER_SCANLINE: u32 = 456;
 pub const SCANLINES_PER_FRAME: u8 = 154;
 
@@ -31,6 +33,7 @@ impl PpuMode {
 pub struct Ppu {
     curr_scanline_dot: u32,
     debug_frames_drawn: u64,
+    dma: Dma,
 }
 
 impl Ppu {
@@ -38,6 +41,7 @@ impl Ppu {
         Self {
             curr_scanline_dot: 0,
             debug_frames_drawn: 0,
+            dma: Dma::new(),
         }
     }
 
@@ -45,7 +49,19 @@ impl Ppu {
         self.debug_frames_drawn
     }
 
+    pub fn dma_mut(&mut self) -> &mut Dma {
+        &mut self.dma
+    }
+
     pub fn update_ppu(sys: &mut Sys) {
+        // Advance by 1 M-Cycle (4 dots).
+        for _ in 0..4 {
+            Self::update_mode(sys);
+        }
+        update_dma(sys);
+    }
+
+    fn update_mode(sys: &mut Sys) {
         let mut ly = sys.mem.io_regs.get(IoReg::Ly);
 
         let prev_mode = Self::get_mode(sys.ppu.curr_scanline_dot, ly);

@@ -72,6 +72,8 @@ pub struct IoRegs {
     mem: Array,
     ie: Array, // IE reg is not part of contiguous IO regs memory.
     reg_datas: HashMap<IoReg, IoRegData>,
+
+    pub dma_requested: bool,
 }
 
 impl IoRegs {
@@ -86,6 +88,8 @@ impl IoRegs {
             mem: Array::from_mem_section(MemSection::IoRegs),
             ie: Array::from_mem_section(MemSection::IeReg),
             reg_datas,
+            
+            dma_requested: false,
         };
     }
 
@@ -140,6 +144,8 @@ impl IoRegs {
                 let serial_data = self.get(IoReg::Sb);
                 //println!("> {}", serial_data as char);
                 debug::push_serial_char(serial_data as char);
+            } else if reg == IoReg::Dma {
+                self.dma_requested = true;
             }
 
             if reg_data.reset_on_write() {

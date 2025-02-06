@@ -95,10 +95,10 @@ async fn test() {
     //let path = ".\\assets\\mooneye\\emulator-only\\mbc1\\bits_bank1.gb";
     //let path = ".\\assets\\mooneye\\emulator-only\\mbc1\\rom_1Mb.gb";
 
-    //let path = ".\\assets\\real_gb_roms\\tetris.gb";
+    let path = ".\\assets\\real_gb_roms\\tetris.gb";
     //let path = ".\\assets\\real_gb_roms\\Dr_Mario.gb";
     //let path = ".\\assets\\real_gb_roms\\Pokemon.gb";
-    let path = ".\\assets\\real_gb_roms\\Zelda.gb";
+    //let path = ".\\assets\\real_gb_roms\\Zelda.gb";
     //let path = ".\\assets\\real_gb_roms\\Kirby.gb";
 
     //let path = ".\\assets\\homebrew_roms\\porklike.gb";

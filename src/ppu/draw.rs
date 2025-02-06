@@ -66,7 +66,7 @@ pub fn render_screen(sys: &mut Sys) {
 
     // Render objects
     if lcdc.obj_enable {
-
+        
     }
 
     // Render window
@@ -136,7 +136,6 @@ pub fn render_background(sys: &Sys, org: IVec2) {
         TILE_MAP_ADDR_9800
     };
 
-
     for i in 0..TILE_MAP_P8_SIZE.product() {
         let x = i % TILE_MAP_P8_SIZE.x;
         let y = i / TILE_MAP_P8_SIZE.x;
@@ -165,7 +164,6 @@ pub fn render_window(sys: &Sys, org: IVec2) {
         TILE_MAP_ADDR_9800
     };
 
-
     for i in 0..TILE_MAP_P8_SIZE.product() {
         let x = i % TILE_MAP_P8_SIZE.x;
         let y = i / TILE_MAP_P8_SIZE.x;
@@ -184,7 +182,6 @@ pub fn render_window(sys: &Sys, org: IVec2) {
     let window_bounds = ir(window_pos, VIEWPORT_P8_SIZE * P8);
     draw_empty_rect(window_bounds, GREEN);
 }
-
 
 fn draw_tile_from_map(sys: &Sys, pos: IVec2, map_addr: Addr) {
     let lcdc = sys.mem.io_regs.get(IoReg::Lcdc);
