@@ -1,4 +1,4 @@
-use std::mem::transmute;
+use std::{mem::transmute, ops::Add};
 
 use macroquad::color::{Color, BLACK, BLUE, DARKGRAY, GREEN, LIGHTGRAY, RED, WHITE, YELLOW};
 use xf::{
@@ -15,40 +15,12 @@ use crate::{
         io_regs::IoReg,
         sections::{Addr, MemSection},
     },
-    other::joypad::{draw_joypad_state, DRAW_INPUTS_ORG},
+    other::joypad::draw_joypad_state,
     sys::Sys,
     util::{draw::draw_empty_rect, math::bit8},
 };
 
-use super::consts::*;
-
-struct LcdcState {
-    pub ppu_enable: bool,
-    pub window_tile_map_area_is_9c00: bool,
-    pub window_enable: bool,
-    pub bg_window_tile_data_area_is_8000: bool,
-    pub bg_tile_map_area_is_9c00: bool,
-    pub obj_size_is_8x16: bool,
-    pub obj_enable: bool,
-    pub bg_window_enable: bool,
-}
-
-impl LcdcState {
-    pub fn from(sys: &Sys) -> Self {
-        let lcdc = sys.mem.io_regs.get(IoReg::Lcdc);
-
-        Self {
-            ppu_enable: bit8(&lcdc, 7) == 1,
-            window_tile_map_area_is_9c00: bit8(&lcdc, 6) == 1,
-            window_enable: bit8(&lcdc, 5) == 1,
-            bg_window_tile_data_area_is_8000: bit8(&lcdc, 4) == 1,
-            bg_tile_map_area_is_9c00: bit8(&lcdc, 3) == 1,
-            obj_size_is_8x16: bit8(&lcdc, 2) == 1,
-            obj_enable: bit8(&lcdc, 1) == 1,
-            bg_window_enable: bit8(&lcdc, 0) == 1,
-        }
-    }
-}
+use super::{consts::*, lcdc::LcdcState};
 
 pub fn render_screen(sys: &mut Sys) {
     let lcdc = LcdcState::from(&sys);
@@ -59,20 +31,22 @@ pub fn render_screen(sys: &mut Sys) {
 
     // Render background
     if lcdc.bg_window_enable {
-        render_background(sys, IVec2::ZERO);
+        render_background(sys, TILE_MAP_ORG);
     }
 
     // Render objects
-    if lcdc.obj_enable {}
+    if lcdc.obj_enable {
+        render_objects(sys, TILE_MAP_ORG);
+    }
 
     // Render window
     if lcdc.bg_window_enable && lcdc.window_enable {
-        render_window(sys, IVec2::ZERO);
+        render_window(sys, TILE_MAP_ORG);
     }
 
     // Render debugging info.
-    render_tile_data(sys, i2(TILE_MAP_P8_SIZE.x * 8, 0));
-    draw_joypad_state(DRAW_INPUTS_ORG);
+    render_tile_data(sys, TILE_DATA_ORG);
+    draw_joypad_state(JOYPAD_ORG);
 
     // Draw moving dot to indicate frame rate.
     let frame = sys.ppu.debug_frames_drawn() as i32;
@@ -142,7 +116,7 @@ pub fn render_background(sys: &Sys, org: IVec2) {
         // if (x + y) % 2 == 0 {
         //     draw_rect(rect(x * 8, y * 8, 8, 8), YELLOW);
         // }
-        draw_tile_from_map(sys, i2(x, y), addr);
+        draw_tile_from_map(sys, i2(x, y), addr, org);
     }
 
     // Draw viewport outline.
@@ -150,10 +124,25 @@ pub fn render_background(sys: &Sys, org: IVec2) {
     let scy = sys.mem.io_regs.get(IoReg::Scy);
     let viewport_pos = i2(scx as i32, scy as i32);
     let viewport_bounds = ir(viewport_pos, VIEWPORT_P8_SIZE * P8);
-    draw_empty_rect(viewport_bounds, YELLOW);
-    draw_empty_rect(viewport_bounds.offset_by(i2(-TILE_MAP_SIZE.x, 0)), YELLOW);
-    draw_empty_rect(viewport_bounds.offset_by(i2(0, -TILE_MAP_SIZE.y)), YELLOW);
-    draw_empty_rect(viewport_bounds.offset_by(i2(-TILE_MAP_SIZE.x, -TILE_MAP_SIZE.y)), YELLOW);
+    // draw_empty_rect(viewport_bounds.offset_by(org), YELLOW);
+    // draw_empty_rect(
+    //     viewport_bounds
+    //         .offset_by(i2(-TILE_MAP_SIZE.x, 0))
+    //         .offset_by(org),
+    //     YELLOW,
+    // );
+    // draw_empty_rect(
+    //     viewport_bounds
+    //         .offset_by(i2(0, -TILE_MAP_SIZE.y))
+    //         .offset_by(org),
+    //     YELLOW,
+    // );
+    // draw_empty_rect(
+    //     viewport_bounds
+    //         .offset_by(i2(-TILE_MAP_SIZE.x, -TILE_MAP_SIZE.y))
+    //         .offset_by(org),
+    //     YELLOW,
+    // );
 }
 
 pub fn render_window(sys: &Sys, org: IVec2) {
@@ -172,18 +161,47 @@ pub fn render_window(sys: &Sys, org: IVec2) {
         // if (x + y) % 2 == 0 {
         //     draw_rect(rect(x * 8, y * 8, 8, 8), YELLOW);
         // }
-        draw_tile_from_map(sys, i2(x, y), addr);
+        draw_tile_from_map(sys, i2(x, y), addr, org);
     }
 
     // Draw window outline.
     let wx = sys.mem.io_regs.get(IoReg::Scx);
     let wy = sys.mem.io_regs.get(IoReg::Scy);
     let window_pos = i2(wx as i32, wy as i32);
-    let window_bounds = ir(window_pos, VIEWPORT_P8_SIZE * P8);
+    let window_bounds = ir(window_pos, VIEWPORT_P8_SIZE * P8).offset_by(org);
     draw_empty_rect(window_bounds, GREEN);
 }
 
-fn draw_tile_from_map(sys: &Sys, pos: IVec2, map_addr: Addr) {
+fn render_objects(sys: &Sys, org: IVec2) {
+    let scx = sys.mem.io_regs.get(IoReg::Scx);
+    let scy = sys.mem.io_regs.get(IoReg::Scy);
+    let viewport_pos = i2(scx as i32, scy as i32);
+
+    for idx in 0..40 {
+        let addr = 0xFE00 + (idx * 4);
+        let y = sys.mem.read(addr + 0);
+        let x = sys.mem.read(addr + 1);
+        let tile_idx = sys.mem.read(addr + 2);
+        let attrs = sys.mem.read(addr + 3);
+
+        //let priority = bit8(&attrs, 6);
+        let y_flip = bit8(&attrs, 6);
+        let x_flip = bit8(&attrs, 5);
+        let palette = bit8(&attrs, 4);
+        let bank = bit8(&attrs, 3);
+
+        let map_addr = if bank == 0 {
+            0x8000 + tile_idx as u16
+        } else {
+            0x8800 + tile_idx as u16
+        };
+
+        let pos = i2(x as i32, y as i32);
+        draw_tile_from_map(sys, viewport_pos + pos + org, map_addr, org);
+    }
+}
+
+fn draw_tile_from_map(sys: &Sys, pos: IVec2, map_addr: Addr, org: IVec2) {
     let lcdc = sys.mem.io_regs.get(IoReg::Lcdc);
     let mode_8000 = bit8(&lcdc, 4) == 1;
     let tile_idx = sys.mem.read(map_addr);
@@ -199,7 +217,7 @@ fn draw_tile_from_map(sys: &Sys, pos: IVec2, map_addr: Addr) {
     let addr = (tile_data_addr - MemSection::Vram.start_addr()) as usize;
     let bytes = &sys.mem.vram.as_slice()[addr..(addr + 16)];
 
-    let org = pos * P8;
+    let org = pos * P8 + org;
     draw_tile(bytes, org);
 }
 

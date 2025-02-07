@@ -5,7 +5,11 @@ use crate::{
     util::math::{bit8, bits8, set_bit8},
 };
 
-use super::dma::{update_dma, Dma};
+use super::{
+    consts::VIEWPORT_ORG,
+    dma::{update_dma, Dma},
+    render::render_scanline,
+};
 
 pub const DOTS_PER_SCANLINE: u32 = 456;
 pub const SCANLINES_PER_FRAME: u8 = 154;
@@ -124,6 +128,10 @@ impl Ppu {
                 //render_screen(sys);
                 sys.is_render_pending = true;
                 request_interrupt(sys, InterruptType::VBlank);
+            }
+            PpuMode::Draw => {
+                let ly = sys.mem.io_regs.get(IoReg::Ly);
+                render_scanline(sys, ly, VIEWPORT_ORG);
             }
             _ => {}
         }

@@ -12,8 +12,9 @@ use macroquad::{
     window::next_frame,
 };
 use ppu::{
-    consts::TILE_MAP_P8_SIZE,
-    draw::render_screen,
+    consts::{TILE_MAP_P8_SIZE, VIEWPORT_ORG},
+    debug_draw::render_screen,
+    render::render_scanline,
     tile_data_test::{self, draw_vram_tile_data},
     tile_map_test::{self, draw_bg_tile_map},
 };
@@ -95,11 +96,11 @@ async fn test() {
     //let path = ".\\assets\\mooneye\\emulator-only\\mbc1\\bits_bank1.gb";
     //let path = ".\\assets\\mooneye\\emulator-only\\mbc1\\rom_1Mb.gb";
 
-    let path = ".\\assets\\real_gb_roms\\tetris.gb";
+    //let path = ".\\assets\\real_gb_roms\\tetris.gb";
     //let path = ".\\assets\\real_gb_roms\\Dr_Mario.gb";
     //let path = ".\\assets\\real_gb_roms\\Pokemon.gb";
     //let path = ".\\assets\\real_gb_roms\\Zelda.gb";
-    //let path = ".\\assets\\real_gb_roms\\Kirby.gb";
+    let path = ".\\assets\\real_gb_roms\\Kirby.gb";
 
     //let path = ".\\assets\\homebrew_roms\\porklike.gb";
     //let path = ".\\assets\\homebrew_roms\\20y.gb";
@@ -136,15 +137,31 @@ async fn run_normal(path: &str) {
         if is_key_pressed(KeyCode::Escape) {
             sys.hard_lock = true;
         }
-        sys.run_one_m_cycle();
+        //sys.run_one_m_cycle();
 
-        if sys.is_render_pending {
-            window.render_pass(|| {
-                render_screen(&mut sys);
-            });
-            next_frame().await;
+        window.render_pass(|| {
+            while !sys.is_render_pending {
+                sys.run_one_m_cycle();
+            }
+
+            render_screen(&mut sys);
             sys.is_render_pending = false;
-        }
+        });
+
+        next_frame().await;
+
+        // if let Some(ly) = sys.is_scanline_render_pending.take() {
+        //     window.render_pass(|| {
+        //         render_scanline(&mut sys, ly, VIEWPORT_ORG);
+        //     });
+        // }
+        // if sys.is_debug_render_pending {
+        //     window.render_pass(|| {
+        //         render_screen(&mut sys);
+        //     });
+        //     next_frame().await;
+        //     sys.is_debug_render_pending = false;
+        // }
     }
 
     debug::flush_serial_char();

@@ -52,8 +52,6 @@ impl Button {
     }
 }
 
-pub const DRAW_INPUTS_ORG: IVec2 = i2(TILE_MAP_SIZE.x, TILE_DATA_SIZE.y);
-
 pub fn draw_joypad_state(org: IVec2) {
     draw_button(Button::Up, i2(2, 1), org);
     draw_button(Button::Right, i2(3, 2), org);
