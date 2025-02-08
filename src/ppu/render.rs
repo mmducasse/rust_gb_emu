@@ -4,7 +4,7 @@ use macroquad::color::{Color, BLACK, DARKGRAY, LIGHTGRAY, WHITE};
 use xf::{
     mq::draw::draw_rect,
     num::{
-        irect::ir,
+        irect::{ir, rect},
         ivec2::{i2, IVec2},
     },
 };
@@ -21,19 +21,40 @@ use super::{
 };
 
 pub fn render_scanline(sys: &mut Sys, ly: u8, org: IVec2) {
+    let lcdc = LcdcState::from(sys);
+
     let scx = sys.mem.io_regs.get(IoReg::Scx);
     let scy = sys.mem.io_regs.get(IoReg::Scy);
 
     let src_y = u8::wrapping_add(ly, scy);
 
-    for x in 0..160 {
-        let src_x = u8::wrapping_add(scx, x);
-        let color_id = sample_pixel_from_tilemap(sys, src_x, src_y);
-        draw_pixel(i2(x as i32, ly as i32) + org, color_id);
+    // Draw background
+    if lcdc.bg_window_enable {
+        for x in 0..160 {
+            let src_x = u8::wrapping_add(scx, x);
+            let color_id = sample_pixel_from_bg_tilemap(sys, src_x, src_y);
+            draw_pixel(i2(x as i32, ly as i32) + org, color_id);
+        }
+    }
+
+    // Draw objects
+    if lcdc.obj_enable {
+        for obj_idx in 0..40u8 {
+            try_draw_obj_row(sys, obj_idx, ly, org);
+        }
+    }
+
+    // Draw window
+    if lcdc.bg_window_enable && lcdc.window_enable {
+        for x in 0..160 {
+            if let Some(color_id) = sample_pixel_from_window_tilemap(sys, x, ly) {
+                draw_pixel(i2(x as i32, ly as i32) + org, color_id);
+            }
+        }
     }
 }
 
-fn sample_pixel_from_tilemap(sys: &Sys, x: u8, y: u8) -> u8 {
+fn sample_pixel_from_bg_tilemap(sys: &Sys, x: u8, y: u8) -> u8 {
     let lcdc = LcdcState::from(sys);
     let tile_map_start_addr = if lcdc.bg_tile_map_area_is_9c00 {
         TILE_MAP_ADDR_9C00
@@ -50,8 +71,63 @@ fn sample_pixel_from_tilemap(sys: &Sys, x: u8, y: u8) -> u8 {
     let tile_data_addr = if lcdc.bg_window_tile_data_area_is_8000 {
         (tile_idx as u16) * 16 + 0x8000
     } else {
-        let s_tile_idx = unsafe { transmute::<u8, i8>(tile_idx) };
-        ((tile_idx as i32) * 16 + 0x9000) as u16
+        if tile_idx < 128 {
+            (tile_idx as u16) * 16 + 0x9000
+        } else {
+            ((tile_idx + 128) as u16) * 16 + 0x8800
+        }
+    };
+
+    let pixel_x = x % 8;
+    let pixel_y = y % 8;
+    let row_lowers_addr = tile_data_addr + (pixel_y as u16 * 2);
+    let row_uppers_addr = row_lowers_addr + 1;
+
+    let bit = 7 - pixel_x;
+    let lo = bit8(&sys.mem.read(row_lowers_addr), bit);
+    let hi = bit8(&sys.mem.read(row_uppers_addr), bit);
+
+    return (hi << 1) | lo;
+}
+
+fn sample_pixel_from_window_tilemap(sys: &Sys, x: u8, y: u8) -> Option<u8> {
+    let lcdc = LcdcState::from(sys);
+    let wx = sys.mem.io_regs.get(IoReg::Wx);
+    if !(0..=166).contains(&wx) {
+        return None;
+    }
+    let wy = sys.mem.io_regs.get(IoReg::Wy);
+    if !(0..=143).contains(&wy) {
+        return None;
+    }
+
+    if wy > y {
+        return None;
+    }
+
+    let x = u8::saturating_sub(x, wx);
+    let y = u8::saturating_sub(y, wy);
+
+    let tile_map_start_addr = if lcdc.window_tile_map_area_is_9c00 {
+        TILE_MAP_ADDR_9C00
+    } else {
+        TILE_MAP_ADDR_9800
+    };
+
+    let tile_x_idx = x / 8;
+    let tile_y_idx = y / 8;
+    let tile_idx = (tile_y_idx as u16 * TILE_MAP_P8_SIZE.x as u16) + tile_x_idx as u16;
+    let map_addr = tile_map_start_addr + tile_idx;
+
+    let tile_idx = sys.mem.read(map_addr);
+    let tile_data_addr = if lcdc.bg_window_tile_data_area_is_8000 {
+        (tile_idx as u16) * 16 + 0x8000
+    } else {
+        if tile_idx < 128 {
+            (tile_idx as u16) * 16 + 0x9000
+        } else {
+            ((tile_idx + 128) as u16) * 16 + 0x8800
+        }
     };
 
     let pixel_x = 7 - (x % 8);
@@ -62,7 +138,42 @@ fn sample_pixel_from_tilemap(sys: &Sys, x: u8, y: u8) -> u8 {
     let lo = bit8(&sys.mem.read(row_lowers_addr), pixel_x);
     let hi = bit8(&sys.mem.read(row_uppers_addr), pixel_x);
 
-    return (hi << 1) | lo;
+    return Some((hi << 1) | lo);
+}
+
+fn try_draw_obj_row(sys: &Sys, obj_idx: u8, ly: u8, org: IVec2) {
+    let lcdc = LcdcState::from(sys);
+
+    let obj_addr = 0xFE00 + (4 * obj_idx as Addr);
+    let y_pos = sys.mem.read(obj_addr + 0);
+    let x_pos = sys.mem.read(obj_addr + 1);
+    let mut tile_idx = sys.mem.read(obj_addr + 2);
+    let attrs = sys.mem.read(obj_addr + 3);
+
+    let obj_h = if lcdc.obj_size_is_8x16 { 16 } else { 8 };
+    if !(y_pos..(y_pos + obj_h)).contains(&ly) {
+        return;
+    }
+
+    let mut pixel_y = ly - y_pos;
+    if pixel_y >= 8 {
+        tile_idx += 1;
+        pixel_y -= 8;
+    }
+
+    let tile_data_addr = (tile_idx as u16) * 16 + 0x8000;
+
+    for x in 0..8 {
+        let pixel_x = 7 - (x % 8);
+        let row_lowers_addr = tile_data_addr + (pixel_y as u16 * 2);
+        let row_uppers_addr = row_lowers_addr + 1;
+
+        let lo = bit8(&sys.mem.read(row_lowers_addr), pixel_x);
+        let hi = bit8(&sys.mem.read(row_uppers_addr), pixel_x);
+
+        let color_id = (hi << 1) | lo;
+        draw_pixel(i2((x_pos + x) as i32 - 8, ly as i32 - 16) + org, color_id);
+    }
 }
 
 fn draw_pixel(pos: IVec2, color_id: u8) {

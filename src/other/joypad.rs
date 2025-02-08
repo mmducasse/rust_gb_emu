@@ -101,7 +101,7 @@ pub fn handle_joypad_inputs(sys: &mut Sys) {
         set_bits8(p1, 3, 0, lo_4);
         unsafe {
             if PREV_LO_4 != lo_4 {
-                println!("btns: {:0>8b}", p1);
+                //println!("btns: {:0>8b}", p1);
                 PREV_LO_4 = lo_4;
             }
         }

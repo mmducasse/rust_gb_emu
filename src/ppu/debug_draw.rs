@@ -39,11 +39,6 @@ pub fn render_screen(sys: &mut Sys) {
         render_objects(sys, TILE_MAP_ORG);
     }
 
-    // Render window
-    if lcdc.bg_window_enable && lcdc.window_enable {
-        render_window(sys, TILE_MAP_ORG);
-    }
-
     // Render debugging info.
     render_tile_data(sys, TILE_DATA_ORG);
     draw_joypad_state(JOYPAD_ORG);
@@ -145,33 +140,6 @@ pub fn render_background(sys: &Sys, org: IVec2) {
     // );
 }
 
-pub fn render_window(sys: &Sys, org: IVec2) {
-    let lcdc = LcdcState::from(sys);
-    let tile_map_start_addr = if lcdc.window_tile_map_area_is_9c00 {
-        TILE_MAP_ADDR_9C00
-    } else {
-        TILE_MAP_ADDR_9800
-    };
-
-    for i in 0..TILE_MAP_P8_SIZE.product() {
-        let x = i % TILE_MAP_P8_SIZE.x;
-        let y = i / TILE_MAP_P8_SIZE.x;
-        let addr = (i as u16) + tile_map_start_addr;
-
-        // if (x + y) % 2 == 0 {
-        //     draw_rect(rect(x * 8, y * 8, 8, 8), YELLOW);
-        // }
-        draw_tile_from_map(sys, i2(x, y), addr, org);
-    }
-
-    // Draw window outline.
-    let wx = sys.mem.io_regs.get(IoReg::Scx);
-    let wy = sys.mem.io_regs.get(IoReg::Scy);
-    let window_pos = i2(wx as i32, wy as i32);
-    let window_bounds = ir(window_pos, VIEWPORT_P8_SIZE * P8).offset_by(org);
-    draw_empty_rect(window_bounds, GREEN);
-}
-
 fn render_objects(sys: &Sys, org: IVec2) {
     let scx = sys.mem.io_regs.get(IoReg::Scx);
     let scy = sys.mem.io_regs.get(IoReg::Scy);
@@ -209,8 +177,11 @@ fn draw_tile_from_map(sys: &Sys, pos: IVec2, map_addr: Addr, org: IVec2) {
     let tile_data_addr = if mode_8000 {
         (tile_idx as u16) * 16 + 0x8000
     } else {
-        let s_tile_idx = unsafe { transmute::<u8, i8>(tile_idx) };
-        ((tile_idx as i32) * 16 + 0x9000) as u16
+        if tile_idx < 128 {
+            (tile_idx as u16) * 16 + 0x9000
+        } else {
+            ((tile_idx + 128) as u16) * 16 + 0x8800
+        }
     };
 
     //println!(" tile_data_addr = {:0>4X}", tile_data_addr);
