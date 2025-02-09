@@ -15,7 +15,7 @@ pub const P16: IVec2 = i2(16, 16);
 
 pub const PIXEL_SCALE: f32 = 2.0;
 
-pub const SCREEN_SIZE: IVec2 = ppu::consts::DEBUG_SCREEN_SIZE;
+pub const SCREEN_SIZE: IVec2 = ppu::consts::WINDOW_SIZE;
 pub const SCREEN_BOUNDS: IRect = ir(IVec2::ZERO, SCREEN_SIZE);
 
 // Memory sizes

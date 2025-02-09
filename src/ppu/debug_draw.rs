@@ -42,57 +42,32 @@ pub fn render_screen(sys: &mut Sys) {
     // Render debugging info.
     render_tile_data(sys, TILE_DATA_ORG);
     draw_joypad_state(JOYPAD_ORG);
-
-    // Draw moving dot to indicate frame rate.
-    let frame = sys.ppu.debug_frames_drawn() as i32;
-    let x = frame % TILE_MAP_SIZE.x;
-    let y = (frame % TILE_MAP_SIZE.product()) / TILE_MAP_SIZE.x;
-    draw_rect(ir(i2(x, y), i2(1, 1)), BLUE)
 }
 
 pub fn render_tile_data(sys: &Sys, org: IVec2) {
-    // let max = SCREEN_SIZE.x;
-    // for i in 0..max {
-    //     draw_pixel(i2(i, i), 0b01);
-    // }
+    fn render_tile_data_bank(sys: &Sys, start_addr: usize, org: IVec2) {
+        let mut i = 0;
+        let range = start_addr..(start_addr + 0x0800);
+        for addr in range.clone().step_by(16) {
+            let x = i % TILE_DATA_P8_SIZE.x;
+            let y = i / TILE_DATA_P8_SIZE.x;
 
-    let mut i = 0;
-    let range = 0x8000..0x9800;
-    for addr in range.clone().step_by(16) {
-        let x = i % TILE_DATA_P8_SIZE.x;
-        let y = i / TILE_DATA_P8_SIZE.x;
+            let rel_addr = addr - 0x8000;
+            let bytes = &sys.mem.vram.as_slice()[rel_addr..(rel_addr + 16)];
 
-        let rel_addr = addr - range.start;
-        let bytes = &sys.mem.vram.as_slice()[rel_addr..(rel_addr + 16)];
+            i += 1;
 
-        // if sum_slice(bytes) == 0 {
-        //     continue;
-        // }
-        i += 1;
-
-        // let block_color = if y < 8 {
-        //     RED
-        // } else if y < 16 {
-        //     BLUE
-        // } else {
-        //     YELLOW
-        // };
-        // draw_rect(rect(org.x + x * 8, org.y + y * 8, 8, 8), block_color);
-
-        draw_tile(bytes, org + i2(x * 8, y * 8));
+            draw_tile(bytes, org + i2(x * 8, y * 8));
+        }
     }
 
-    // Draw sections
-    let size = (TILE_DATA_P8_SIZE * P8) / i2(1, 3);
-    draw_empty_rect(rect(0, 0, size.x, size.y).offset_by(org), BLUE);
-    draw_empty_rect(rect(0, size.y, size.x, size.y).offset_by(org), BLUE);
-    draw_empty_rect(rect(0, 2 * size.y, size.x, size.y).offset_by(org), BLUE);
-
-    // let offset = 0x9000; // MemSection::Vram.start_addr();
-    // for idx in 0..MemSection::Vram.size() {
-    //     let data = sys.rd_mem(offset + idx);
-    //     println!("[{:0>4X}]: {:0>2X}", idx, data);
-    // }
+    render_tile_data_bank(sys, 0x8000, org);
+    render_tile_data_bank(sys, 0x8800, org + i2(0, TILE_DATA_BANK_P8_SIZE.y + 1) * P8);
+    render_tile_data_bank(
+        sys,
+        0x9000,
+        org + i2(0, 2 * TILE_DATA_BANK_P8_SIZE.y + 2) * P8,
+    );
 }
 
 pub fn render_background(sys: &Sys, org: IVec2) {
@@ -119,25 +94,6 @@ pub fn render_background(sys: &Sys, org: IVec2) {
     let scy = sys.mem.io_regs.get(IoReg::Scy);
     let viewport_pos = i2(scx as i32, scy as i32);
     let viewport_bounds = ir(viewport_pos, VIEWPORT_P8_SIZE * P8);
-    // draw_empty_rect(viewport_bounds.offset_by(org), YELLOW);
-    // draw_empty_rect(
-    //     viewport_bounds
-    //         .offset_by(i2(-TILE_MAP_SIZE.x, 0))
-    //         .offset_by(org),
-    //     YELLOW,
-    // );
-    // draw_empty_rect(
-    //     viewport_bounds
-    //         .offset_by(i2(0, -TILE_MAP_SIZE.y))
-    //         .offset_by(org),
-    //     YELLOW,
-    // );
-    // draw_empty_rect(
-    //     viewport_bounds
-    //         .offset_by(i2(-TILE_MAP_SIZE.x, -TILE_MAP_SIZE.y))
-    //         .offset_by(org),
-    //     YELLOW,
-    // );
 }
 
 fn render_objects(sys: &Sys, org: IVec2) {

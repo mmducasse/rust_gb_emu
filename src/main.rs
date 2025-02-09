@@ -8,20 +8,25 @@
 use consts::{PIXEL_SCALE, SCREEN_SIZE};
 use debug::{initialize_debug, DebugConfig};
 use macroquad::{
+    color::BLACK,
     input::{is_key_pressed, KeyCode},
     window::next_frame,
 };
 use ppu::{
-    consts::{TILE_MAP_P8_SIZE, VIEWPORT_ORG},
+    consts::{TILE_MAP_P8_SIZE, VIEWPORT_ORG, WINDOW_BOUNDS},
     debug_draw::render_screen,
     render::render_scanline,
     tile_data_test::{self, draw_vram_tile_data},
     tile_map_test::{self, draw_bg_tile_map},
+    ui::render_ui,
 };
 use sys::{Options, Sys};
 use test::instr::test_all_opcodes;
 use xf::{
-    mq::window::{Window, WindowParams},
+    mq::{
+        draw::draw_rect,
+        window::{Window, WindowParams},
+    },
     num::ivec2::{i2, IVec2},
 };
 
@@ -140,11 +145,12 @@ async fn run_normal(path: &str) {
         //sys.run_one_m_cycle();
 
         window.render_pass(|| {
+            draw_rect(WINDOW_BOUNDS, BLACK);
             while !sys.is_render_pending {
                 sys.run_one_m_cycle();
             }
 
-            render_screen(&mut sys);
+            render_ui(&mut sys);
             sys.is_render_pending = false;
         });
 

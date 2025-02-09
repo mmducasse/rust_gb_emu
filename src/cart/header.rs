@@ -20,7 +20,7 @@ impl CartHeader {
     pub fn parse(rom: &[u8]) -> Self {
         let title = {
             let title = &rom[0x134..0x144];
-            std::str::from_utf8(title).ok().map(|s| s.to_owned())
+            std::str::from_utf8(title).ok().map(|s| s.trim().to_owned())
         };
 
         let cart_type_id = rom[0x0147];

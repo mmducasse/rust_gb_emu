@@ -104,6 +104,10 @@ impl Cart {
         self.hw.ram()
     }
 
+    pub fn header(&self) -> CartHeader {
+        CartHeader::parse(self.rom())
+    }
+
     pub fn check_nintendo_logo(&self) -> bool {
         let logo_path = ".\\assets\\files\\nintendo_logo.txt";
         let logo_text = fs::read_to_string(logo_path)

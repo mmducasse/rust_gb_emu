@@ -53,16 +53,16 @@ impl Button {
 }
 
 pub fn draw_joypad_state(org: IVec2) {
-    draw_button(Button::Up, i2(2, 1), org);
-    draw_button(Button::Right, i2(3, 2), org);
-    draw_button(Button::Down, i2(2, 3), org);
-    draw_button(Button::Left, i2(1, 2), org);
+    draw_button(Button::Up, i2(4, 1), org);
+    draw_button(Button::Right, i2(5, 2), org);
+    draw_button(Button::Down, i2(4, 3), org);
+    draw_button(Button::Left, i2(3, 2), org);
 
-    draw_button(Button::A, i2(9, 3), org);
-    draw_button(Button::B, i2(10, 2), org);
+    draw_button(Button::A, i2(13, 3), org);
+    draw_button(Button::B, i2(14, 2), org);
 
-    draw_button(Button::Start, i2(5, 4), org);
-    draw_button(Button::Select, i2(7, 4), org);
+    draw_button(Button::Start, i2(8, 4), org);
+    draw_button(Button::Select, i2(10, 4), org);
 }
 
 fn draw_button(button: Button, pos: IVec2, org: IVec2) {
