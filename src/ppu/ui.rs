@@ -16,11 +16,11 @@ pub fn render_ui(sys: &mut Sys) {
     let lcdc = LcdcState::from(sys);
     let bg_tile_map_area = lcdc.bg_tile_map_area();
     draw_text(
-        format!("0x{:0>4X}", bg_tile_map_area),
+        format!("0x{:0>4X} BG MAP", bg_tile_map_area),
         TILE_MAP_ORG - i2(0, 8),
     );
 
-    draw_text("0x8000", TILE_DATA_ORG - i2(0, 8));
+    draw_text("0x8000 TILES", TILE_DATA_ORG - i2(0, 8));
     draw_text("0x8800", TILE_DATA_ORG + i2(0, TILE_DATA_BANK_SIZE.y));
     draw_text(
         "0x9000",

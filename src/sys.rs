@@ -158,7 +158,7 @@ impl Sys {
 
         if let Some(failure) = debug::get_failure() {
             println!("FAILURE: {}", failure);
-            debug::print_system_state(&self);
+            //debug::print_system_state(&self);
             self.hard_lock = true;
             return;
         }

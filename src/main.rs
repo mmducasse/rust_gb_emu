@@ -12,6 +12,7 @@ use macroquad::{
     input::{is_key_pressed, KeyCode},
     window::next_frame,
 };
+use other::misc::shuffle_tile_data;
 use ppu::{
     consts::{TILE_MAP_P8_SIZE, VIEWPORT_ORG, WINDOW_BOUNDS},
     debug_draw::render_screen,
@@ -104,8 +105,8 @@ async fn test() {
     //let path = ".\\assets\\real_gb_roms\\tetris.gb";
     //let path = ".\\assets\\real_gb_roms\\Dr_Mario.gb";
     //let path = ".\\assets\\real_gb_roms\\Pokemon.gb";
-    let path = ".\\assets\\real_gb_roms\\Zelda.gb";
-    //let path = ".\\assets\\real_gb_roms\\Kirby.gb";
+    //let path = ".\\assets\\real_gb_roms\\Zelda.gb";
+    let path = ".\\assets\\real_gb_roms\\Kirby.gb";
 
     //let path = ".\\assets\\homebrew_roms\\porklike.gb";
     //let path = ".\\assets\\homebrew_roms\\20y.gb";
@@ -142,11 +143,14 @@ async fn run_normal(path: &str) {
         if is_key_pressed(KeyCode::Escape) {
             sys.hard_lock = true;
         }
+        if is_key_pressed(KeyCode::Q) {
+            shuffle_tile_data(&mut sys);
+        }
         //sys.run_one_m_cycle();
 
         window.render_pass(|| {
             draw_rect(WINDOW_BOUNDS, BLACK);
-            while !sys.is_render_pending {
+            while !sys.is_render_pending && !sys.hard_lock {
                 sys.run_one_m_cycle();
             }
 
