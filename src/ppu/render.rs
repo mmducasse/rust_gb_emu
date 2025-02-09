@@ -18,6 +18,7 @@ use crate::{
 use super::{
     consts::{TILE_MAP_ADDR_9800, TILE_MAP_ADDR_9C00, TILE_MAP_P8_SIZE},
     lcdc::LcdcState,
+    palette::{draw_pixel, Palette},
 };
 
 pub fn render_scanline(sys: &mut Sys, ly: u8, org: IVec2) {
@@ -28,12 +29,14 @@ pub fn render_scanline(sys: &mut Sys, ly: u8, org: IVec2) {
 
     let src_y = u8::wrapping_add(ly, scy);
 
+    let bgp = Palette::from_reg(sys, IoReg::Bgp);
+
     // Draw background
     if lcdc.bg_window_enable {
         for x in 0..160 {
             let src_x = u8::wrapping_add(scx, x);
             let color_id = sample_pixel_from_bg_tilemap(sys, src_x, src_y);
-            draw_pixel(i2(x as i32, ly as i32) + org, color_id);
+            draw_pixel::<false>(i2(x as i32, ly as i32) + org, &bgp, color_id);
         }
     }
 
@@ -48,7 +51,7 @@ pub fn render_scanline(sys: &mut Sys, ly: u8, org: IVec2) {
     if lcdc.bg_window_enable && lcdc.window_enable {
         for x in 0..160 {
             if let Some(color_id) = sample_pixel_from_window_tilemap(sys, x, ly) {
-                draw_pixel(i2(x as i32, ly as i32) + org, color_id);
+                draw_pixel::<false>(i2(x as i32, ly as i32) + org, &bgp, color_id);
             }
         }
     }
@@ -150,10 +153,21 @@ fn try_draw_obj_row(sys: &Sys, obj_idx: u8, ly: u8, org: IVec2) {
     let mut tile_idx = sys.mem.read(obj_addr + 2);
     let attrs = sys.mem.read(obj_addr + 3);
 
+    //let priority = bit8(&attrs, 7) == 1;
+    let y_flip = bit8(&attrs, 6) == 1;
+    let x_flip = bit8(&attrs, 5) == 1;
+    let palette_reg = if bit8(&attrs, 4) == 0 {
+        IoReg::Obp0
+    } else {
+        IoReg::Obp1
+    };
+
     let obj_h = if lcdc.obj_size_is_8x16 { 16 } else { 8 };
     if !(y_pos..(y_pos + obj_h)).contains(&ly) {
         return;
     }
+
+    let palette = Palette::from_reg(sys, palette_reg);
 
     let mut pixel_y = ly - y_pos;
     if pixel_y >= 8 {
@@ -164,7 +178,7 @@ fn try_draw_obj_row(sys: &Sys, obj_idx: u8, ly: u8, org: IVec2) {
     let tile_data_addr = (tile_idx as u16) * 16 + 0x8000;
 
     for x in 0..8 {
-        let pixel_x = 7 - (x % 8);
+        let pixel_x = if x_flip { x % 8 } else { 7 - (x % 8) };
         let row_lowers_addr = tile_data_addr + (pixel_y as u16 * 2);
         let row_uppers_addr = row_lowers_addr + 1;
 
@@ -172,21 +186,10 @@ fn try_draw_obj_row(sys: &Sys, obj_idx: u8, ly: u8, org: IVec2) {
         let hi = bit8(&sys.mem.read(row_uppers_addr), pixel_x);
 
         let color_id = (hi << 1) | lo;
-        draw_pixel(i2((x_pos + x) as i32 - 8, ly as i32 - 16) + org, color_id);
+        draw_pixel::<true>(
+            i2((x_pos + x) as i32 - 8, ly as i32 - 16) + org,
+            &palette,
+            color_id,
+        );
     }
-}
-
-fn draw_pixel(pos: IVec2, color_id: u8) {
-    draw_rect(ir(pos, i2(1, 1)), get_color(color_id));
-}
-
-#[inline]
-fn get_color(color_id: u8) -> Color {
-    return match color_id {
-        0b00 => WHITE,
-        0b01 => LIGHTGRAY,
-        0b10 => DARKGRAY,
-        0b11 => BLACK,
-        _ => unreachable!(),
-    };
 }
