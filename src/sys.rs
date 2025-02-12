@@ -9,7 +9,6 @@ use crate::{
     },
     debug::{self, debug_state},
     mem::{
-        array::Array,
         io_regs::{IoReg, IoRegs},
         mem::Mem,
         sections::{self, Addr, MemSection},

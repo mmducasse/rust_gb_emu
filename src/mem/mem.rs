@@ -19,11 +19,11 @@ impl Mem {
     pub fn new(cart: Cart) -> Self {
         Self {
             cart,
-            wram: Array::from_mem_section(MemSection::Wram),
-            vram: Array::from_mem_section(MemSection::Vram),
-            oam: Array::from_mem_section(MemSection::Oam),
+            wram: MemSection::into_array(MemSection::Wram),
+            vram: MemSection::into_array(MemSection::Vram),
+            oam: MemSection::into_array(MemSection::Oam),
             io_regs: IoRegs::new(),
-            hram: Array::from_mem_section(MemSection::Hram),
+            hram: MemSection::into_array(MemSection::Hram),
         }
     }
 

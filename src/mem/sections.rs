@@ -3,7 +3,7 @@ use strum_macros::EnumIter;
 
 use crate::{consts::FAIL_ON_BAD_RW, debug, sys::Sys};
 
-use super::io_regs::IoRegs;
+use super::{array::Array, io_regs::IoRegs};
 
 pub type Addr = u16;
 
@@ -38,6 +38,12 @@ impl MemSection {
         }
     }
 
+    /// Creates an array that represents this section of memory.
+    pub fn into_array(section: Self) -> Array {
+        return Array::new(section.start_addr(), section.size());
+    }
+
+    /// The number of bytes in this section of memory.
     pub fn size(self) -> u16 {
         if self == Self::IeReg {
             return 1;

@@ -1,19 +1,16 @@
-use crate::{
-    consts::KB_32,
-    mem::{array::Array, sections::Addr},
-};
+use crate::{consts::KB_32, mem::sections::Addr};
 
 use super::{cart_hw::CartHw, consts::ROM_BANK_SIZE};
 
 /// Cartridge hardware with only ROM.
 pub struct HwRomOnly {
-    rom: Array,
+    rom: Vec<u8>,
 }
 
 impl HwRomOnly {
     pub fn new(rom_banks: usize) -> Self {
         Self {
-            rom: Array::new(0, (rom_banks * ROM_BANK_SIZE) as u16),
+            rom: vec![0; rom_banks * ROM_BANK_SIZE],
         }
     }
 }
@@ -36,18 +33,11 @@ impl CartHw for HwRomOnly {
     }
 
     fn read(&self, addr: Addr) -> u8 {
-        if !self.rom.contains_addr(addr) {
-            //panic!("Bad Rom-only cart read address: {}", addr);
-            return 0;
-        }
-        return self.rom.read(addr);
+        let addr = addr as usize;
+        return *self.rom.get(addr).unwrap_or(&0);
     }
 
     fn write(&mut self, addr: Addr, data: u8) {
-        if !self.rom.contains_addr(addr) {
-            //panic!("Bad Rom-only cart write address: {}", addr);
-            return;
-        }
-        self.rom.write(addr, data);
+        // Does nothing.
     }
 }

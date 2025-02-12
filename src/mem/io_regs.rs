@@ -85,8 +85,8 @@ impl IoRegs {
         }
 
         return Self {
-            mem: Array::from_mem_section(MemSection::IoRegs),
-            ie: Array::from_mem_section(MemSection::IeReg),
+            mem: MemSection::into_array(MemSection::IoRegs),
+            ie: MemSection::into_array(MemSection::IeReg),
             reg_datas,
 
             dma_requested: false,

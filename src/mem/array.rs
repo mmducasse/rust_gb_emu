@@ -1,7 +1,6 @@
 use crate::mem::sections::Addr;
 
-use super::sections::MemSection;
-
+/// Array of bytes that represents a segment of memory.
 pub struct Array {
     start_addr: Addr,
     memory: Vec<u8>,
@@ -13,10 +12,6 @@ impl Array {
             start_addr,
             memory: vec![0; size as usize],
         }
-    }
-
-    pub fn from_mem_section(section: MemSection) -> Self {
-        return Self::new(section.start_addr(), section.size());
     }
 
     pub fn start_addr(&self) -> Addr {
