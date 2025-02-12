@@ -1,10 +1,8 @@
-use std::{mem::transmute, ops::Add};
-
-use macroquad::color::{Color, BLACK, BLUE, DARKGRAY, GREEN, LIGHTGRAY, RED, WHITE, YELLOW};
+use macroquad::color::{Color, BLACK, DARKGRAY, LIGHTGRAY, WHITE};
 use xf::{
     mq::draw::draw_rect,
     num::{
-        irect::{ir, rect, IRect},
+        irect::{ir, rect},
         ivec2::{i2, IVec2},
     },
 };
@@ -17,7 +15,7 @@ use crate::{
     },
     other::joypad::draw_joypad_state,
     sys::Sys,
-    util::{draw::draw_empty_rect, math::bit8},
+    util::math::bit8,
 };
 
 use super::{consts::*, lcdc::LcdcState};

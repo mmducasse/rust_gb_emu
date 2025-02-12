@@ -4,11 +4,7 @@ use num::FromPrimitive;
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 
-use crate::{
-    debug,
-    sys::Sys,
-    util::math::{set_bits8, set_bits8_masked},
-};
+use crate::{debug, util::math::set_bits8_masked};
 
 use super::{
     array::Array,

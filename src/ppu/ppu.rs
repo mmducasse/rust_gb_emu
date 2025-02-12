@@ -2,7 +2,7 @@ use crate::{
     cpu::interrupt::{request_interrupt, InterruptType},
     mem::io_regs::IoReg,
     sys::Sys,
-    util::math::{bit8, bits8, set_bit8},
+    util::math::{bit8, set_bit8},
 };
 
 use super::{

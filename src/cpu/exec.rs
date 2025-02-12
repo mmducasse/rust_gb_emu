@@ -3,13 +3,13 @@ use std::mem::transmute;
 use crate::{
     debug::{self, debug_state},
     sys::Sys,
-    util::math::{add16_ui, add16_uu, bit8, bits16, bits8, join_16, set_bit8, split_16},
+    util::math::{add16_ui, add16_uu, bit8, bits8, join_16, set_bit8, split_16},
 };
 
 use super::{
-    exec_math::{add_2_u8, add_3_u8, add_sp_i8, add_u16_i8, sub_2_u8, sub_3_u8},
+    exec_math::{add_2_u8, add_3_u8, add_sp_i8, sub_2_u8, sub_3_u8},
     instr::{decode, Cond, Instr, R16Mem, R16Stk, R16, R8},
-    regs::{CpuFlag, CpuReg16, CpuReg8, CpuRegs},
+    regs::{CpuFlag, CpuReg16, CpuReg8},
 };
 
 /// Executes the instruction at PC and updates PC.
@@ -152,21 +152,6 @@ pub fn execute_next_instr(sys: &mut Sys) -> u32 {
 }
 
 // Helper functions.
-fn print_if_ld_a_a(sys: &mut Sys, instr: Instr) {
-    if debug_state().config.enable_debug_print
-        && matches!(
-            instr,
-            Instr::Ld_R8_R8 {
-                dst: R8::A,
-                src: R8::A
-            }
-        )
-    {
-        sys.regs.print();
-        CpuRegs::print_key_addrs(sys);
-    }
-}
-
 fn take_imm_u8(sys: &mut Sys) -> u8 {
     let imm8 = sys.mem.read(sys.get_pc());
     sys.inc_pc();

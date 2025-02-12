@@ -1,6 +1,5 @@
 use std::{
-    collections::{HashMap, HashSet},
-    fmt::format,
+    collections::HashMap,
     mem::{self, transmute},
 };
 

@@ -1,6 +1,6 @@
 use std::mem::transmute;
 
-use macroquad::color::{Color, BLACK, DARKGRAY, LIGHTGRAY, WHITE, YELLOW};
+use macroquad::color::{Color, BLACK, DARKGRAY, LIGHTGRAY, WHITE};
 use xf::{
     mq::draw::draw_rect,
     num::{

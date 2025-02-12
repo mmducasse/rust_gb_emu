@@ -13,7 +13,6 @@ use xf::{
 use crate::{
     consts::P8,
     mem::io_regs::IoReg,
-    ppu::consts::{TILE_DATA_P8_SIZE, TILE_DATA_SIZE, TILE_MAP_SIZE},
     sys::Sys,
     util::{
         draw::draw_empty_rect,

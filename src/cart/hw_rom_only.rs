@@ -1,4 +1,4 @@
-use crate::{consts::KB_32, mem::sections::Addr};
+use crate::mem::sections::Addr;
 
 use super::{cart_hw::CartHw, consts::ROM_BANK_SIZE};
 

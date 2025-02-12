@@ -1,11 +1,9 @@
 //#![forbid(unsafe_code)]
 #![allow(dead_code)]
-#![allow(unused_imports)]
+//#![allow(unused_imports)]
 #![allow(non_camel_case_types)]
 #![allow(unused_variables)]
 #![allow(static_mut_refs)]
-
-use std::time::Instant;
 
 use cart::cart::Cart;
 use consts::{PIXEL_SCALE, SCREEN_SIZE};
@@ -16,22 +14,11 @@ use macroquad::{
     window::next_frame,
 };
 use other::misc::shuffle_tile_data;
-use ppu::{
-    consts::{TILE_MAP_P8_SIZE, VIEWPORT_ORG, WINDOW_BOUNDS},
-    debug_draw::render_screen,
-    render::render_scanline,
-    tile_data_test::{self, draw_vram_tile_data},
-    tile_map_test::{self, draw_bg_tile_map},
-    ui::render_ui,
-};
+use ppu::{consts::WINDOW_BOUNDS, debug_draw::render_screen, ui::render_ui};
 use sys::{Options, Sys};
-use test::instr::test_all_opcodes;
-use xf::{
-    mq::{
-        draw::draw_rect,
-        window::{Window, WindowParams},
-    },
-    num::ivec2::{i2, IVec2},
+use xf::mq::{
+    draw::draw_rect,
+    window::{Window, WindowParams},
 };
 
 extern crate num;
@@ -273,8 +260,6 @@ async fn run_blaargs_suite() {
 
 #[cfg(test)]
 mod tests {
-    // Note this useful idiom: importing names from outer (for mod tests) scope.
-    use super::*;
 
     #[test]
     fn test_() {

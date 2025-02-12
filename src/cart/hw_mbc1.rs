@@ -1,10 +1,8 @@
 use num::FromPrimitive;
 
 use crate::{
-    consts::{KB_32, MB_2},
-    debug,
     mem::sections::Addr,
-    util::math::{bit8, bits8, set_bits8},
+    util::math::{bit8, bits8},
 };
 
 use super::{
@@ -17,9 +15,6 @@ enum Mode {
     RomBanking,
     RamBanking,
 }
-
-const ROM_MAX_SIZE: usize = MB_2;
-const RAM_MAX_SIZE: usize = KB_32;
 
 /// MBC1 cartridge hardware. Features 2MB ROM and/or 32KB RAM.
 pub struct HwMbc1 {

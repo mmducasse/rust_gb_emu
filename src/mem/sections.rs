@@ -1,9 +1,7 @@
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 
-use crate::{consts::FAIL_ON_BAD_RW, debug, sys::Sys};
-
-use super::{array::Array, io_regs::IoRegs};
+use super::array::Array;
 
 pub type Addr = u16;
 

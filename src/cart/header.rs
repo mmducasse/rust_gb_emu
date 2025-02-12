@@ -1,13 +1,8 @@
-use std::fs;
-
 use num::FromPrimitive;
 
-use crate::{
-    cart::consts::{RAM_BANK_SIZE, ROM_BANK_SIZE},
-    util::string::slice_to_hex_string,
-};
+use crate::cart::consts::{RAM_BANK_SIZE, ROM_BANK_SIZE};
 
-use super::{cart::Cart, type_::CartType};
+use super::type_::CartType;
 
 const NINTENDO_LOGO: &[u8] = include_bytes!("..\\..\\assets\\files\\nintendo_logo.txt");
 

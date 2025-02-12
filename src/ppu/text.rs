@@ -6,7 +6,7 @@ use xf::{
     },
 };
 
-use crate::{consts::P8, sys::Sys};
+use crate::consts::P8;
 
 const CHAR_SIZE: IVec2 = P8;
 

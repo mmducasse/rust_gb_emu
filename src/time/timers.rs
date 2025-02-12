@@ -1,20 +1,9 @@
-use std::time::Duration;
-
 use crate::{
     cpu::interrupt::{request_interrupt, InterruptType},
     mem::io_regs::IoReg,
     sys::Sys,
     util::math::{bit8, bits8},
 };
-
-// pub const CPU_FREQ_HZ: f64 = 4.194304E6;
-// pub const LCD_FREQ_HZ: f64 = 59.73;
-
-// pub const DIV_FREQ_HZ: f64 = 16384.0;
-// pub const TAC_CLK_SEL_0_FREQ_HZ: f64 = 4194.0;
-// pub const TAC_CLK_SEL_1_FREQ_HZ: f64 = 268400.0;
-// pub const TAC_CLK_SEL_2_FREQ_HZ: f64 = 67110.0;
-// pub const TAC_CLK_SEL_3_FREQ_HZ: f64 = 16780.0;
 
 pub const CPU_PERIOD_MCYCLES: u32 = 1;
 pub const DIV_PERIOD_MCYCLES: u32 = 64;
@@ -36,7 +25,6 @@ pub fn update_timer_regs(sys: &mut Sys) {
             let div_ = u8::wrapping_add(*div, 1);
             if div_ == 0 {
                 // DIV overflow
-                //println!("DIV overflow");
             }
             *div = div_;
         });
@@ -67,7 +55,6 @@ pub fn update_timer_regs(sys: &mut Sys) {
                 let tma = sys.mem.io_regs.get(IoReg::Tma);
                 sys.mem.io_regs.set(IoReg::Tima, tma);
                 request_interrupt(sys, InterruptType::Timer);
-                //println!("TIMA overflow. Reset to TMA = {:0>2X}", tma);
             }
             sys.mem.io_regs.set(IoReg::Tima, tima_);
         }

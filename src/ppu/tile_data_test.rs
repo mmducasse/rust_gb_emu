@@ -7,12 +7,7 @@ use xf::{
     },
 };
 
-use crate::{
-    consts::P8,
-    mem::sections::{Addr, MemSection},
-    sys::Sys,
-    util::{math::bit8, slice::sum_slice},
-};
+use crate::{consts::P8, sys::Sys, util::math::bit8};
 
 pub const SCREEN_P8_SIZE: IVec2 = i2(16, 24);
 pub const SCREEN_SIZE: IVec2 = IVec2::mul(SCREEN_P8_SIZE, P8);

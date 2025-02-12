@@ -1,4 +1,4 @@
-use crate::{cart::cart::Cart, consts::FAIL_ON_BAD_RW, cpu::regs::CpuRegs, debug};
+use crate::{cart::cart::Cart, consts::FAIL_ON_BAD_RW, debug};
 
 use super::{
     array::Array,

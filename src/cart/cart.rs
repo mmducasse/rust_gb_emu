@@ -1,17 +1,12 @@
 use std::{
     ffi::OsStr,
     fs::{self},
-    mem::transmute,
     path::Path,
 };
 
 use num::FromPrimitive;
 
-use crate::{
-    cart::header::CartHeader,
-    mem::sections::Addr,
-    util::{slice::copy_from_safe, string::slice_to_hex_string},
-};
+use crate::{cart::header::CartHeader, mem::sections::Addr, util::slice::copy_from_safe};
 
 use super::{
     cart_hw::CartHw,

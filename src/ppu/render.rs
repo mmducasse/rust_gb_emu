@@ -1,13 +1,4 @@
-use std::mem::transmute;
-
-use macroquad::color::{Color, BLACK, DARKGRAY, LIGHTGRAY, WHITE};
-use xf::{
-    mq::draw::draw_rect,
-    num::{
-        irect::{ir, rect},
-        ivec2::{i2, IVec2},
-    },
-};
+use xf::num::ivec2::{i2, IVec2};
 
 use crate::{
     mem::{io_regs::IoReg, sections::Addr},

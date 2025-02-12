@@ -1,5 +1,3 @@
-use std::time::Instant;
-
 use crate::{
     cart::cart::Cart,
     cpu::{
@@ -8,21 +6,15 @@ use crate::{
         regs::{CpuReg16, CpuReg8, CpuRegs},
     },
     debug::{self, debug_state},
-    mem::{
-        io_regs::{IoReg, IoRegs},
-        mem::Mem,
-        sections::{self, Addr, MemSection},
-    },
+    mem::{io_regs::IoReg, mem::Mem, sections::Addr},
     other::joypad::handle_joypad_inputs,
     ppu::ppu::Ppu,
     time::{
-        real_clock::RealClock,
         simple_clock::SimpleClock,
         timers::{
             update_timer_regs, CPU_PERIOD_MCYCLES, DIV_PERIOD_MCYCLES, TAC_CLK_0_PERIOD_MCYCLES,
         },
     },
-    util::math::{bit8, set_bit8},
 };
 
 pub struct Options {
