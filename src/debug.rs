@@ -152,7 +152,7 @@ pub fn record_curr_instr(sys: &Sys) {
     }
     let instr = match decode(op, has_cb_prefix) {
         Ok(instr) => instr,
-        Err(msg) => {
+        Err(_) => {
             return;
         }
     };

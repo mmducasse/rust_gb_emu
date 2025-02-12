@@ -32,11 +32,6 @@ pub fn render_screen(sys: &mut Sys) {
         render_background(sys, TILE_MAP_ORG);
     }
 
-    // Render objects
-    if lcdc.obj_enable {
-        render_objects(sys, TILE_MAP_ORG);
-    }
-
     // Render debugging info.
     render_tile_data(sys, TILE_DATA_ORG);
     draw_joypad_state(JOYPAD_ORG);
@@ -92,35 +87,6 @@ pub fn render_background(sys: &Sys, org: IVec2) {
     let scy = sys.mem.io_regs.get(IoReg::Scy);
     let viewport_pos = i2(scx as i32, scy as i32);
     let viewport_bounds = ir(viewport_pos, VIEWPORT_P8_SIZE * P8);
-}
-
-fn render_objects(sys: &Sys, org: IVec2) {
-    let scx = sys.mem.io_regs.get(IoReg::Scx);
-    let scy = sys.mem.io_regs.get(IoReg::Scy);
-    let viewport_pos = i2(scx as i32, scy as i32);
-
-    for idx in 0..40 {
-        let addr = 0xFE00 + (idx * 4);
-        let y = sys.mem.read(addr + 0);
-        let x = sys.mem.read(addr + 1);
-        let tile_idx = sys.mem.read(addr + 2);
-        let attrs = sys.mem.read(addr + 3);
-
-        //let priority = bit8(&attrs, 6);
-        let y_flip = bit8(&attrs, 6);
-        let x_flip = bit8(&attrs, 5);
-        let palette = bit8(&attrs, 4);
-        let bank = bit8(&attrs, 3);
-
-        let map_addr = if bank == 0 {
-            0x8000 + tile_idx as u16
-        } else {
-            0x8800 + tile_idx as u16
-        };
-
-        let pos = i2(x as i32, y as i32);
-        draw_tile_from_map(sys, viewport_pos + pos + org, map_addr, org);
-    }
 }
 
 fn draw_tile_from_map(sys: &Sys, pos: IVec2, map_addr: Addr, org: IVec2) {

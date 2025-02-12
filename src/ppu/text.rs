@@ -29,7 +29,7 @@ pub fn draw_text(s: impl Into<String>, org: IVec2) {
 fn get_font_texture() -> Texture {
     unsafe {
         const IMAGE_BYTES: &[u8] = include_bytes!("../../assets/sprites/font_nes.png");
-        return TEXTURES.get_or_load((), |id| IMAGE_BYTES);
+        return TEXTURES.get_or_load((), |_| IMAGE_BYTES);
     }
 }
 

@@ -18,7 +18,6 @@ use super::{
 pub fn execute_next_instr(sys: &mut Sys) -> u32 {
     debug::record_curr_instr(sys);
 
-    let start_pc = sys.get_pc();
     let mut pc = sys.get_pc();
     let mut op = sys.mem.read(pc);
     let has_cb_prefix;
@@ -239,7 +238,7 @@ pub fn call(sys: &mut Sys, prev_pc: u16, next_pc: u16) {
 }
 
 // Block 0 functions.
-fn nop(sys: &mut Sys) -> u8 {
+fn nop(_: &mut Sys) -> u8 {
     return 1;
 }
 
@@ -485,7 +484,7 @@ fn jr_cond_imm8(sys: &mut Sys, cond: Cond) -> u8 {
     // todo jumping from correct starting addr??
 }
 
-fn stop(sys: &mut Sys) -> u8 {
+fn stop(_: &mut Sys) -> u8 {
     //sys.cpu_enable = false;
 
     return 1;

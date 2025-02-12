@@ -37,7 +37,7 @@ impl CartHw for HwRomOnly {
         return *self.rom.get(addr).unwrap_or(&0);
     }
 
-    fn write(&mut self, addr: Addr, data: u8) {
+    fn write(&mut self, _: Addr, _: u8) {
         // Does nothing.
     }
 }
