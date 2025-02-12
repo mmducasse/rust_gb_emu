@@ -5,7 +5,7 @@ use super::{
     consts::{RAM_BANK_SIZE, ROM_BANK_SIZE},
 };
 
-/// Features: 2MB ROM and/or 32KB RAM, and Timer
+/// MBC3 cartridge hardware. Features 2MB ROM and/or 64KB RAM, and Timer.
 pub struct HwMbc3 {
     rom: Vec<u8>,
     rom_bank_sel: u8,
@@ -69,11 +69,6 @@ impl CartHw for HwMbc3 {
                 let bank_offs = bank_sel * ROM_BANK_SIZE;
                 let addr = bank_offs + (rel_addr as usize);
                 if addr >= self.rom.len() {
-                    // debug::fail(format!(
-                    //     "Attempted to read MCB1 ROM address {:0>4X} (len = {:0>8X})",
-                    //     addr,
-                    //     self.rom.len()
-                    // ));
                     return 0;
                 }
                 self.rom[addr]
@@ -85,11 +80,6 @@ impl CartHw for HwMbc3 {
                 let bank_offs = bank_sel * RAM_BANK_SIZE;
                 let addr = bank_offs + (rel_addr as usize);
                 if addr >= self.rom.len() {
-                    // debug::fail(format!(
-                    //     "Attempted to read MCB1 ROM address {:0>4X} (len = {:0>8X})",
-                    //     addr,
-                    //     self.rom.len()
-                    // ));
                     return 0;
                 }
                 self.ram[addr]
@@ -121,11 +111,6 @@ impl CartHw for HwMbc3 {
                 let addr = bank_offs + (rel_addr as usize);
 
                 if addr >= self.ram.len() {
-                    // debug::fail(format!(
-                    //     "Attempted to write MCB1 RAM address {:0>4X} (len = {:0>8X})",
-                    //     addr,
-                    //     self.ram.len()
-                    // ));
                     return;
                 }
 

@@ -16,9 +16,9 @@ pub struct Mem {
 }
 
 impl Mem {
-    pub fn new() -> Self {
+    pub fn new(cart: Cart) -> Self {
         Self {
-            cart: Cart::new(),
+            cart,
             wram: Array::from_mem_section(MemSection::Wram),
             vram: Array::from_mem_section(MemSection::Vram),
             oam: Array::from_mem_section(MemSection::Oam),

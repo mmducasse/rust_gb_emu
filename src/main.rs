@@ -5,6 +5,9 @@
 #![allow(unused_variables)]
 #![allow(static_mut_refs)]
 
+use std::time::Instant;
+
+use cart::cart::Cart;
 use consts::{PIXEL_SCALE, SCREEN_SIZE};
 use debug::{initialize_debug, DebugConfig};
 use macroquad::{
@@ -106,7 +109,11 @@ async fn test() {
     //let path = ".\\assets\\real_gb_roms\\Dr_Mario.gb";
     //let path = ".\\assets\\real_gb_roms\\Pokemon.gb";
     //let path = ".\\assets\\real_gb_roms\\Zelda.gb";
-    let path = ".\\assets\\real_gb_roms\\Kirby.gb";
+    //let path = ".\\assets\\real_gb_roms\\Kirby.gb";
+    let path = ".\\assets\\real_gb_roms\\Tennis.gb";
+    // let path = ".\\assets\\real_gb_roms\\Super Mario Land 2.gb";
+    //let path = ".\\assets\\real_gb_roms\\Wario Land.gb";
+    //let path = ".\\assets\\real_gb_roms\\DuckTales.gb";
 
     //let path = ".\\assets\\homebrew_roms\\porklike.gb";
     //let path = ".\\assets\\homebrew_roms\\20y.gb";
@@ -133,11 +140,25 @@ async fn run_normal(path: &str) {
     window.render_pass(|| {});
     next_frame().await;
 
-    let mut sys = Sys::new(Options {
+    let cart = match Cart::load_from(path, true) {
+        Ok(cart) => cart,
+        Err(msg) => {
+            panic!("{}", msg);
+        }
+    };
+    let options = Options {
         kill_on_infinite_loop: true,
-    });
-    Sys::initialize(&mut sys);
-    sys.mem.cart.load(path, true);
+    };
+
+    let mut sys = Sys::new(options, cart);
+
+    // let now = Instant::now();
+    // while (Instant::now() - now).as_secs_f32() < 5.0 {
+    //     window.render_pass(|| {
+    //         draw_rect(WINDOW_BOUNDS, BLACK);
+    //     });
+    //     next_frame().await;
+    // }
 
     while !sys.hard_lock {
         if is_key_pressed(KeyCode::Escape) {
@@ -218,11 +239,11 @@ async fn run_blaargs_suite() {
     ];
 
     for path in rom_paths {
-        let mut sys = Sys::new(Options {
+        let options = Options {
             kill_on_infinite_loop: true,
-        });
-        Sys::initialize(&mut sys);
-        sys.mem.cart.load(path, false);
+        };
+        let cart = Cart::load_from(&path, false).unwrap();
+        let mut sys = Sys::new(options, cart);
 
         let rom_name = std::path::Path::new(path)
             .file_name()

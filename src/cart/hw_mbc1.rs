@@ -21,6 +21,7 @@ enum Mode {
 const ROM_MAX_SIZE: usize = MB_2;
 const RAM_MAX_SIZE: usize = KB_32;
 
+/// MBC1 cartridge hardware. Features 2MB ROM and/or 32KB RAM.
 pub struct HwMbc1 {
     rom: Vec<u8>,
 
@@ -103,11 +104,6 @@ impl CartHw for HwMbc1 {
                 let bank_offs = bank_sel * ROM_BANK_SIZE;
                 let addr = bank_offs + (rel_addr as usize);
                 if addr >= self.rom.len() {
-                    // debug::fail(format!(
-                    //     "Attempted to read MCB1 ROM address {:0>4X} (len = {:0>8X})",
-                    //     addr,
-                    //     self.rom.len()
-                    // ));
                     return 0;
                 }
                 self.rom[addr]
@@ -119,11 +115,6 @@ impl CartHw for HwMbc1 {
                 let addr = bank_offs + (rel_addr as usize);
 
                 if addr >= self.ram.len() {
-                    // debug::fail(format!(
-                    //     "Attempted to read MCB1 RAM address {:0>4X} (len = {:0>8X})",
-                    //     addr,
-                    //     self.ram.len()
-                    // ));
                     return 0;
                 }
 
@@ -155,19 +146,12 @@ impl CartHw for HwMbc1 {
                 if self.ram_enable {
                     // RAM Bank 00-03
                     let rel_addr = addr - 0xA000;
-                    let bank_offs = (self.ram_bank_sel() as usize) * 0x2000;
+                    let bank_offs = (self.ram_bank_sel() as usize) * RAM_BANK_SIZE;
                     let addr = bank_offs + (rel_addr as usize);
 
-                    if addr >= self.ram.len() {
-                        // debug::fail(format!(
-                        //     "Attempted to write MCB1 RAM address {:0>4X} (len = {:0>8X})",
-                        //     addr,
-                        //     self.ram.len()
-                        // ));
-                        return;
+                    if let Some(val) = self.ram.get_mut(addr) {
+                        *val = data;
                     }
-
-                    self.ram[addr] = data;
                 }
             }
             _ => {

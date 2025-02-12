@@ -15,60 +15,62 @@ use crate::{
 
 use super::{
     cart_hw::CartHw,
-    hw_empty::HwEmpty,
     hw_mbc1::HwMbc1,
     hw_mbc3::HwMbc3,
     hw_rom_only::HwRomOnly,
     type_::{CartType, MbcType},
 };
 
+/// Represents a GameBoy cartridge.
 pub struct Cart {
+    header: CartHeader,
     hw: Box<dyn CartHw>,
 }
 
 impl Cart {
-    pub fn new() -> Self {
-        Self {
-            hw: Box::new(HwEmpty),
-        }
-    }
-
-    pub fn load(&mut self, file_path: &str, verbose: bool) {
+    /// Attempts to load a gb file at the given `file_path` and create a new `Cart` instance.
+    pub fn load_from(file_path: &str, verbose: bool) -> Result<Self, String> {
         let path = Path::new(file_path);
         let Some(ext) = path.extension() else {
-            panic!("File extension for file {} wasn't specified.", file_path);
+            return Err(format!(
+                "File extension for file {} wasn't specified.",
+                file_path
+            ));
         };
 
         if ext != OsStr::new("gb") {
-            panic!("Couldnt load gb rom. Expected a \".gb\" file.");
+            return Err(format!("Couldnt load gb rom. Expected a \".gb\" file."));
         }
 
-        let rom = fs::read(file_path).expect(&format!("Unable to read file {}.", file_path));
-        if verbose {
-            println!(
-                "loaded rom: {}",
-                path.file_name().unwrap().to_str().unwrap()
-            );
-        }
+        let Ok(rom) = fs::read(file_path) else {
+            return Err(format!("Unable to read file {}.", file_path));
+        };
 
         let cart_type_id = rom[0x0147];
-        let cart_type = CartType::from_u8(cart_type_id).unwrap();
+        let Some(cart_type) = CartType::from_u8(cart_type_id) else {
+            return Err(format!("Invalid cart type ID in header: {}.", cart_type_id));
+        };
+
         if !cart_type.is_supported_by_emu() {
-            panic!(
+            return Err(format!(
                 "Cartridge type not supported: {:?} ({})",
                 cart_type, cart_type_id
-            );
+            ));
         }
 
-        let header = CartHeader::parse(&rom);
+        let header = CartHeader::parse(&rom)?;
         if verbose {
             header.print();
         }
 
-        self.hw = Self::create_hw(&header, rom);
+        let hw = Self::create_hw(&header, &rom);
+
+        return Ok(Self { header, hw });
     }
 
-    fn create_hw(header: &CartHeader, program: Vec<u8>) -> Box<dyn CartHw> {
+    /// Creates the specific cartridge hardware implementation for the cartridge type
+    /// specified in the header.
+    fn create_hw(header: &CartHeader, rom: &[u8]) -> Box<dyn CartHw> {
         let mut cart_hw: Box<dyn CartHw> = match header.cart_type.mbc_type() {
             Some(MbcType::Mbc1) => {
                 Box::new(HwMbc1::new(header.rom_bank_count, header.ram_bank_count))
@@ -83,7 +85,7 @@ impl Cart {
             None => Box::new(HwRomOnly::new(header.rom_bank_count)),
         };
 
-        copy_from_safe(cart_hw.rom_mut(), &program);
+        copy_from_safe(cart_hw.rom_mut(), rom);
 
         return cart_hw;
     }
@@ -104,28 +106,7 @@ impl Cart {
         self.hw.ram()
     }
 
-    pub fn header(&self) -> CartHeader {
-        CartHeader::parse(self.rom())
-    }
-
-    pub fn check_nintendo_logo(&self) -> bool {
-        let logo_path = ".\\assets\\files\\nintendo_logo.txt";
-        let logo_text = fs::read_to_string(logo_path)
-            .expect(&format!("Unable to read nintendo logo file {}.", logo_path));
-        let logo_bytes = logo_text
-            .split_ascii_whitespace()
-            .map(|s| u8::from_str_radix(&s, 16).unwrap())
-            .collect::<Vec<_>>();
-
-        let cart_rom_span = &self.hw.rom()[0x104..0x134];
-
-        for (logo, cart) in logo_bytes.iter().zip(cart_rom_span.iter()) {
-            // println!("logo = {:#02x}, cart = {:#02x}", logo, cart);
-            if *logo != *cart {
-                return false;
-            }
-        }
-
-        return true;
+    pub fn header(&self) -> &CartHeader {
+        &self.header
     }
 }

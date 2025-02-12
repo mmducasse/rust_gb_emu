@@ -1,3 +1,5 @@
+use std::fs;
+
 use num::FromPrimitive;
 
 use crate::{
@@ -7,54 +9,74 @@ use crate::{
 
 use super::{cart::Cart, type_::CartType};
 
+const NINTENDO_LOGO: &[u8] = include_bytes!("..\\..\\assets\\files\\nintendo_logo.txt");
+
+/// The interpretation of the data in the cartridge ROM header (addresses 0x0100-0x014F).
 pub struct CartHeader {
     pub title: Option<String>,
     pub cart_type: CartType,
     pub rom_bank_count: usize,
     pub ram_bank_count: usize,
+    pub is_nintendo_logo_matching: bool,
     pub checksum: u8,
     pub is_checksum_matching: bool,
 }
 
 impl CartHeader {
-    pub fn parse(rom: &[u8]) -> Self {
+    /// Parses the entire cartridge ROM and returns the interpretation of its header.
+    pub fn parse(rom: &[u8]) -> Result<Self, String> {
         let title = {
             let title = &rom[0x134..0x144];
             std::str::from_utf8(title).ok().map(|s| s.trim().to_owned())
         };
 
         let cart_type_id = rom[0x0147];
-        let cart_type = CartType::from_u8(cart_type_id).unwrap();
+        let Some(cart_type) = CartType::from_u8(cart_type_id) else {
+            return Err(format!(
+                "Invalid cart type id at header address [0x0147]: {}",
+                cart_type_id
+            ));
+        };
+
+        let rom_banks_code = rom[0x0148];
+        let Some(rom_bank_count) = get_rom_bank_count(rom_banks_code) else {
+            return Err(format!(
+                "Unknown cartridge rom size code in header address [0x0148]: {}",
+                rom_banks_code
+            ));
+        };
+
+        let ram_banks_code = rom[0x0149];
+        let Some(ram_bank_count) = get_ram_bank_count(ram_banks_code) else {
+            return Err(format!(
+                "Unknown cartridge ram size code in header address [0x0149]: {}",
+                ram_banks_code
+            ));
+        };
+
+        let is_nintendo_logo_matching = check_nintendo_logo(rom);
 
         let (checksum, is_matching) = check_header_checksum(rom);
 
-        let rom_bank_count = get_rom_bank_count(rom);
-        let ram_bank_count = get_ram_bank_count(rom);
-
-        return Self {
+        return Ok(Self {
             title,
             cart_type,
-            rom_bank_count: rom_bank_count,
-            ram_bank_count: ram_bank_count,
+            rom_bank_count,
+            ram_bank_count,
+            is_nintendo_logo_matching,
             checksum,
             is_checksum_matching: is_matching,
-        };
+        });
     }
 
     pub fn print(&self) {
         println!("Cartridge Header:");
-
-        //println!("  Logo Matches: {}", self.check_nintendo_logo());
 
         if let Some(title) = &self.title {
             println!("  Title: {}", title);
         }
 
         println!("  Type: {:?} ({})", self.cart_type, self.cart_type as u8);
-        println!(
-            "  Checksum ({:#02x}) Matches: {}",
-            self.checksum, self.is_checksum_matching
-        );
 
         println!(
             "  Rom: {} banks, 0x{:0>8X} bytes",
@@ -65,6 +87,13 @@ impl CartHeader {
             "  Ram: {} banks, 0x{:0>8X} bytes",
             self.ram_bank_count,
             self.ram_bank_count * RAM_BANK_SIZE
+        );
+
+        println!("  Logo Matches: {}", self.is_nintendo_logo_matching);
+
+        println!(
+            "  Checksum ({:#02x}) Matches: {}",
+            self.checksum, self.is_checksum_matching
         );
 
         println!();
@@ -90,10 +119,28 @@ fn check_header_checksum(rom: &[u8]) -> (u8, bool) {
     return (checksum, is_matching);
 }
 
-fn get_rom_bank_count(rom: &[u8]) -> usize {
-    let code = rom[0x0148];
+fn check_nintendo_logo(rom: &[u8]) -> bool {
+    let logo_text = String::from_utf8(NINTENDO_LOGO.to_vec())
+        .expect(&format!("Unable to read nintendo logo file.",));
 
-    return match code {
+    let logo_bytes = logo_text
+        .split_ascii_whitespace()
+        .map(|s| u8::from_str_radix(&s, 16).unwrap())
+        .collect::<Vec<_>>();
+
+    let cart_rom_span = &rom[0x104..0x134];
+
+    for (logo, cart) in logo_bytes.iter().zip(cart_rom_span.iter()) {
+        if *logo != *cart {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+fn get_rom_bank_count(code: u8) -> Option<usize> {
+    let count = match code {
         0x00 => 2,
         0x01 => 4,
         0x02 => 8,
@@ -104,15 +151,15 @@ fn get_rom_bank_count(rom: &[u8]) -> usize {
         0x07 => 256,
         0x08 => 512,
         _ => {
-            panic!("Unknown cartridge rom size code: {}", code);
+            return None;
         }
     };
+
+    return Some(count);
 }
 
-fn get_ram_bank_count(rom: &[u8]) -> usize {
-    let code = rom[0x0149];
-
-    return match code {
+fn get_ram_bank_count(code: u8) -> Option<usize> {
+    let count = match code {
         0x00 => 0,
         // 0x01 => unused
         0x02 => 1,
@@ -120,7 +167,9 @@ fn get_ram_bank_count(rom: &[u8]) -> usize {
         0x04 => 16,
         0x05 => 8,
         _ => {
-            panic!("Unknown cartridge ram size code: {}", code);
+            return None;
         }
     };
+
+    return Some(count);
 }

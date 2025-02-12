@@ -54,11 +54,11 @@ pub struct Sys {
 }
 
 impl Sys {
-    pub fn new(options: Options) -> Self {
-        Self {
+    pub fn new(options: Options, cart: Cart) -> Self {
+        let mut sys = Self {
             options,
 
-            mem: Mem::new(),
+            mem: Mem::new(cart),
 
             ppu: Ppu::new(),
 
@@ -76,10 +76,14 @@ impl Sys {
 
             hard_lock: false,
             is_render_pending: false,
-        }
+        };
+
+        Self::initialize(&mut sys);
+
+        return sys;
     }
 
-    pub fn initialize(sys: &mut Self) {
+    fn initialize(sys: &mut Self) {
         // Set CPU registers to defaults.
         sys.regs.set_8(CpuReg8::A, 0x01);
         sys.regs.set_8(CpuReg8::F, 0b1000_0000);

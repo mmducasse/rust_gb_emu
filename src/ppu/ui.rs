@@ -1,16 +1,25 @@
-use xf::num::ivec2::i2;
+use macroquad::color::BLACK;
+use xf::{
+    mq::draw::draw_rect,
+    num::{
+        irect::ir,
+        ivec2::{i2, IVec2},
+    },
+};
 
 use crate::{consts::P8, sys::Sys};
 
 use super::{
-    consts::{TILE_DATA_BANK_SIZE, TILE_DATA_ORG, TILE_MAP_ORG},
+    consts::{TILE_DATA_BANK_SIZE, TILE_DATA_ORG, TILE_MAP_ORG, VIEWPORT_P8_SIZE},
     debug_draw::render_screen,
     lcdc::LcdcState,
     text::draw_text,
 };
 
 pub fn render_ui(sys: &mut Sys) {
-    let game_title = sys.mem.cart.header().title.unwrap_or("".to_owned());
+    draw_rect(ir(IVec2::ZERO, i2(VIEWPORT_P8_SIZE.x + 1, 1) * P8), BLACK);
+    draw_rect(ir(IVec2::ZERO, i2(1, VIEWPORT_P8_SIZE.y + 1) * P8), BLACK);
+    let game_title = sys.mem.cart.header().title.clone().unwrap_or("".to_owned());
     draw_text(game_title, i2(1, 0) * P8);
 
     let lcdc = LcdcState::from(sys);

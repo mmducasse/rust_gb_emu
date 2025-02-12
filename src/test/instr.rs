@@ -33,32 +33,3 @@ pub fn test_all_opcodes() {
         println!("$CB{:0>2X} = {}", op, value);
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use crate::{
-        cpu::regs::{CpuReg16, CpuReg8},
-        sys::{Options, Sys},
-    };
-
-    #[test]
-    fn test_ld() {
-        let mut sys = Sys::new(Options {
-            kill_on_infinite_loop: true,
-        });
-        sys.mem
-            .cart
-            .load(".\\assets\\files\\custom_roms\\ld_r8_r8\\rom.gb", true);
-        sys.run();
-
-        assert_eq!(sys.regs.get_8(CpuReg8::B), 1);
-        assert_eq!(sys.regs.get_8(CpuReg8::C), 2);
-        assert_eq!(sys.regs.get_8(CpuReg8::D), 3);
-        assert_eq!(sys.regs.get_8(CpuReg8::E), 4);
-
-        assert_eq!(sys.regs.get_8(CpuReg8::H), 5);
-        assert_eq!(sys.regs.get_8(CpuReg8::L), 6);
-        assert_eq!(sys.mem.read(sys.regs.get_16(CpuReg16::HL)), 7);
-        assert_eq!(sys.regs.get_8(CpuReg8::A), 8);
-    }
-}

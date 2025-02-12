@@ -5,6 +5,7 @@ use crate::{
 
 use super::{cart_hw::CartHw, consts::ROM_BANK_SIZE};
 
+/// Cartridge hardware with only ROM.
 pub struct HwRomOnly {
     rom: Array,
 }
