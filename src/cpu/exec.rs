@@ -2,6 +2,7 @@ use std::mem::transmute;
 
 use crate::{
     debug::{self, debug_state},
+    mem::sections::Addr,
     sys::Sys,
     util::math::{add16_ui, add16_uu, bit8, bits8, join_16, set_bit8, split_16},
 };
@@ -18,7 +19,7 @@ use super::{
 pub fn execute_next_instr(sys: &mut Sys) -> u32 {
     debug::record_curr_instr(sys);
 
-    let mut pc = sys.get_pc();
+    let mut pc = sys.regs.pc();
     let mut op = sys.mem.read(pc);
     let has_cb_prefix;
 
@@ -42,7 +43,7 @@ pub fn execute_next_instr(sys: &mut Sys) -> u32 {
     }
 
     pc += 1;
-    sys.set_pc(pc);
+    set_pc(sys, pc);
 
     let cycles: u8 = match instr {
         // Block 0.
@@ -151,9 +152,36 @@ pub fn execute_next_instr(sys: &mut Sys) -> u32 {
 }
 
 // Helper functions.
+fn set_pc(sys: &mut Sys, addr: Addr) {
+    sys.regs.set_16(CpuReg16::PC, addr);
+}
+
+fn inc_pc(sys: &mut Sys) {
+    //
+    let mut pc = sys.regs.pc();
+    pc = u16::wrapping_add(pc, 1);
+    sys.regs.set_16(CpuReg16::PC, pc);
+}
+
+fn set_sp(sys: &mut Sys, addr: Addr) {
+    sys.regs.set_16(CpuReg16::SP, addr);
+}
+
+fn inc_sp(sys: &mut Sys) {
+    let mut sp = sys.regs.sp();
+    sp = u16::wrapping_add(sp, 1);
+    sys.regs.set_16(CpuReg16::SP, sp);
+}
+
+fn dec_sp(sys: &mut Sys) {
+    let mut sp = sys.regs.sp();
+    sp = u16::wrapping_sub(sp, 1);
+    sys.regs.set_16(CpuReg16::SP, sp);
+}
+
 fn take_imm_u8(sys: &mut Sys) -> u8 {
-    let imm8 = sys.mem.read(sys.get_pc());
-    sys.inc_pc();
+    let imm8 = sys.mem.read(sys.regs.pc());
+    inc_pc(sys);
 
     if debug_state().config.enable_debug_print {
         println!("  imm8: {:0>2X} ({})", imm8, imm8);
@@ -168,10 +196,10 @@ fn take_imm_i8(sys: &mut Sys) -> i8 {
 }
 
 fn take_imm_u16(sys: &mut Sys) -> u16 {
-    let lo = sys.mem.read(sys.get_pc());
-    sys.inc_pc();
-    let hi = sys.mem.read(sys.get_pc());
-    sys.inc_pc();
+    let lo = sys.mem.read(sys.regs.pc());
+    inc_pc(sys);
+    let hi = sys.mem.read(sys.regs.pc());
+    inc_pc(sys);
 
     let imm16 = join_16(hi, lo);
 
@@ -215,26 +243,26 @@ fn set_r8_data(sys: &mut Sys, operand: R8, data: u8) {
 fn push_16(sys: &mut Sys, data: u16) {
     let (hi, lo) = split_16(data);
 
-    sys.dec_sp();
-    sys.mem.write(sys.get_sp(), hi);
+    dec_sp(sys);
+    sys.mem.write(sys.regs.sp(), hi);
 
-    sys.dec_sp();
-    sys.mem.write(sys.get_sp(), lo);
+    dec_sp(sys);
+    sys.mem.write(sys.regs.sp(), lo);
 }
 
 fn pop_16(sys: &mut Sys) -> u16 {
-    let lo = sys.mem.read(sys.get_sp());
-    sys.inc_sp();
+    let lo = sys.mem.read(sys.regs.sp());
+    inc_sp(sys);
 
-    let hi = sys.mem.read(sys.get_sp());
-    sys.inc_sp();
+    let hi = sys.mem.read(sys.regs.sp());
+    inc_sp(sys);
 
     return join_16(hi, lo);
 }
 
 pub fn call(sys: &mut Sys, prev_pc: u16, next_pc: u16) {
     push_16(sys, prev_pc);
-    sys.set_pc(next_pc);
+    set_pc(sys, next_pc);
 }
 
 // Block 0 functions.
@@ -458,11 +486,11 @@ fn jr_imm8(sys: &mut Sys) -> u8 {
         //debug::fail("Ininite loop.");
         sys.hard_lock = true;
     }
-    let mut pc = sys.get_pc();
+    let mut pc = sys.regs.pc();
 
     pc = add16_ui(pc, rel as i16);
 
-    sys.set_pc(pc);
+    set_pc(sys, pc);
 
     return 3;
 }
@@ -470,11 +498,11 @@ fn jr_imm8(sys: &mut Sys) -> u8 {
 fn jr_cond_imm8(sys: &mut Sys, cond: Cond) -> u8 {
     let rel = take_imm_i8(sys);
     if is_condition_met(sys, cond) {
-        let mut pc = sys.get_pc();
+        let mut pc = sys.regs.pc();
 
         pc = add16_ui(pc, rel as i16);
 
-        sys.set_pc(pc);
+        set_pc(sys, pc);
 
         return 3;
     } else {
@@ -768,14 +796,14 @@ fn ret_cond(sys: &mut Sys, cond: Cond) -> u8 {
 
 fn ret(sys: &mut Sys) -> u8 {
     let addr = pop_16(sys);
-    sys.set_pc(addr);
+    set_pc(sys, addr);
 
     return 4;
 }
 
 fn reti(sys: &mut Sys) -> u8 {
     let addr = pop_16(sys);
-    sys.set_pc(addr);
+    set_pc(sys, addr);
 
     sys.interrupt_master_enable = true;
 
@@ -785,7 +813,7 @@ fn reti(sys: &mut Sys) -> u8 {
 fn jp_cond_imm16(sys: &mut Sys, cond: Cond) -> u8 {
     let imm16 = take_imm_u16(sys);
     if is_condition_met(sys, cond) {
-        sys.set_pc(imm16);
+        set_pc(sys, imm16);
 
         return 4;
     }
@@ -795,14 +823,14 @@ fn jp_cond_imm16(sys: &mut Sys, cond: Cond) -> u8 {
 
 fn jp_imm16(sys: &mut Sys) -> u8 {
     let imm16 = take_imm_u16(sys);
-    sys.set_pc(imm16);
+    set_pc(sys, imm16);
 
     return 4;
 }
 
 fn jp_hl(sys: &mut Sys) -> u8 {
     let hl = sys.regs.get_16(CpuReg16::HL);
-    sys.set_pc(hl);
+    set_pc(sys, hl);
 
     return 1;
 }
@@ -810,7 +838,7 @@ fn jp_hl(sys: &mut Sys) -> u8 {
 fn call_cond_imm16(sys: &mut Sys, cond: Cond) -> u8 {
     let imm16 = take_imm_u16(sys);
     if is_condition_met(sys, cond) {
-        let pc = sys.get_pc();
+        let pc = sys.regs.pc();
         call(sys, pc, imm16);
 
         return 6;
@@ -821,18 +849,18 @@ fn call_cond_imm16(sys: &mut Sys, cond: Cond) -> u8 {
 
 fn call_imm16(sys: &mut Sys) -> u8 {
     let imm16 = take_imm_u16(sys);
-    let pc = sys.get_pc();
+    let pc = sys.regs.pc();
     call(sys, pc, imm16);
 
     return 6;
 }
 
 fn rst_tgt3(sys: &mut Sys, tgt3: u8) -> u8 {
-    let pc = sys.get_pc();
+    let pc = sys.regs.pc();
     push_16(sys, pc);
 
     let tgt = (tgt3 as u16) << 3;
-    sys.set_pc(tgt);
+    set_pc(sys, tgt);
 
     return 4;
 }
@@ -911,11 +939,11 @@ fn ld_a_imm16p(sys: &mut Sys) -> u8 {
 }
 
 fn add_sp_imm8(sys: &mut Sys) -> u8 {
-    let sp = sys.get_sp();
+    let sp = sys.regs.sp();
     let s_imm8 = take_imm_i8(sys);
     let res = add_sp_i8(sp, s_imm8);
 
-    sys.set_sp(res.ans);
+    set_sp(sys, res.ans);
 
     sys.regs.set_flag(CpuFlag::Z, false);
     sys.regs.set_flag(CpuFlag::N, false);
@@ -926,7 +954,7 @@ fn add_sp_imm8(sys: &mut Sys) -> u8 {
 }
 
 fn ld_hl_spimm8(sys: &mut Sys) -> u8 {
-    let sp = sys.get_sp();
+    let sp = sys.regs.sp();
     let s_imm8 = take_imm_i8(sys);
     let res = add_sp_i8(sp, s_imm8);
 
@@ -942,7 +970,7 @@ fn ld_hl_spimm8(sys: &mut Sys) -> u8 {
 
 fn ld_sp_hl(sys: &mut Sys) -> u8 {
     let data = sys.regs.get_16(CpuReg16::HL);
-    sys.set_sp(data);
+    set_sp(sys, data);
 
     return 2;
 }

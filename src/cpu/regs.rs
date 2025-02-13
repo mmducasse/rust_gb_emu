@@ -111,6 +111,14 @@ impl CpuRegs {
         }
     }
 
+    pub fn pc(&self) -> u16 {
+        self.get_16(CpuReg16::PC)
+    }
+
+    pub fn sp(&self) -> u16 {
+        self.get_16(CpuReg16::SP)
+    }
+
     pub fn get_flag(&self, flag: CpuFlag) -> bool {
         let idx = flag as u8;
         return bit8(&self.get_8(CpuReg8::F), idx) == 1;

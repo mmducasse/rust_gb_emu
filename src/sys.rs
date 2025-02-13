@@ -6,7 +6,7 @@ use crate::{
         regs::{CpuReg16, CpuReg8, CpuRegs},
     },
     debug::{self, debug_state},
-    mem::{io_regs::IoReg, mem::Mem, sections::Addr},
+    mem::{io_regs::IoReg, mem::Mem},
     other::joypad::handle_joypad_inputs,
     ppu::ppu::Ppu,
     time::{
@@ -86,8 +86,8 @@ impl Sys {
         sys.regs.set_8(CpuReg8::H, 0x01);
         sys.regs.set_8(CpuReg8::L, 0x48);
 
-        sys.set_pc(0x0100);
-        sys.set_sp(0xFFFE);
+        sys.regs.set_16(CpuReg16::PC, 0x0100);
+        sys.regs.set_16(CpuReg16::SP, 0xFFFE);
 
         // Set IO registers to defaults.
         use IoReg::*;
@@ -169,40 +169,6 @@ impl Sys {
         if debug_state().total_instrs_executed > 100 {
             self.hard_lock = true;
         }
-    }
-
-    pub fn get_pc(&self) -> Addr {
-        return self.regs.get_16(CpuReg16::PC);
-    }
-
-    pub fn set_pc(&mut self, addr: Addr) {
-        self.regs.set_16(CpuReg16::PC, addr);
-    }
-
-    pub fn inc_pc(&mut self) {
-        let mut pc = self.get_pc();
-        pc = u16::wrapping_add(pc, 1);
-        self.set_pc(pc);
-    }
-
-    pub fn get_sp(&self) -> Addr {
-        return self.regs.get_16(CpuReg16::SP);
-    }
-
-    pub fn set_sp(&mut self, addr: Addr) {
-        self.regs.set_16(CpuReg16::SP, addr);
-    }
-
-    pub fn inc_sp(&mut self) {
-        let mut sp = self.get_sp();
-        sp = u16::wrapping_add(sp, 1);
-        self.regs.set_16(CpuReg16::SP, sp);
-    }
-
-    pub fn dec_sp(&mut self) {
-        let mut sp = self.get_sp();
-        sp = u16::wrapping_sub(sp, 1);
-        self.regs.set_16(CpuReg16::SP, sp);
     }
 
     pub fn print(&self) {

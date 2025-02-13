@@ -141,7 +141,7 @@ const DO_RECORD_NOP: bool = false;
 pub fn record_curr_instr(sys: &Sys) {
     debug_state().total_instrs_executed += 1;
 
-    let mut pc = sys.get_pc();
+    let mut pc = sys.regs.pc();
     let addr = pc;
     let mut op = sys.mem.read(pc);
     let mut has_cb_prefix = false;
@@ -182,7 +182,7 @@ pub fn record_curr_instr(sys: &Sys) {
     };
 
     let stack_record = {
-        let sp = sys.get_sp();
+        let sp = sys.regs.sp();
         let range_min = u16::saturating_sub(sp, 2);
         let range_max = u16::saturating_add(sp, 2);
         let offset = range_min;
