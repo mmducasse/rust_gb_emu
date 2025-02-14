@@ -27,8 +27,8 @@ enum Button {
     Down,
     Left,
 
-    A,
     B,
+    A,
 
     Start,
     Select,
@@ -42,8 +42,8 @@ impl Button {
             Button::Down => KeyCode::Down,
             Button::Left => KeyCode::Left,
 
-            Button::A => KeyCode::Z,
-            Button::B => KeyCode::X,
+            Button::B => KeyCode::Z,
+            Button::A => KeyCode::X,
 
             Button::Start => KeyCode::Enter,
             Button::Select => KeyCode::RightShift,
@@ -57,8 +57,8 @@ pub fn draw_joypad_state(org: IVec2) {
     draw_button(Button::Down, i2(4, 3), org);
     draw_button(Button::Left, i2(3, 2), org);
 
-    draw_button(Button::A, i2(13, 3), org);
-    draw_button(Button::B, i2(14, 2), org);
+    draw_button(Button::B, i2(13, 3), org);
+    draw_button(Button::A, i2(14, 2), org);
 
     draw_button(Button::Start, i2(8, 4), org);
     draw_button(Button::Select, i2(10, 4), org);
