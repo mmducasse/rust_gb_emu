@@ -97,8 +97,16 @@ impl Cart {
         self.hw.rom()
     }
 
+    pub fn rom_mut(&mut self) -> &mut [u8] {
+        self.hw.rom_mut()
+    }
+
     pub fn ram(&self) -> &[u8] {
         self.hw.ram()
+    }
+
+    pub fn ram_mut(&mut self) -> &mut [u8] {
+        self.hw.ram_mut()
     }
 
     pub fn header(&self) -> &CartHeader {

@@ -8,7 +8,7 @@ const NINTENDO_LOGO: &[u8] = include_bytes!("..\\..\\assets\\files\\nintendo_log
 
 /// The interpretation of the data in the cartridge ROM header (addresses 0x0100-0x014F).
 pub struct CartHeader {
-    pub title: Option<String>,
+    title: Option<String>,
     pub cart_type: CartType,
     pub rom_bank_count: usize,
     pub ram_bank_count: usize,
@@ -22,7 +22,18 @@ impl CartHeader {
     pub fn parse(rom: &[u8]) -> Result<Self, String> {
         let title = {
             let title = &rom[0x134..0x144];
-            std::str::from_utf8(title).ok().map(|s| s.trim().to_owned())
+
+            // Workaround for bug where null character would
+            // be included in title string.
+            let title = title
+                .iter()
+                .take_while(|c| **c != 0)
+                .map(|c| *c)
+                .collect::<Vec<_>>();
+
+            std::str::from_utf8(&title)
+                .ok()
+                .map(|s| s.trim().to_owned())
         };
 
         let cart_type_id = rom[0x0147];
@@ -62,6 +73,14 @@ impl CartHeader {
             checksum,
             is_checksum_matching: is_matching,
         });
+    }
+
+    pub fn title(&self) -> &str {
+        if let Some(title) = &self.title {
+            title
+        } else {
+            ""
+        }
     }
 
     pub fn print(&self) {

@@ -19,7 +19,7 @@ use super::{
 pub fn render_ui(sys: &mut Sys) {
     draw_rect(ir(IVec2::ZERO, i2(VIEWPORT_P8_SIZE.x + 1, 1) * P8), BLACK);
     draw_rect(ir(IVec2::ZERO, i2(1, VIEWPORT_P8_SIZE.y + 1) * P8), BLACK);
-    let game_title = sys.mem.cart.header().title.clone().unwrap_or("".to_owned());
+    let game_title = sys.mem.cart.header().title();
     draw_text(game_title, i2(1, 0) * P8);
 
     let lcdc = LcdcState::from(sys);

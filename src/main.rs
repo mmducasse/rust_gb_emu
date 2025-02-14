@@ -13,7 +13,7 @@ use macroquad::{
     input::{is_key_pressed, KeyCode},
     window::next_frame,
 };
-use other::misc::shuffle_tile_data;
+use other::{misc::shuffle_tile_data, save::check_load_save_inputs};
 use ppu::{consts::WINDOW_BOUNDS, debug_draw::render_screen, ui::render_ui};
 use sys::{Options, Sys};
 use xf::mq::{
@@ -154,6 +154,7 @@ async fn run_normal(path: &str) {
         if is_key_pressed(KeyCode::Q) {
             shuffle_tile_data(&mut sys);
         }
+        check_load_save_inputs(&mut sys);
         //sys.run_one_m_cycle();
 
         window.render_pass(|| {
