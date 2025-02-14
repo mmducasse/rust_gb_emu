@@ -117,6 +117,7 @@ impl IoRegs {
         return data;
     }
 
+    /// Reads the entire IO register.
     pub fn get(&self, reg: IoReg) -> u8 {
         return if reg == IoReg::Ie {
             self.ie.read(reg)
@@ -138,13 +139,12 @@ impl IoRegs {
 
             if reg == IoReg::Sc {
                 let serial_data = self.get(IoReg::Sb);
-                //println!("> {}", serial_data as char);
                 debug::push_serial_char(serial_data as char);
             } else if reg == IoReg::Dma {
                 self.dma_requested = true;
             }
 
-            if reg_data.reset_on_write() {
+            if reg == IoReg::Div {
                 self.mem.write(addr, 0x00);
             } else {
                 let data = self.mem.mut_(addr);
@@ -156,6 +156,7 @@ impl IoRegs {
         }
     }
 
+    /// Sets the entire IO register.
     pub fn set(&mut self, reg: IoReg, data: u8) {
         return if reg == IoReg::Ie {
             self.ie.write(reg, data)
@@ -164,6 +165,7 @@ impl IoRegs {
         };
     }
 
+    /// Gets a mutable reference to the IO register.
     pub fn mut_(&mut self, reg: IoReg, mut f: impl FnMut(&mut u8) -> ()) -> u8 {
         let data = if reg == IoReg::Ie {
             self.ie.mut_(reg)

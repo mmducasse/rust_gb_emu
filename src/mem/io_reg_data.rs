@@ -5,7 +5,6 @@ pub struct IoRegData {
     reg: IoReg,
     read_mask: u8,
     write_mask: u8,
-    reset_on_write: bool,
 }
 
 impl IoRegData {
@@ -13,8 +12,7 @@ impl IoRegData {
         Self {
             reg,
             read_mask: 0xFF,
-            write_mask: 0x00,
-            reset_on_write: false,
+            write_mask: 0xFF,
         }
     }
 
@@ -24,10 +22,6 @@ impl IoRegData {
 
     pub fn write_mask(&self) -> u8 {
         self.write_mask
-    }
-
-    pub fn reset_on_write(&self) -> bool {
-        self.reset_on_write
     }
 
     fn with_read_mask(mut self, read_mask: u8) -> Self {
@@ -40,39 +34,35 @@ impl IoRegData {
         self
     }
 
-    fn with_reset_on_write(mut self) -> Self {
-        self.reset_on_write = true;
-        self
-    }
-
     pub fn from_reg(reg: IoReg) -> Self {
-        let r = Self::new(reg).with_write_mask(0x00);
-        let rw = Self::new(reg).with_write_mask(0xFF);
+        let data = Self::new(reg);
 
         match reg {
-            IoReg::P1 => rw.with_write_mask(0b1111_0000),
-            IoReg::Sb => rw,
-            IoReg::Sc => rw,
-            IoReg::Div => rw.with_reset_on_write(),
-            IoReg::Tima => rw,
-            IoReg::Tma => rw,
-            IoReg::Tac => rw,
-            IoReg::If => rw.with_read_mask(0b0001_1111).with_write_mask(0b0001_1111),
+            IoReg::P1 => data.with_write_mask(0b1111_0000),
+            IoReg::Sb => data,
+            IoReg::Sc => data,
+            IoReg::Div => data,
+            IoReg::Tima => data,
+            IoReg::Tma => data,
+            IoReg::Tac => data,
+            IoReg::If => data
+                .with_read_mask(0b0001_1111)
+                .with_write_mask(0b0001_1111),
             // todo: Sound regs...
-            IoReg::Lcdc => rw,
-            IoReg::Stat => rw.with_write_mask(0b1111_1000),
-            IoReg::Scy => rw,
-            IoReg::Scx => rw,
-            IoReg::Ly => r,
-            IoReg::Lyc => rw,
-            IoReg::Dma => rw,
-            IoReg::Bgp => rw,
-            IoReg::Obp0 => rw,
-            IoReg::Obp1 => rw,
-            IoReg::Wy => rw,
-            IoReg::Wx => rw,
+            IoReg::Lcdc => data,
+            IoReg::Stat => data.with_write_mask(0b1111_1000),
+            IoReg::Scy => data,
+            IoReg::Scx => data,
+            IoReg::Ly => data.with_write_mask(0x00),
+            IoReg::Lyc => data,
+            IoReg::Dma => data,
+            IoReg::Bgp => data,
+            IoReg::Obp0 => data,
+            IoReg::Obp1 => data,
+            IoReg::Wy => data,
+            IoReg::Wx => data,
             // todo: CGB regs...
-            IoReg::Ie => rw,
+            IoReg::Ie => data,
         }
     }
 }
