@@ -132,6 +132,10 @@ fn try_draw_obj_row(sys: &Sys, obj_idx: u8, ly: u8, org: IVec2) {
     let mut tile_idx = sys.mem.read(obj_addr + 2) as u16;
     let attrs = sys.mem.read(obj_addr + 3);
 
+    if x_pos == 0 || x_pos >= 168 || y_pos == 0 {
+        return;
+    }
+
     let obj_h = if lcdc.obj_size_is_8x16 { 16 } else { 8 };
     if !(y_pos..(y_pos + obj_h)).contains(&ly) {
         return;
@@ -149,6 +153,9 @@ fn try_draw_obj_row(sys: &Sys, obj_idx: u8, ly: u8, org: IVec2) {
     let palette = Palette::from_reg(sys, palette_reg);
 
     let mut pixel_y = ly - y_pos;
+    if y_flip {
+        pixel_y = obj_h - 1 - pixel_y;
+    }
     if pixel_y >= 8 {
         tile_idx += 1;
         pixel_y -= 8;
