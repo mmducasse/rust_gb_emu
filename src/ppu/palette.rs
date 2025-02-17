@@ -15,12 +15,21 @@ impl Palette {
         return Self::new(data);
     }
 
-    pub fn new(data: u8) -> Self {
+    pub const fn new(data: u8) -> Self {
         Self {
             val0: (data >> 0) & 0b11,
             val1: (data >> 2) & 0b11,
             val2: (data >> 4) & 0b11,
             val3: (data >> 6) & 0b11,
+        }
+    }
+
+    pub const fn default() -> Self {
+        Self {
+            val0: 0,
+            val1: 1,
+            val2: 2,
+            val3: 3,
         }
     }
 
@@ -31,17 +40,6 @@ impl Palette {
             0b10 => self.val2,
             0b11 => self.val3,
             _ => unreachable!(),
-        }
-    }
-}
-
-impl Default for Palette {
-    fn default() -> Self {
-        Self {
-            val0: 0,
-            val1: 1,
-            val2: 2,
-            val3: 3,
         }
     }
 }

@@ -69,7 +69,7 @@ fn draw_tile_from_map(sys: &Sys, pos: IVec2, map_addr: Addr, org: IVec2) {
 
 #[inline]
 fn draw_tile(bytes: &[u8], org: IVec2) {
-    let palette = Palette::default();
+    const PALETTE: Palette = Palette::default();
 
     for pos in rect(0, 0, 8, 8).iter() {
         let idx = (pos.y * 2) as usize;
@@ -79,6 +79,6 @@ fn draw_tile(bytes: &[u8], org: IVec2) {
 
         let color_id = (upper << 1) | lower;
 
-        draw_pixel::<false>(pos + org, &palette, color_id);
+        draw_pixel::<false>(pos + org, &PALETTE, color_id);
     }
 }

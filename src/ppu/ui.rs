@@ -16,6 +16,7 @@ use super::{
     },
     lcdc::LcdcState,
     render_mem::{render_bg_tile_map, render_tile_data_block},
+    render_util::get_tile_map_addr,
     text::draw_text,
 };
 
@@ -29,7 +30,7 @@ pub fn render_ui(sys: &mut Sys) {
     draw_text(game_title, i2(1, 0) * P8);
 
     // Background tilemap view.
-    let bg_tile_map_area = lcdc.bg_tile_map_area();
+    let bg_tile_map_area = get_tile_map_addr(lcdc.bg_tile_map_area_is_9c00);
     draw_text(
         format!("0x{:0>4X} BG MAP", bg_tile_map_area),
         TILE_MAP_ORG - i2(0, 8),

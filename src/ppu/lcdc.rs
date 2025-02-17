@@ -1,11 +1,6 @@
-use crate::{
-    mem::{io_regs::IoReg, Addr},
-    sys::Sys,
-    util::math::bit8,
-};
+use crate::{mem::io_regs::IoReg, sys::Sys, util::math::bit8};
 
-use super::consts::{TILE_MAP_ADDR_9800, TILE_MAP_ADDR_9C00};
-
+/// Interpretation of each bit of the LCDC register.
 pub struct LcdcState {
     pub ppu_enable: bool,
     pub window_tile_map_area_is_9c00: bool,
@@ -18,6 +13,7 @@ pub struct LcdcState {
 }
 
 impl LcdcState {
+    /// Loads the current state of the LCDC register.
     pub fn from(sys: &Sys) -> Self {
         let lcdc = sys.mem.io_regs.get(IoReg::Lcdc);
 
@@ -30,14 +26,6 @@ impl LcdcState {
             obj_size_is_8x16: bit8(&lcdc, 2) == 1,
             obj_enable: bit8(&lcdc, 1) == 1,
             bg_window_enable: bit8(&lcdc, 0) == 1,
-        }
-    }
-
-    pub fn bg_tile_map_area(&self) -> Addr {
-        if self.bg_tile_map_area_is_9c00 {
-            TILE_MAP_ADDR_9C00
-        } else {
-            TILE_MAP_ADDR_9800
         }
     }
 }

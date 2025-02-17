@@ -2,6 +2,7 @@ use crate::{mem::io_regs::IoReg, sys::Sys};
 
 const DMA_DURATION_M_CYCLES: u16 = 160;
 
+/// Represents the OAM DMA Transfer state.
 pub struct Dma {
     is_active: bool,
     next_idx: u16,
@@ -16,6 +17,7 @@ impl Dma {
     }
 }
 
+/// Advances the DMA state by one M-Cycle.
 pub fn update_dma(sys: &mut Sys) {
     let dma = sys.ppu.dma_mut();
     if !dma.is_active {

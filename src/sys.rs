@@ -8,7 +8,7 @@ use crate::{
     debug::{self, debug_state},
     mem::{io_regs::IoReg, mem::Mem},
     other::joypad::handle_joypad_inputs,
-    ppu::ppu::Ppu,
+    ppu::ppu::{print_ppu, update_ppu, Ppu},
     time::{
         simple_clock::SimpleClock,
         timers::{
@@ -134,7 +134,7 @@ impl Sys {
             }
         }
 
-        Ppu::update_ppu(self);
+        update_ppu(self);
         update_timer_regs(self);
         handle_joypad_inputs(self);
 
@@ -177,7 +177,7 @@ impl Sys {
         println!("IE={:0>8b}", self.mem.io_regs.get(IoReg::Ie));
         println!("IF={:0>8b}", self.mem.io_regs.get(IoReg::If));
 
-        Ppu::print(self);
+        print_ppu(self);
 
         self.cpu_clock.print();
         self.div_timer_clock.print();
