@@ -43,9 +43,9 @@ pub fn render_scanline(sys: &mut Sys, ly: u8, org: IVec2) {
 
     // Draw window
     if lcdc.bg_window_enable && lcdc.window_enable {
-        for x in 0..160 {
+        for x in 0..168 {
             if let Some(color_id) = sample_pixel_from_window_tilemap(sys, x, ly) {
-                draw_pixel::<false>(i2(x as i32, ly as i32) + org, &bgp, color_id);
+                draw_pixel::<false>(i2(x as i32 - 7, ly as i32) + org, &bgp, color_id);
             }
         }
     }
