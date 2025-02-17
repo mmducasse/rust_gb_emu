@@ -132,12 +132,12 @@ fn try_draw_obj_row(sys: &Sys, obj_idx: u8, ly: u8, org: IVec2) {
     let mut tile_idx = sys.mem.read(obj_addr + 2) as u16;
     let attrs = sys.mem.read(obj_addr + 3);
 
-    if x_pos == 0 || x_pos >= 168 || y_pos == 0 {
+    if x_pos == 0 || x_pos >= 168 || y_pos == 0 || y_pos >= 160 {
         return;
     }
 
     let obj_h = if lcdc.obj_size_is_8x16 { 16 } else { 8 };
-    if !(y_pos..(y_pos + obj_h)).contains(&ly) {
+    if !(y_pos..(y_pos + obj_h)).contains(&(ly + 16)) {
         return;
     }
 
@@ -152,7 +152,7 @@ fn try_draw_obj_row(sys: &Sys, obj_idx: u8, ly: u8, org: IVec2) {
 
     let palette = Palette::from_reg(sys, palette_reg);
 
-    let mut pixel_y = ly - y_pos;
+    let mut pixel_y = (ly + 16) - y_pos;
     if y_flip {
         pixel_y = obj_h - 1 - pixel_y;
     }
@@ -173,7 +173,7 @@ fn try_draw_obj_row(sys: &Sys, obj_idx: u8, ly: u8, org: IVec2) {
 
         let color_id = (hi << 1) | lo;
         draw_pixel::<true>(
-            i2(u8::wrapping_add(x_pos, x) as i32 - 8, ly as i32 - 16) + org,
+            i2(u8::wrapping_add(x_pos, x) as i32 - 8, ly as i32) + org,
             &palette,
             color_id,
         );
