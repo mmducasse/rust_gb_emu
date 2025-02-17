@@ -42,6 +42,18 @@ impl Palette {
     }
 }
 
+impl Default for Palette {
+    fn default() -> Self {
+        Self {
+            id0: 0,
+            id1: 1,
+            id2: 2,
+            id3: 3,
+        }
+    }
+}
+
+#[inline]
 pub fn draw_pixel<const TRANSPARENT: bool>(pos: IVec2, palette: &Palette, color_id: u8) {
     if TRANSPARENT && (color_id == 0) {
         return;

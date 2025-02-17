@@ -11,15 +11,16 @@ pub const VIEWPORT_SIZE: IVec2 = IVec2::mul(VIEWPORT_P8_SIZE, P8);
 
 pub const TILE_MAP_P8_SIZE: IVec2 = i2(32, 32);
 pub const TILE_MAP_SIZE: IVec2 = IVec2::mul(TILE_MAP_P8_SIZE, P8);
-pub const TILE_DATA_BANK_P8_SIZE: IVec2 = i2(16, 8);
-pub const TILE_DATA_BANK_SIZE: IVec2 = IVec2::mul(TILE_DATA_BANK_P8_SIZE, P8);
-pub const TILE_DATA_P8_SIZE: IVec2 = IVec2::mul(TILE_DATA_BANK_P8_SIZE, i2(1, 3));
+pub const TILE_DATA_BLOCK_DRAW_P8_SIZE: IVec2 = i2(16, 8);
+pub const TILE_DATA_BLOCK_DRAW_SIZE: IVec2 = IVec2::mul(TILE_DATA_BLOCK_DRAW_P8_SIZE, P8);
+pub const TILE_DATA_P8_SIZE: IVec2 = IVec2::mul(TILE_DATA_BLOCK_DRAW_P8_SIZE, i2(1, 3));
 pub const TILE_DATA_SIZE: IVec2 = IVec2::mul(TILE_DATA_P8_SIZE, P8);
 
 pub const TILE_MAP_ADDR_9800: Addr = 0x9800;
 pub const TILE_MAP_ADDR_9C00: Addr = 0x9C00;
 
 pub const TILE_DATA_TILE_SIZE: u16 = 16;
+pub const TILE_DATA_BLOCK_SIZE: u16 = 0x0800;
 pub const TILE_DATA_ADDR_8000: Addr = 0x8000;
 pub const TILE_DATA_ADDR_8800: Addr = 0x8800;
 pub const TILE_DATA_ADDR_9000: Addr = 0x9000;

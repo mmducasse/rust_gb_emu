@@ -1,9 +1,10 @@
 pub mod consts;
-mod debug_draw;
 mod dma;
 mod lcdc;
 mod palette;
 pub mod ppu;
 mod render;
+mod render_mem;
+mod render_util;
 mod text;
 pub mod ui;

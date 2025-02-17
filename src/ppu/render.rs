@@ -8,11 +8,11 @@ use crate::{
 
 use super::{
     consts::{
-        OAM_ADDR_FE00, OAM_OBJ_SIZE, TILE_DATA_ADDR_8000, TILE_DATA_ADDR_8800, TILE_DATA_ADDR_9000,
-        TILE_DATA_TILE_SIZE, TILE_MAP_ADDR_9800, TILE_MAP_ADDR_9C00, TILE_MAP_P8_SIZE,
+        OAM_ADDR_FE00, OAM_OBJ_SIZE, TILE_DATA_ADDR_8000, TILE_DATA_TILE_SIZE, TILE_MAP_P8_SIZE,
     },
     lcdc::LcdcState,
     palette::{draw_pixel, Palette},
+    render_util::{get_tile_map_addr, tile_data_idx_to_addr},
 };
 
 pub fn render_scanline(sys: &mut Sys, ly: u8, org: IVec2) {
@@ -98,28 +98,18 @@ fn sample_pixel_from_tilemap(
     sys: &Sys,
     x: u8,
     y: u8,
-    is_map_area_9c00: bool,
-    is_tile_data_area_8000: bool,
+    is_map_mode_9c00: bool,
+    is_data_mode_8000: bool,
 ) -> u8 {
-    let tile_map_start_addr = if is_map_area_9c00 {
-        TILE_MAP_ADDR_9C00
-    } else {
-        TILE_MAP_ADDR_9800
-    };
+    let tile_map_start_addr = get_tile_map_addr(is_map_mode_9c00);
 
     let tile_x_idx = x / 8;
     let tile_y_idx = y / 8;
     let map_idx = (tile_y_idx as u16 * TILE_MAP_P8_SIZE.x as u16) + tile_x_idx as u16;
     let map_addr = tile_map_start_addr + map_idx;
 
-    let data_idx = sys.mem.read(map_addr) as u16;
-    let data_addr = if is_tile_data_area_8000 {
-        data_idx * TILE_DATA_TILE_SIZE + TILE_DATA_ADDR_8000
-    } else if data_idx < 128 {
-        data_idx * TILE_DATA_TILE_SIZE + TILE_DATA_ADDR_9000
-    } else {
-        (data_idx - 128) * TILE_DATA_TILE_SIZE + TILE_DATA_ADDR_8800
-    };
+    let data_idx = sys.mem.read(map_addr);
+    let data_addr = tile_data_idx_to_addr(data_idx as u16, is_data_mode_8000);
 
     let pixel_x_bit = 7 - (x % 8);
     let pixel_y = y % 8;
