@@ -7,7 +7,7 @@ use crate::{
     },
     debug::{self, debug_state},
     mem::{io_regs::IoReg, mem::Mem},
-    other::joypad::handle_joypad_inputs,
+    other::{emu::Emu, joypad::handle_joypad_inputs},
     ppu::ppu::{print_ppu, update_ppu, Ppu},
     time::{
         simple_clock::SimpleClock,
@@ -23,11 +23,10 @@ pub struct Options {
 
 pub struct Sys {
     pub options: Options,
+    pub emu: Emu,
 
     pub mem: Mem,
-
     pub ppu: Ppu,
-
     pub regs: CpuRegs,
 
     pub cpu_clock: SimpleClock,
@@ -48,11 +47,10 @@ impl Sys {
     pub fn new(options: Options, cart: Cart) -> Self {
         let mut sys = Self {
             options,
+            emu: Emu::default(),
 
             mem: Mem::new(cart),
-
             ppu: Ppu::new(),
-
             regs: CpuRegs::new(),
 
             cpu_clock: SimpleClock::new("CPU", CPU_PERIOD_MCYCLES),

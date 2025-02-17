@@ -94,10 +94,10 @@ async fn test() {
 
     //let path = ".\\assets\\real_gb_roms\\tetris.gb";
     //let path = ".\\assets\\real_gb_roms\\Dr_Mario.gb";
-    //let path = ".\\assets\\real_gb_roms\\Pokemon.gb";
+    let path = ".\\assets\\real_gb_roms\\Pokemon.gb";
     //let path = ".\\assets\\real_gb_roms\\Zelda.gb";
     //let path = ".\\assets\\real_gb_roms\\Kirby.gb";
-    let path = ".\\assets\\real_gb_roms\\Tennis.gb";
+    //let path = ".\\assets\\real_gb_roms\\Tennis.gb";
     //let path = ".\\assets\\real_gb_roms\\Super Mario Land 2.gb";
     //let path = ".\\assets\\real_gb_roms\\Wario Land.gb";
     //let path = ".\\assets\\real_gb_roms\\DuckTales.gb";
@@ -155,6 +155,7 @@ async fn run_normal(path: &str) {
             shuffle_tile_data(&mut sys);
         }
         check_load_save_inputs(&mut sys);
+        sys.emu.update();
         //sys.run_one_m_cycle();
 
         window.render_pass(|| {

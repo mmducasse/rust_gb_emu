@@ -12,9 +12,8 @@ use crate::{
 
 use super::{
     consts::*,
-    lcdc::LcdcState,
     palette::Palette,
-    render_util::{draw_pixel, get_tile_map_addr, tile_data_idx_to_addr},
+    render_util::{draw_pixel, tile_data_idx_to_addr},
 };
 
 /// Renders one of the tile data blocks to the screen.
@@ -36,17 +35,13 @@ pub fn render_tile_data_block(sys: &Sys, block_addr: Addr, org: IVec2) {
     }
 }
 
-/// Renders the entire background tilemap to the screen.
+/// Renders the entire tilemap, starting at `tile_map_addr`, to the screen .
 #[inline]
-pub fn render_bg_tile_map(sys: &Sys, org: IVec2) {
-    let lcdc = LcdcState::from(sys);
-
-    let tile_map_start_addr = get_tile_map_addr(lcdc.bg_tile_map_area_is_9c00);
-
+pub fn render_tile_map(sys: &Sys, tile_map_addr: Addr, org: IVec2) {
     for i in 0..TILE_MAP_P8_SIZE.product() {
         let x = i % TILE_MAP_P8_SIZE.x;
         let y = i / TILE_MAP_P8_SIZE.x;
-        let addr = (i as u16) + tile_map_start_addr;
+        let addr = (i as u16) + tile_map_addr;
 
         draw_tile_from_map(sys, i2(x, y), addr, org);
     }

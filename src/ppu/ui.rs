@@ -15,7 +15,7 @@ use super::{
         TILE_MAP_ORG, VIEWPORT_P8_SIZE,
     },
     lcdc::LcdcState,
-    render_mem::{render_bg_tile_map, render_tile_data_block},
+    render_mem::{render_tile_data_block, render_tile_map},
     render_util::get_tile_map_addr,
     text::draw_text,
 };
@@ -44,12 +44,20 @@ pub fn render_ui(sys: &mut Sys) {
     draw_text(game_title, i2(1, 0) * P8);
 
     // Background tilemap view.
-    let bg_tile_map_area = get_tile_map_addr(lcdc.bg_tile_map_area_is_9c00);
+    let is_showing_win = sys.emu.show_win_map;
+    let tile_map_area_is_9c00 = if is_showing_win {
+        lcdc.window_tile_map_area_is_9c00
+    } else {
+        lcdc.bg_tile_map_area_is_9c00
+    };
+    let bg_tile_map_area = get_tile_map_addr(tile_map_area_is_9c00);
+    let label = if is_showing_win { "WIN" } else { "BG" };
     draw_text(
-        format!("0x{:0>4X} BG MAP", bg_tile_map_area),
+        format!("0x{:0>4X} {} MAP", bg_tile_map_area, label),
         TILE_MAP_ORG - i2(0, 8),
     );
-    render_bg_tile_map(sys, TILE_MAP_ORG);
+    let tile_map_addr = get_tile_map_addr(tile_map_area_is_9c00);
+    render_tile_map(sys, tile_map_addr, TILE_MAP_ORG);
 
     // Tile data blocks view.
     draw_text("0x8000 TILES", TILE_DATA_ORG - i2(0, 8));
