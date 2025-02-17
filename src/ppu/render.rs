@@ -11,8 +11,8 @@ use super::{
         OAM_ADDR_FE00, OAM_OBJ_SIZE, TILE_DATA_ADDR_8000, TILE_DATA_TILE_SIZE, TILE_MAP_P8_SIZE,
     },
     lcdc::LcdcState,
-    palette::{draw_pixel, Palette},
-    render_util::{get_tile_map_addr, tile_data_idx_to_addr},
+    palette::Palette,
+    render_util::{draw_pixel, get_tile_map_addr, tile_data_idx_to_addr},
 };
 
 pub fn render_scanline(sys: &mut Sys, ly: u8, org: IVec2) {

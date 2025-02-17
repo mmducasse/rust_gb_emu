@@ -1,10 +1,6 @@
-use macroquad::color::{Color, BLACK, DARKGRAY, LIGHTGRAY, WHITE};
-use xf::{
-    mq::draw::draw_rect,
-    num::{
-        irect::{ir, rect},
-        ivec2::{i2, IVec2},
-    },
+use xf::num::{
+    irect::rect,
+    ivec2::{i2, IVec2},
 };
 
 use crate::{
@@ -20,10 +16,12 @@ use crate::{
 use super::{
     consts::*,
     lcdc::LcdcState,
-    render_util::{get_tile_map_addr, tile_data_idx_to_addr},
+    palette::Palette,
+    render_util::{draw_pixel, get_tile_map_addr, tile_data_idx_to_addr},
 };
 
 /// Renders one of the tile data blocks to the screen.
+#[inline]
 pub fn render_tile_data_block(sys: &Sys, block_addr: Addr, org: IVec2) {
     let mut i = 0;
     let range = block_addr..(block_addr + TILE_DATA_BLOCK_SIZE);
@@ -42,6 +40,7 @@ pub fn render_tile_data_block(sys: &Sys, block_addr: Addr, org: IVec2) {
 }
 
 /// Renders the entire background tilemap to the screen.
+#[inline]
 pub fn render_bg_tile_map(sys: &Sys, org: IVec2) {
     let lcdc = LcdcState::from(sys);
 
@@ -56,6 +55,7 @@ pub fn render_bg_tile_map(sys: &Sys, org: IVec2) {
     }
 }
 
+#[inline]
 fn draw_tile_from_map(sys: &Sys, pos: IVec2, map_addr: Addr, org: IVec2) {
     let lcdc = sys.mem.io_regs.get(IoReg::Lcdc);
     let is_mode_8000 = bit8(&lcdc, 4) == 1;
@@ -70,7 +70,10 @@ fn draw_tile_from_map(sys: &Sys, pos: IVec2, map_addr: Addr, org: IVec2) {
     draw_tile(bytes, org);
 }
 
+#[inline]
 fn draw_tile(bytes: &[u8], org: IVec2) {
+    let palette = Palette::default();
+
     for pos in rect(0, 0, 8, 8).iter() {
         let idx = (pos.y * 2) as usize;
         let bit = 7 - pos.x;
@@ -79,21 +82,6 @@ fn draw_tile(bytes: &[u8], org: IVec2) {
 
         let color_id = (upper << 1) | lower;
 
-        draw_pixel(pos + org, color_id);
+        draw_pixel::<false>(pos + org, &palette, color_id);
     }
-}
-
-fn draw_pixel(pos: IVec2, color_id: u8) {
-    draw_rect(ir(pos, i2(1, 1)), get_color(color_id));
-}
-
-#[inline]
-fn get_color(color_id: u8) -> Color {
-    return match color_id {
-        0b00 => WHITE,
-        0b01 => LIGHTGRAY,
-        0b10 => DARKGRAY,
-        0b11 => BLACK,
-        _ => unreachable!(),
-    };
 }
