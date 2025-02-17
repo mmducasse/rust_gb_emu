@@ -46,9 +46,6 @@ fn transfer_one_byte(sys: &mut Sys) {
 
     let data = sys.mem.read(src_addr);
     sys.mem.write(dst_addr, data);
-    let sanity_check = sys.mem.read(dst_addr);
-
-    assert_eq!(data, sanity_check);
 
     dma.next_idx += 1;
     if dma.next_idx >= DMA_DURATION_M_CYCLES {

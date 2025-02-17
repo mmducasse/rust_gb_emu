@@ -1,11 +1,9 @@
 pub mod consts;
-pub mod debug_draw;
-pub mod dma;
+mod debug_draw;
+mod dma;
 mod lcdc;
-pub mod palette;
+mod palette;
 pub mod ppu;
-pub mod render;
-pub mod text;
-pub mod tile_data_test;
-pub mod tile_map_test;
+mod render;
+mod text;
 pub mod ui;

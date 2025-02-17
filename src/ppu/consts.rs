@@ -19,6 +19,14 @@ pub const TILE_DATA_SIZE: IVec2 = IVec2::mul(TILE_DATA_P8_SIZE, P8);
 pub const TILE_MAP_ADDR_9800: Addr = 0x9800;
 pub const TILE_MAP_ADDR_9C00: Addr = 0x9C00;
 
+pub const TILE_DATA_TILE_SIZE: u16 = 16;
+pub const TILE_DATA_ADDR_8000: Addr = 0x8000;
+pub const TILE_DATA_ADDR_8800: Addr = 0x8800;
+pub const TILE_DATA_ADDR_9000: Addr = 0x9000;
+
+pub const OAM_OBJ_SIZE: u16 = 4;
+pub const OAM_ADDR_FE00: Addr = 0xFE00;
+
 pub const VIEWPORT_ORG: IVec2 = P8;
 pub const TILE_MAP_ORG: IVec2 = i2(VIEWPORT_ORG.x + (VIEWPORT_P8_SIZE.x + 1) * P8.x, P8.y);
 pub const TILE_DATA_ORG: IVec2 = i2(TILE_MAP_ORG.x + (TILE_MAP_P8_SIZE.x + 1) * P8.x, P8.y);

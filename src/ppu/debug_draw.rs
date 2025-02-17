@@ -100,7 +100,7 @@ fn draw_tile_from_map(sys: &Sys, pos: IVec2, map_addr: Addr, org: IVec2) {
         if tile_idx < 128 {
             (tile_idx as u16) * 16 + 0x9000
         } else {
-            ((tile_idx + 128) as u16) * 16 + 0x8800
+            ((tile_idx - 128) as u16) * 16 + 0x8800
         }
     };
 

@@ -14,7 +14,7 @@ use macroquad::{
     window::next_frame,
 };
 use other::{misc::shuffle_tile_data, save::check_load_save_inputs};
-use ppu::{consts::WINDOW_BOUNDS, debug_draw::render_screen, ui::render_ui};
+use ppu::{consts::WINDOW_BOUNDS, ui::render_ui};
 use sys::{Options, Sys};
 use xf::mq::{
     draw::draw_rect,
@@ -95,9 +95,9 @@ async fn test() {
     //let path = ".\\assets\\real_gb_roms\\tetris.gb";
     //let path = ".\\assets\\real_gb_roms\\Dr_Mario.gb";
     //let path = ".\\assets\\real_gb_roms\\Pokemon.gb";
-    let path = ".\\assets\\real_gb_roms\\Zelda.gb";
+    //let path = ".\\assets\\real_gb_roms\\Zelda.gb";
     //let path = ".\\assets\\real_gb_roms\\Kirby.gb";
-    //let path = ".\\assets\\real_gb_roms\\Tennis.gb";
+    let path = ".\\assets\\real_gb_roms\\Tennis.gb";
     //let path = ".\\assets\\real_gb_roms\\Super Mario Land 2.gb";
     //let path = ".\\assets\\real_gb_roms\\Wario Land.gb";
     //let path = ".\\assets\\real_gb_roms\\DuckTales.gb";
@@ -248,7 +248,7 @@ async fn run_blaargs_suite() {
 
             if sys.is_render_pending {
                 window.render_pass(|| {
-                    render_screen(&mut sys);
+                    render_ui(&mut sys);
                 });
                 next_frame().await;
                 sys.is_render_pending = false;
