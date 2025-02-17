@@ -1,5 +1,5 @@
 use crate::{
-    mem::{io_regs::IoReg, sections::Addr},
+    mem::{io_regs::IoReg, Addr},
     sys::Sys,
     util::math::bit8,
 };

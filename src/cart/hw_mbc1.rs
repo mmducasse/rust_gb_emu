@@ -1,7 +1,7 @@
 use num::FromPrimitive;
 
 use crate::{
-    mem::sections::Addr,
+    mem::Addr,
     util::math::{bit8, bits8},
 };
 

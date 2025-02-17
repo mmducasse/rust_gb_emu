@@ -7,7 +7,7 @@ use xf::{
     },
 };
 
-use crate::mem::sections::Addr;
+use crate::mem::Addr;
 
 use super::{
     consts::{

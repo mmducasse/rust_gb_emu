@@ -3,7 +3,7 @@ use strum_macros::EnumIter;
 
 use crate::{
     debug,
-    mem::{io_regs::IoReg, sections::Addr},
+    mem::{io_regs::IoReg, Addr},
     sys::Sys,
     util::math::{bit8, set_bit8},
 };

@@ -1,4 +1,4 @@
-use crate::{mem::sections::Addr, sys::Sys};
+use crate::{mem::Addr, sys::Sys};
 
 pub fn shuffle_tile_data(sys: &mut Sys) {
     let len = (0x9800 - 0x8000) / 16;

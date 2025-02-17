@@ -1,4 +1,4 @@
-use crate::mem::sections::Addr;
+use crate::mem::Addr;
 
 /// Array of bytes that represents a segment of memory.
 pub struct Array {

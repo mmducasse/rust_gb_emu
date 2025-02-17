@@ -11,10 +11,7 @@ use crate::{
         interrupt::InterruptType,
         regs::CpuRegs,
     },
-    mem::{
-        io_regs::IoReg,
-        sections::{Addr, MemSection},
-    },
+    mem::{io_regs::IoReg, sections::MemSection, Addr},
     sys::Sys,
     util::{math::join_16, ring_buffer::RingBuffer},
 };

@@ -1,10 +1,6 @@
 use crate::{cart::cart::Cart, consts::FAIL_ON_BAD_RW, debug};
 
-use super::{
-    array::Array,
-    io_regs::IoRegs,
-    sections::{Addr, MemSection},
-};
+use super::{array::Array, io_regs::IoRegs, sections::MemSection, Addr};
 
 pub struct Mem {
     pub cart: Cart,

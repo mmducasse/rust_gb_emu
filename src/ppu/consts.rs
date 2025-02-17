@@ -3,7 +3,7 @@ use xf::num::{
     ivec2::{i2, IVec2},
 };
 
-use crate::{consts::P8, mem::sections::Addr};
+use crate::{consts::P8, mem::Addr};
 
 pub const TILE_SIZE: IVec2 = P8;
 pub const VIEWPORT_P8_SIZE: IVec2 = i2(20, 18);

@@ -6,7 +6,7 @@ use std::{
 
 use num::FromPrimitive;
 
-use crate::{cart::header::CartHeader, mem::sections::Addr, util::slice::copy_from_safe};
+use crate::{cart::header::CartHeader, mem::Addr, util::slice::copy_from_safe};
 
 use super::{
     cart_hw::CartHw,

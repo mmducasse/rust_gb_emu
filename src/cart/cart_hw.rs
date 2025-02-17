@@ -1,4 +1,4 @@
-use crate::mem::sections::Addr;
+use crate::mem::Addr;
 
 /// Functionality that any cartridge type (ROM-only, MBC1, etc.) must provide.
 pub trait CartHw {

@@ -6,11 +6,7 @@ use strum_macros::EnumIter;
 
 use crate::{debug, util::math::set_bits8_masked};
 
-use super::{
-    array::Array,
-    io_reg_data::IoRegData,
-    sections::{Addr, MemSection},
-};
+use super::{array::Array, io_reg_data::IoRegData, sections::MemSection, Addr};
 
 #[derive(Hash, Clone, Copy, PartialEq, Eq, Debug, FromPrimitive, EnumIter)]
 pub enum IoReg {

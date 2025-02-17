@@ -1,9 +1,7 @@
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 
-use super::array::Array;
-
-pub type Addr = u16;
+use super::{array::Array, Addr};
 
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, EnumIter, FromPrimitive, Debug)]
 pub enum MemSection {

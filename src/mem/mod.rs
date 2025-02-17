@@ -4,3 +4,5 @@ mod io_reg_data;
 pub mod io_regs;
 pub mod mem;
 pub mod sections;
+
+pub use addr::Addr;
