@@ -1,7 +1,9 @@
+#[inline]
 pub fn bit8(op: &u8, idx: u8) -> u8 {
     (op >> idx) & 0b1
 }
 
+#[inline]
 pub fn bits8(op: &u8, hi: usize, lo: usize) -> u8 {
     let mask = 0xFF;
     let mask = mask << (8 - (hi + 1));
@@ -10,6 +12,7 @@ pub fn bits8(op: &u8, hi: usize, lo: usize) -> u8 {
     return (op >> lo) & mask;
 }
 
+#[inline]
 pub fn set_bit8(data: &mut u8, idx: u8, value: u8) {
     let mask = 0x1 << idx;
 
@@ -20,6 +23,7 @@ pub fn set_bit8(data: &mut u8, idx: u8, value: u8) {
     }
 }
 
+#[inline]
 pub fn set_bits8(data: &mut u8, hi: u8, lo: u8, value: u8) {
     let shift_r = 7 - (hi - lo);
     let shift_l = lo;
@@ -34,10 +38,12 @@ pub fn set_bits8_masked(data: &mut u8, mask: u8, value: u8) {
     *data = (*data & !mask) | (value & mask);
 }
 
+#[inline]
 pub fn bit16(op: &u16, idx: usize) -> u16 {
     (op >> idx) & 0b1
 }
 
+#[inline]
 pub fn bits16(op: &u16, hi: usize, lo: usize) -> u16 {
     let mask = 0xFF;
     let mask = mask << (16 - (hi + 1));
@@ -46,6 +52,7 @@ pub fn bits16(op: &u16, hi: usize, lo: usize) -> u16 {
     return (op >> lo) & mask;
 }
 
+#[inline]
 pub fn split_16(data: u16) -> (u8, u8) {
     let hi = ((data & 0xFF00) >> 8) as u8;
     let lo = (data & 0x00FF) as u8;
@@ -53,6 +60,7 @@ pub fn split_16(data: u16) -> (u8, u8) {
     return (hi, lo);
 }
 
+#[inline]
 pub fn join_16(hi: u8, lo: u8) -> u16 {
     let hi = (hi as u16) << 8;
     let lo = lo as u16;
@@ -60,6 +68,7 @@ pub fn join_16(hi: u8, lo: u8) -> u16 {
     return hi | lo;
 }
 
+#[inline]
 pub fn add8_ui(a: u8, b: i8) -> u8 {
     if b >= 0 {
         let b = b as u8;
@@ -70,10 +79,12 @@ pub fn add8_ui(a: u8, b: i8) -> u8 {
     }
 }
 
+#[inline]
 pub fn add8_uu(a: u8, b: u8) -> u8 {
     u8::wrapping_add(a, b)
 }
 
+#[inline]
 pub fn add16_ui(a: u16, b: i16) -> u16 {
     if b >= 0 {
         let b = b as u16;
@@ -84,17 +95,10 @@ pub fn add16_ui(a: u16, b: i16) -> u16 {
     }
 }
 
+#[inline]
 pub fn add16_uu(a: u16, b: u16) -> u16 {
     u16::wrapping_add(a, b)
 }
-
-// pub fn add_u16_i8(u: u16, i: i8) -> u16 {
-//     if i >= 0 {
-//         return u16::wrapping_add(u, i as u16);
-//     } else {
-//         return u16::wrapping_sub(u, (-i) as u16);
-//     }
-// }
 
 #[cfg(test)]
 mod tests {
