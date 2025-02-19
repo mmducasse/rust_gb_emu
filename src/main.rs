@@ -13,7 +13,7 @@ use macroquad::{
     input::{is_key_pressed, KeyCode},
     window::next_frame,
 };
-use other::{misc::shuffle_tile_data, save::check_load_save_inputs};
+use other::{misc::shuffle_tile_data, save::{check_load_save_inputs, load_state}};
 use ppu::{consts::WINDOW_BOUNDS, ui::render_ui};
 use sys::{Options, Sys};
 use xf::mq::{
@@ -151,6 +151,8 @@ async fn run_normal(path: &str) {
     //     });
     //     next_frame().await;
     // }
+
+    load_state(&mut sys);
 
     while !sys.hard_lock {
         if is_key_pressed(KeyCode::Escape) {
