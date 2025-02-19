@@ -15,10 +15,12 @@ use super::{
         TILE_MAP_ORG, VIEWPORT_P8_SIZE,
     },
     lcdc::LcdcState,
-    render_mem::{render_tile_data_block, render_tile_map},
+    render_mem::{render_scroll_view_area, render_tile_data_block, render_tile_map},
     render_util::get_tile_map_addr,
     text::draw_text,
 };
+
+const SHOW_SCROLL_AREA_OUTLINE: bool = false;
 
 pub fn render_ui(sys: &mut Sys) {
     let lcdc = LcdcState::from(sys);
@@ -58,6 +60,10 @@ pub fn render_ui(sys: &mut Sys) {
     );
     let tile_map_addr = get_tile_map_addr(tile_map_area_is_9c00);
     render_tile_map(sys, tile_map_addr, TILE_MAP_ORG);
+    let is_even_frame = sys.ppu.total_frames_drawn() % 2 == 0;
+    if SHOW_SCROLL_AREA_OUTLINE && !is_showing_win && is_even_frame {
+        render_scroll_view_area(sys, TILE_MAP_ORG);
+    }
 
     // Tile data blocks view.
     draw_text("0x8000 TILES", TILE_DATA_ORG - i2(0, 8));

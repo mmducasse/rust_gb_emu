@@ -99,7 +99,10 @@ impl CartHeader {
             0xC0 => "CGB only",
             _ => "DMG only",
         };
-        println!("  Compatibility = 0x{:0>2X}: {}", self.cgb_flag, compatibility);
+        println!(
+            "  Compatibility = 0x{:0>2X}: {}",
+            self.cgb_flag, compatibility
+        );
 
         println!("  Type: {:?} ({})", self.cart_type, self.cart_type as u8);
 

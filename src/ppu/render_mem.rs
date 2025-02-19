@@ -1,3 +1,4 @@
+use macroquad::color::BLACK;
 use xf::num::{
     irect::rect,
     ivec2::{i2, IVec2},
@@ -13,7 +14,7 @@ use crate::{
 use super::{
     consts::*,
     palette::Palette,
-    render_util::{draw_pixel, tile_data_idx_to_addr},
+    render_util::{draw_line, draw_pixel, tile_data_idx_to_addr},
 };
 
 /// Renders one of the tile data blocks to the screen.
@@ -44,6 +45,43 @@ pub fn render_tile_map(sys: &Sys, tile_map_addr: Addr, org: IVec2) {
         let addr = (i as u16) + tile_map_addr;
 
         draw_tile_from_map(sys, i2(x, y), addr, org);
+    }
+}
+
+/// Renders the viewport bounds detrmined by the SCX/SCY registers.
+#[inline]
+pub fn render_scroll_view_area(sys: &Sys, org: IVec2) {
+    let scx = sys.mem.io_regs.get(IoReg::Scx) as i32;
+    let scy = sys.mem.io_regs.get(IoReg::Scy) as i32;
+
+    let end_x = (scx + VIEWPORT_SIZE.x) % 256;
+    let end_y = (scy + VIEWPORT_SIZE.y) % 256;
+
+    let x_wraps = scx > end_x;
+    let y_wraps = scy > end_y;
+
+    let pos = i2(scx, scy);
+
+    if !x_wraps {
+        draw_line(org + i2(scx, scy), VIEWPORT_SIZE.x, false, BLACK);
+        draw_line(org + i2(scx, end_y), VIEWPORT_SIZE.x, false, BLACK);
+    } else {
+        draw_line(org + i2(scx, scy), 255 - scx, false, BLACK);
+        draw_line(org + i2(0, scy), end_x, false, BLACK);
+
+        draw_line(org + i2(scx, end_y), 255 - scx, false, BLACK);
+        draw_line(org + i2(0, end_y), end_x, false, BLACK);
+    }
+
+    if !y_wraps {
+        draw_line(org + i2(scx, scy), VIEWPORT_SIZE.y, true, BLACK);
+        draw_line(org + i2(end_x, scy), VIEWPORT_SIZE.y, true, BLACK);
+    } else {
+        draw_line(org + i2(scx, scy), 255 - scy, true, BLACK);
+        draw_line(org + i2(scx, 0), end_y, true, BLACK);
+
+        draw_line(org + i2(end_x, scy), 255 - scy, true, BLACK);
+        draw_line(org + i2(end_x, 0), end_y, true, BLACK);
     }
 }
 

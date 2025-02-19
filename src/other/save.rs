@@ -2,9 +2,7 @@ use std::{fs, io::Write, path::Path};
 
 use macroquad::input::{is_key_pressed, KeyCode};
 
-use crate::{
-    sys::Sys, util::slice::copy_from_safe,
-};
+use crate::{sys::Sys, util::slice::copy_from_safe};
 
 const SAVE_FOLDER_PATH: &str = "C:\\Users\\matth\\Desktop";
 

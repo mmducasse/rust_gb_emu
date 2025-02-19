@@ -41,6 +41,11 @@ pub fn tile_data_idx_to_addr(data_idx: u16, is_data_mode_8000: bool) -> Addr {
     return data_addr;
 }
 
+pub fn draw_line(pos: IVec2, len: i32, is_vert: bool, color: Color) {
+    let size = if !is_vert { i2(len, 1) } else { i2(1, len) };
+    draw_rect(ir(pos, size), color);
+}
+
 #[inline]
 pub fn draw_pixel<const TRANSPARENT: bool>(pos: IVec2, palette: &Palette, color_id: u8) {
     if TRANSPARENT && (color_id == 0) {

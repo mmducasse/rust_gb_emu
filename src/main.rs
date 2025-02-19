@@ -13,7 +13,10 @@ use macroquad::{
     input::{is_key_pressed, KeyCode},
     window::next_frame,
 };
-use other::{misc::shuffle_tile_data, save::{check_load_save_inputs, load_state}};
+use other::{
+    misc::shuffle_tile_data,
+    save::{check_load_save_inputs, load_state},
+};
 use ppu::{consts::WINDOW_BOUNDS, ui::render_ui};
 use sys::{Options, Sys};
 use xf::mq::{
