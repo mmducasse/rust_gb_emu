@@ -33,8 +33,8 @@ impl Cart {
             ));
         };
 
-        if ext != OsStr::new("gb") {
-            return Err(format!("Couldnt load gb rom. Expected a \".gb\" file."));
+        if ext != OsStr::new("gb") && ext != OsStr::new("gbc") {
+            return Err(format!("Couldnt load gb rom. Expected a \".gb\" or \".gbc\" file."));
         }
 
         let Ok(rom) = fs::read(file_path) else {

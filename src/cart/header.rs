@@ -9,6 +9,7 @@ const NINTENDO_LOGO: &[u8] = include_bytes!("..\\..\\assets\\files\\nintendo_log
 /// The interpretation of the data in the cartridge ROM header (addresses 0x0100-0x014F).
 pub struct CartHeader {
     title: Option<String>,
+    pub cgb_flag: u8,
     pub cart_type: CartType,
     pub rom_bank_count: usize,
     pub ram_bank_count: usize,
@@ -21,7 +22,7 @@ impl CartHeader {
     /// Parses the entire cartridge ROM and returns the interpretation of its header.
     pub fn parse(rom: &[u8]) -> Result<Self, String> {
         let title = {
-            let title = &rom[0x134..0x144];
+            let title = &rom[0x134..=0x142];
 
             // Workaround for bug where null character would
             // be included in title string.
@@ -35,6 +36,8 @@ impl CartHeader {
                 .ok()
                 .map(|s| s.trim().to_owned())
         };
+
+        let cgb_flag = rom[0x0143];
 
         let cart_type_id = rom[0x0147];
         let Some(cart_type) = CartType::from_u8(cart_type_id) else {
@@ -66,6 +69,7 @@ impl CartHeader {
 
         return Ok(Self {
             title,
+            cgb_flag,
             cart_type,
             rom_bank_count,
             ram_bank_count,
@@ -89,6 +93,13 @@ impl CartHeader {
         if let Some(title) = &self.title {
             println!("  Title: {}", title);
         }
+
+        let compatibility = match self.cgb_flag {
+            0x80 => "CGB (backward compatibile)",
+            0xC0 => "CGB only",
+            _ => "DMG only",
+        };
+        println!("  Compatibility = 0x{:0>2X}: {}", self.cgb_flag, compatibility);
 
         println!("  Type: {:?} ({})", self.cart_type, self.cart_type as u8);
 

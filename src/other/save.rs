@@ -2,7 +2,10 @@ use std::{fs, io::Write, path::Path};
 
 use macroquad::input::{is_key_pressed, KeyCode};
 
-use crate::{mem::sections::MemSection, sys::Sys};
+use crate::{
+    mem::{sections::MemSection, Addr},
+    sys::Sys,
+};
 
 const SAVE_FOLDER_PATH: &str = "C:\\Users\\matth\\Desktop";
 
@@ -43,10 +46,10 @@ pub fn save_state(sys: &Sys) {
 }
 
 fn save_section(sys: &Sys, buffer: &mut Vec<u8>, section: MemSection) {
-    let start = section.start_addr();
-    let size = section.size();
+    let start = section.start_addr() as u32;
+    let size = section.size() as u32;
     for addr in start..(start + size) {
-        let data = sys.mem.read(addr);
+        let data = sys.mem.read(addr as Addr);
         buffer.push(data);
     }
 }
@@ -78,11 +81,11 @@ pub fn load_state(sys: &mut Sys) {
 }
 
 fn load_section(sys: &mut Sys, buffer: &Vec<u8>, idx: &mut usize, section: MemSection) {
-    let start = section.start_addr();
-    let size = section.size();
+    let start = section.start_addr() as u32;
+    let size = section.size() as u32;
     for addr in start..(start + size) {
         let data = buffer[*idx];
-        sys.mem.write(addr, data);
+        sys.mem.write(addr as Addr, data);
         *idx += 1;
     }
 }
