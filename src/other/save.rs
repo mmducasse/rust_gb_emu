@@ -35,14 +35,18 @@ pub fn save_state(sys: &Sys) {
 }
 
 /// Loads the contents of cartridge RAM from a file named after the currently running game.
-pub fn load_state(sys: &mut Sys) {
+pub fn load_state(sys: &mut Sys) -> bool {
     let file_name = sys.mem.cart.header().title();
     let path = format!("{}\\{}.sav", SAVE_FOLDER_PATH, file_name);
 
-    let buffer = fs::read(&path).unwrap();
+    let Ok(buffer) = fs::read(&path) else {
+        return false;
+    };
 
     let cart_ram = sys.mem.cart.ram_mut();
     copy_from_safe(cart_ram, &buffer);
 
     println!("Loaded from: {}", path);
+
+    return true;
 }
