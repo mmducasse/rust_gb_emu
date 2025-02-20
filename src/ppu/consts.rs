@@ -36,9 +36,13 @@ pub const JOYPAD_ORG: IVec2 = i2(
     VIEWPORT_ORG.y + (VIEWPORT_P8_SIZE.y + 1) * P8.y,
 );
 
-pub const WINDOW_P8_SIZE: IVec2 = i2(
+pub const WINDOW_P8_SIZE_NORMAL: IVec2 = i2(VIEWPORT_P8_SIZE.x + 2, VIEWPORT_P8_SIZE.y + 10);
+pub const WINDOW_SIZE_NORMAL: IVec2 = IVec2::mul(WINDOW_P8_SIZE_NORMAL, P8);
+pub const WINDOW_BOUNDS_NORMAL: IRect = IRect::of_size(WINDOW_SIZE_NORMAL);
+
+pub const WINDOW_P8_SIZE_DEBUG: IVec2 = i2(
     VIEWPORT_P8_SIZE.x + TILE_MAP_P8_SIZE.x + TILE_DATA_P8_SIZE.x + 4,
     TILE_MAP_P8_SIZE.y + 2,
 );
-pub const WINDOW_SIZE: IVec2 = IVec2::mul(WINDOW_P8_SIZE, P8);
-pub const WINDOW_BOUNDS: IRect = IRect::of_size(WINDOW_SIZE);
+pub const WINDOW_SIZE_DEBUG: IVec2 = IVec2::mul(WINDOW_P8_SIZE_DEBUG, P8);
+pub const WINDOW_BOUNDS_DEBUG: IRect = IRect::of_size(WINDOW_SIZE_DEBUG);

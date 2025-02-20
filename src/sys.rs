@@ -19,6 +19,7 @@ use crate::{
 
 pub struct Options {
     pub kill_on_infinite_loop: bool,
+    pub show_debug_views: bool,
 }
 
 pub struct Sys {

@@ -45,6 +45,13 @@ pub fn render_ui(sys: &mut Sys) {
     let game_title = sys.mem.cart.header().title();
     draw_text(game_title, i2(1, 0) * P8);
 
+    // Joypad.
+    draw_joypad_state(JOYPAD_ORG);
+
+    if !sys.options.show_debug_views {
+        return;
+    }
+
     // Background tilemap view.
     let is_showing_win = sys.emu.show_win_map;
     let tile_map_area_is_9c00 = if is_showing_win {
@@ -83,7 +90,4 @@ pub fn render_ui(sys: &mut Sys) {
         0x9000,
         TILE_DATA_ORG + i2(0, 2 * TILE_DATA_BLOCK_DRAW_P8_SIZE.y + 2) * P8,
     );
-
-    // Joypad.
-    draw_joypad_state(JOYPAD_ORG);
 }

@@ -17,7 +17,10 @@ use other::{
     misc::shuffle_tile_data,
     save::{check_load_save_inputs, load_state},
 };
-use ppu::{consts::WINDOW_BOUNDS, ui::render_ui};
+use ppu::{
+    consts::{WINDOW_BOUNDS_DEBUG, WINDOW_SIZE_DEBUG, WINDOW_SIZE_NORMAL},
+    ui::render_ui,
+};
 use sys::{Options, Sys};
 use xf::mq::{
     draw::draw_rect,
@@ -127,25 +130,31 @@ async fn test() {
 }
 
 async fn run_normal(path: &str) {
-    let window = Window::new(WindowParams {
-        resolution: SCREEN_SIZE,
-        scale: PIXEL_SCALE,
-    });
-
-    window.render_pass(|| {});
-    next_frame().await;
-
     let cart = match Cart::load_from(path, true) {
         Ok(cart) => cart,
         Err(msg) => {
             panic!("{}", msg);
         }
     };
+    let show_debug_views = true;
     let options = Options {
         kill_on_infinite_loop: true,
+        show_debug_views,
     };
 
     let mut sys = Sys::new(options, cart);
+
+    let window = Window::new(WindowParams {
+        resolution: if show_debug_views {
+            WINDOW_SIZE_DEBUG
+        } else {
+            WINDOW_SIZE_NORMAL
+        },
+        scale: PIXEL_SCALE,
+    });
+
+    window.render_pass(|| {});
+    next_frame().await;
 
     // let now = Instant::now();
     // while (Instant::now() - now).as_secs_f32() < 5.0 {
@@ -169,7 +178,7 @@ async fn run_normal(path: &str) {
         //sys.run_one_m_cycle();
 
         window.render_pass(|| {
-            draw_rect(WINDOW_BOUNDS, BLACK);
+            draw_rect(WINDOW_BOUNDS_DEBUG, BLACK);
             while !sys.is_render_pending && !sys.hard_lock {
                 sys.run_one_m_cycle();
             }
@@ -240,6 +249,7 @@ async fn run_blaargs_suite() {
     for path in rom_paths {
         let options = Options {
             kill_on_infinite_loop: true,
+            show_debug_views: true,
         };
         let cart = Cart::load_from(&path, false).unwrap();
         let mut sys = Sys::new(options, cart);
