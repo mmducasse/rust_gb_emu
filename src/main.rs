@@ -10,7 +10,7 @@ use consts::{PIXEL_SCALE, SCREEN_SIZE};
 use debug::{initialize_debug, DebugConfig};
 use macroquad::{
     color::BLACK,
-    input::{is_key_pressed, KeyCode},
+    input::{is_key_down, is_key_pressed, KeyCode},
     window::next_frame,
 };
 use other::{
@@ -166,6 +166,8 @@ async fn run_normal(path: &str) {
 
     load_state(&mut sys);
 
+    let mut speedup = false;
+
     while !sys.hard_lock {
         if is_key_pressed(KeyCode::Escape) {
             sys.hard_lock = true;
@@ -177,10 +179,17 @@ async fn run_normal(path: &str) {
         sys.emu.update();
         //sys.run_one_m_cycle();
 
+        if is_key_pressed(KeyCode::Space) {
+            speedup = !speedup;
+        }
         window.render_pass(|| {
             draw_rect(WINDOW_BOUNDS_DEBUG, BLACK);
-            while !sys.is_render_pending && !sys.hard_lock {
-                sys.run_one_m_cycle();
+            let limit = if speedup { 4 } else { 1 };
+            for frame in 0..limit {
+                while !sys.is_render_pending && !sys.hard_lock {
+                    sys.run_one_m_cycle();
+                }
+                sys.is_render_pending = false;
             }
 
             render_ui(&mut sys);
