@@ -1,3 +1,13 @@
+// /////////////////////////////////////////////////////////// //
+//                                                             //
+// Project: Rust Game Boy Emulator                             //
+// Author:  Matthew M. Ducasse                                 //
+// Date:    Jan 2025                                           //
+//                                                             //
+// Description: An emulator for the Nintendo Game Boy (1989).  //
+//                                                             //
+// /////////////////////////////////////////////////////////// //
+
 //#![forbid(unsafe_code)]
 #![allow(dead_code)]
 //#![allow(unused_imports)]
@@ -10,7 +20,7 @@ use consts::{PIXEL_SCALE, SCREEN_SIZE};
 use debug::{initialize_debug, DebugConfig};
 use macroquad::{
     color::BLACK,
-    input::{is_key_down, is_key_pressed, KeyCode},
+    input::{is_key_pressed, KeyCode},
     window::next_frame,
 };
 use other::{
