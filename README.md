@@ -21,6 +21,12 @@ An emulator for the original Nintendo Game Boy (1989) written in Rust.
 | Toggle speedup | Space |
 | Toggle tile map view | T |
 
+### Useful Resources
+- gbdev.io Pan Docs: https://gbdev.io/pandocs/About.html
+- CPU Opcodes map: https://meganesu.github.io/generate-gb-opcodes/
+- Cart Memory Bank Controllers: https://gbdev.gg8.se/wiki/articles/Memory_Bank_Controllers
+- Blargg's Test ROMS: https://github.com/retrio/gb-test-roms/tree/master/cpu_instrs
+
 ### Not implemented
 - Color Games
 - Audio
