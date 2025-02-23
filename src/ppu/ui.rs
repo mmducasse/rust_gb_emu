@@ -48,7 +48,7 @@ pub fn render_ui(sys: &mut Sys) {
     // Joypad.
     draw_joypad_state(JOYPAD_ORG);
 
-    if !sys.options.show_debug_views {
+    if !sys.options.show_vram_views {
         return;
     }
 

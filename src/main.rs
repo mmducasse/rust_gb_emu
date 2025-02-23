@@ -89,16 +89,16 @@ async fn run_emu() {
         }
     };
 
-    let show_debug_views = true;
+    let show_vram_views = true;
     let options = Options {
         kill_on_infinite_loop: true,
-        show_debug_views,
+        show_vram_views,
     };
 
     let mut sys = Sys::new(options, cart);
 
     let window = Window::new(WindowParams {
-        resolution: window_size(show_debug_views),
+        resolution: window_size(show_vram_views),
         scale: PIXEL_SCALE,
     });
 

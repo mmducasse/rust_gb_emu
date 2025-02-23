@@ -20,6 +20,7 @@ use crate::{
     },
 };
 
+/// Represents a Game Boy button.
 #[derive(Clone, Copy)]
 enum Button {
     Up,
@@ -74,8 +75,6 @@ fn draw_button(button: Button, pos: IVec2, org: IVec2) {
     draw_empty_rect(bounds, WHITE);
 }
 
-static mut PREV_LO_4: u8 = 0xF;
-
 pub fn handle_joypad_inputs(sys: &mut Sys) {
     let p1 = sys.mem.io_regs.get(IoReg::P1);
     let select_btns = bit8(&p1, 5) == 0;
@@ -98,12 +97,6 @@ pub fn handle_joypad_inputs(sys: &mut Sys) {
 
     sys.mem.io_regs.mut_(IoReg::P1, |p1| {
         set_bits8(p1, 3, 0, lo_4);
-        unsafe {
-            if PREV_LO_4 != lo_4 {
-                //println!("btns: {:0>8b}", p1);
-                PREV_LO_4 = lo_4;
-            }
-        }
     });
 }
 

@@ -47,7 +47,7 @@ async fn run_blarggs_test_suite() {
     for path in rom_paths {
         let options = Options {
             kill_on_infinite_loop: true,
-            show_debug_views: true,
+            show_vram_views: true,
         };
         let cart = Cart::load_from(&path, false).unwrap();
         let mut sys = Sys::new(options, cart);

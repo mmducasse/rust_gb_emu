@@ -47,8 +47,8 @@ pub const WINDOW_P8_SIZE_DEBUG: IVec2 = i2(
 pub const WINDOW_SIZE_DEBUG: IVec2 = IVec2::mul(WINDOW_P8_SIZE_DEBUG, P8);
 pub const WINDOW_BOUNDS_DEBUG: IRect = IRect::of_size(WINDOW_SIZE_DEBUG);
 
-pub fn window_size(show_debug_views: bool) -> IVec2 {
-    if show_debug_views {
+pub fn window_size(show_vram_views: bool) -> IVec2 {
+    if show_vram_views {
         WINDOW_SIZE_DEBUG
     } else {
         WINDOW_SIZE_NORMAL

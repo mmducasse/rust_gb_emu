@@ -19,9 +19,10 @@ use crate::{
 
 pub struct Options {
     pub kill_on_infinite_loop: bool,
-    pub show_debug_views: bool,
+    pub show_vram_views: bool,
 }
 
+/// Represents the state of the emulated Game Boy system.
 pub struct Sys {
     pub options: Options,
     pub emu: Emu,
@@ -116,12 +117,6 @@ impl Sys {
         sys.mem.io_regs.set(Ie, 0x00);
     }
 
-    pub fn run(&mut self) {
-        while !self.hard_lock {
-            self.run_one_m_cycle();
-        }
-    }
-
     pub fn run_one_m_cycle(&mut self) {
         if self.cpu_clock.update_and_check() {
             self.cpu_delay_ticks = u32::saturating_sub(self.cpu_delay_ticks, 1);
@@ -157,17 +152,9 @@ impl Sys {
             return;
         }
 
-        // self.test_code();
-
         //////////////////////////////////////////////////////////////
 
         return;
-    }
-
-    fn test_code(&mut self) {
-        if debug_state().total_instrs_executed > 100 {
-            self.hard_lock = true;
-        }
     }
 
     pub fn print(&self) {
