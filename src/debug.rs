@@ -127,7 +127,6 @@ enum ImmValue {
 }
 
 struct IoRegRecord {
-    reg: IoReg,
     reads: u64,
     writes: u64,
     last_write_data: u8,
@@ -232,7 +231,6 @@ pub fn record_io_reg_usage(reg: IoReg, is_write: bool, data: u8) {
         debug_state().used_io_regs.insert(
             reg,
             IoRegRecord {
-                reg,
                 reads: 0,
                 writes: 0,
                 last_write_data: 0,

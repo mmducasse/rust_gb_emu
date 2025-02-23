@@ -14,6 +14,7 @@ use crate::{
 
 /// Runs every blargg's cpu_instrs test in sequence and prints the results
 /// to the console.
+#[allow(dead_code)]
 async fn run_blarggs_test_suite() {
     initialize_debug(DebugConfig {
         enable_debug_print: false,

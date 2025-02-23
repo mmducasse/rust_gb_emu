@@ -95,14 +95,6 @@ impl Cart {
         self.hw.write(addr, data);
     }
 
-    pub fn rom(&self) -> &[u8] {
-        self.hw.rom()
-    }
-
-    pub fn rom_mut(&mut self) -> &mut [u8] {
-        self.hw.rom_mut()
-    }
-
     pub fn ram(&self) -> &[u8] {
         self.hw.ram()
     }

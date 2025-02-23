@@ -86,14 +86,6 @@ impl IoRegs {
         };
     }
 
-    pub fn ram(&self) -> &Array {
-        &self.mem
-    }
-
-    pub fn ie(&self) -> &Array {
-        &self.ie
-    }
-
     /// Reads from the readable bits in the IO register.
     pub fn user_read(&self, addr: Addr) -> u8 {
         let mut data = if addr == IoReg::Ie.as_addr() {
@@ -181,20 +173,11 @@ mod io_reg_data {
 
     /// Describes special behavior for a given IO register.
     pub struct IoRegData {
-        reg: IoReg,
         read_mask: u8,
         write_mask: u8,
     }
 
     impl IoRegData {
-        fn new(reg: IoReg) -> Self {
-            Self {
-                reg,
-                read_mask: 0xFF,
-                write_mask: 0xFF,
-            }
-        }
-
         pub fn read_mask(&self) -> u8 {
             self.read_mask
         }
@@ -214,7 +197,10 @@ mod io_reg_data {
         }
 
         pub fn from_reg(reg: IoReg) -> Self {
-            let data = Self::new(reg);
+            let data = Self {
+                read_mask: 0xFF,
+                write_mask: 0xFF,
+            };
 
             match reg {
                 IoReg::P1 => data.with_write_mask(0b1111_0000),

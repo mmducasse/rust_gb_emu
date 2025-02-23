@@ -43,10 +43,6 @@ impl HwMbc3 {
 }
 
 impl CartHw for HwMbc3 {
-    fn rom(&self) -> &[u8] {
-        &self.rom
-    }
-
     fn rom_mut(&mut self) -> &mut [u8] {
         &mut self.rom
     }

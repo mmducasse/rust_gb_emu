@@ -1,6 +1,7 @@
 use crate::cpu::instr::{decode, ImmType};
 
 /// Prints out the decoded CPU instruction for every possible opcode.
+#[allow(dead_code)]
 pub fn test_all_opcodes() {
     // Block 0 - 3
     for op in 0x00..=0xFF {

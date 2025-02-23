@@ -17,10 +17,6 @@ impl<T> RingBuffer<T> {
         return self.data.len();
     }
 
-    pub fn max_len(&self) -> usize {
-        return self.max_len;
-    }
-
     pub fn add(&mut self, value: T) {
         if self.data.len() == self.max_len {
             self.data[self.index] = value;

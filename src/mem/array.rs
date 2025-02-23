@@ -14,14 +14,6 @@ impl Array {
         }
     }
 
-    pub fn start_addr(&self) -> Addr {
-        self.start_addr
-    }
-
-    pub fn contains_addr(&self, abs_addr: Addr) -> bool {
-        return self.to_idx(abs_addr) < self.memory.len();
-    }
-
     pub fn read(&self, abs_addr: impl Into<Addr>) -> u8 {
         let idx = self.to_idx(abs_addr);
         return self.memory[idx];
@@ -46,10 +38,6 @@ impl Array {
 
     pub fn as_slice(&self) -> &[u8] {
         return self.memory.as_slice();
-    }
-
-    pub fn as_mut_slice(&mut self) -> &mut [u8] {
-        return self.memory.as_mut_slice();
     }
 }
 

@@ -16,10 +16,6 @@ impl HwRomOnly {
 }
 
 impl CartHw for HwRomOnly {
-    fn rom(&self) -> &[u8] {
-        self.rom.as_slice()
-    }
-
     fn rom_mut(&mut self) -> &mut [u8] {
         self.rom.as_mut_slice()
     }

@@ -38,19 +38,19 @@ pub fn set_bits8_masked(data: &mut u8, mask: u8, value: u8) {
     *data = (*data & !mask) | (value & mask);
 }
 
-#[inline]
-pub fn bit16(op: &u16, idx: usize) -> u16 {
-    (op >> idx) & 0b1
-}
+// #[inline]
+// pub fn bit16(op: &u16, idx: usize) -> u16 {
+//     (op >> idx) & 0b1
+// }
 
-#[inline]
-pub fn bits16(op: &u16, hi: usize, lo: usize) -> u16 {
-    let mask = 0xFF;
-    let mask = mask << (16 - (hi + 1));
-    let mask = mask >> (16 - (hi + 1 - lo));
+// #[inline]
+// pub fn bits16(op: &u16, hi: usize, lo: usize) -> u16 {
+//     let mask = 0xFF;
+//     let mask = mask << (16 - (hi + 1));
+//     let mask = mask >> (16 - (hi + 1 - lo));
 
-    return (op >> lo) & mask;
-}
+//     return (op >> lo) & mask;
+// }
 
 #[inline]
 pub fn split_16(data: u16) -> (u8, u8) {
@@ -66,22 +66,6 @@ pub fn join_16(hi: u8, lo: u8) -> u16 {
     let lo = lo as u16;
 
     return hi | lo;
-}
-
-#[inline]
-pub fn add8_ui(a: u8, b: i8) -> u8 {
-    if b >= 0 {
-        let b = b as u8;
-        u8::wrapping_add(a, b)
-    } else {
-        let b = (-b) as u8;
-        u8::wrapping_sub(a, b)
-    }
-}
-
-#[inline]
-pub fn add8_uu(a: u8, b: u8) -> u8 {
-    u8::wrapping_add(a, b)
 }
 
 #[inline]
