@@ -3,8 +3,9 @@ use crate::{
     util::math::{bit8, bits8},
 };
 
-#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 /// Interpretation of a 1-byte opcode instruction in ROM.
+#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
+#[allow(non_camel_case_types)]
 pub enum Instr {
     // Block 0 instrs.
     Nop,

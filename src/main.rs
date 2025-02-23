@@ -8,13 +8,6 @@
 //                                                             //
 // /////////////////////////////////////////////////////////// //
 
-//#![forbid(unsafe_code)]
-//#![allow(dead_code)]
-//#![allow(unused_imports)]
-#![allow(non_camel_case_types)]
-//#![allow(unused_variables)]
-#![allow(static_mut_refs)]
-
 use cart::cart::Cart;
 use consts::PIXEL_SCALE;
 use debug::{initialize_debug, DebugConfig};

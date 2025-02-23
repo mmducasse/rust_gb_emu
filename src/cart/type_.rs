@@ -33,6 +33,7 @@ pub enum MbcType {
 // }
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug, FromPrimitive)]
+#[allow(non_camel_case_types)]
 pub enum CartType {
     RomOnly = 0x00,
     Mbc1 = 0x01,

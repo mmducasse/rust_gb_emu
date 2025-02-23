@@ -1,3 +1,5 @@
+#![allow(static_mut_refs)]
+
 use std::{
     collections::HashMap,
     mem::{self, transmute},
