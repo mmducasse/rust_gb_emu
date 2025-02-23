@@ -1,7 +1,4 @@
-use crate::{
-    sys::Sys,
-    util::math::{bit8, join_16, set_bit8, split_16},
-};
+use crate::util::math::{bit8, join_16, set_bit8, split_16};
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub enum CpuReg8 {
@@ -175,16 +172,5 @@ impl CpuRegs {
         println!("  Z={} N={} H={} C={}", z, n, h, c);
 
         println!();
-    }
-
-    pub fn print_key_addrs(sys: &Sys) {
-        let sp_p = sys.mem.read(sys.regs.get_16(CpuReg16::SP));
-        let pc_p = sys.mem.read(sys.regs.get_16(CpuReg16::PC));
-        let hl_p = sys.mem.read(sys.regs.get_16(CpuReg16::HL));
-
-        println!(
-            "  [SP]={:0>2X}  [PC]={:0>2X}  [HL]={:0>2X}",
-            sp_p, pc_p, hl_p
-        );
     }
 }

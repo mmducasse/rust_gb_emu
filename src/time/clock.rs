@@ -1,6 +1,6 @@
 // per Pan Docs: A “dot” = one 2^22 Hz (≅ 4.194 MHz) time unit.
 
-pub struct SimpleClock {
+pub struct Clock {
     name: String,
     period_dots: u32,
     count_dots: u32,
@@ -8,7 +8,7 @@ pub struct SimpleClock {
     pub debug_total_ticks: u64,
 }
 
-impl SimpleClock {
+impl Clock {
     pub fn new(name: impl Into<String>, period_dots: u32) -> Self {
         Self {
             name: name.into(),

@@ -60,8 +60,6 @@ pub fn render_scroll_view_area(sys: &Sys, org: IVec2) {
     let x_wraps = scx > end_x;
     let y_wraps = scy > end_y;
 
-    let pos = i2(scx, scy);
-
     if !x_wraps {
         draw_line(org + i2(scx, scy), VIEWPORT_SIZE.x, false, BLACK);
         draw_line(org + i2(scx, end_y), VIEWPORT_SIZE.x, false, BLACK);

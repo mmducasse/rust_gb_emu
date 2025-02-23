@@ -11,7 +11,7 @@ use crate::{
         interrupt::InterruptType,
         regs::CpuRegs,
     },
-    mem::{io_regs::IoReg, sections::MemSection, Addr},
+    mem::{io_regs::IoReg, Addr},
     sys::Sys,
     util::{math::join_16, ring_buffer::RingBuffer},
 };
@@ -83,12 +83,12 @@ pub fn request_breakpoint() {
     debug_state().pending_breakpoint = true;
 }
 
-pub fn take_pending_breakpoint() -> bool {
-    let pending_breakpoint = debug_state().pending_breakpoint;
-    debug_state().pending_breakpoint = false;
+// pub fn take_pending_breakpoint() -> bool {
+//     let pending_breakpoint = debug_state().pending_breakpoint;
+//     debug_state().pending_breakpoint = false;
 
-    return pending_breakpoint;
-}
+//     return pending_breakpoint;
+// }
 
 pub fn push_serial_char(c: char) {
     debug_state().serial_out_log.push(c);
@@ -226,17 +226,6 @@ pub fn record_curr_instr(sys: &Sys) {
         .insert(variant_str, count + 1);
 }
 
-pub fn print_last_instr() {
-    if let Some(last) = debug_state().instr_ring_buffer.iter().last() {
-        print_instr_record(last);
-
-        debug_state().print_count += 1;
-        if debug_state().print_count >= debug_state().max_print_count {
-            fail("Exceeded max print count.");
-        }
-    };
-}
-
 /// is_write: false for read, true for write.
 pub fn record_io_reg_usage(reg: IoReg, is_write: bool, data: u8) {
     if !debug_state().used_io_regs.contains_key(&reg) {
@@ -269,7 +258,6 @@ const PRINT_TOTAL_INSTRS: bool = true;
 const PRINT_IO_REG_USAGE: bool = true;
 const PRINT_SYS_STATE: bool = true;
 const PRINT_INTERRUPT_COUNTS: bool = true;
-const PRINT_MEM_SUMS: bool = false;
 const PRINT_STACK_RECORDS: bool = true;
 
 pub fn print_system_state(sys: &Sys) {
@@ -332,18 +320,6 @@ pub fn print_system_state(sys: &Sys) {
         // System state.
         println!("\nFinal state:");
         sys.print();
-    }
-
-    if PRINT_MEM_SUMS {
-        // Sample of each memory section.
-        println!("\nMemory section sums:");
-        for section in MemSection::iter() {
-            let mut sum = 0;
-            for data in sys.mem.get_section_slice(section) {
-                sum += *data as u64;
-            }
-            println!("  {:?} data sum: {}", section, sum);
-        }
     }
 
     println!();

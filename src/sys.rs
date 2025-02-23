@@ -10,7 +10,7 @@ use crate::{
     other::{emu::Emu, joypad::handle_joypad_inputs},
     ppu::ppu::{print_ppu, update_ppu, Ppu},
     time::{
-        simple_clock::SimpleClock,
+        clock::Clock,
         timers::{
             update_timer_regs, CPU_PERIOD_MCYCLES, DIV_PERIOD_MCYCLES, TAC_CLK_0_PERIOD_MCYCLES,
         },
@@ -31,9 +31,9 @@ pub struct Sys {
     pub ppu: Ppu,
     pub regs: CpuRegs,
 
-    pub cpu_clock: SimpleClock,
-    pub div_timer_clock: SimpleClock,
-    pub tima_timer_clock: SimpleClock,
+    pub cpu_clock: Clock,
+    pub div_timer_clock: Clock,
+    pub tima_timer_clock: Clock,
 
     pub cpu_delay_ticks: u32,
 
@@ -55,9 +55,9 @@ impl Sys {
             ppu: Ppu::new(),
             regs: CpuRegs::new(),
 
-            cpu_clock: SimpleClock::new("CPU", CPU_PERIOD_MCYCLES),
-            div_timer_clock: SimpleClock::new("DIV", DIV_PERIOD_MCYCLES),
-            tima_timer_clock: SimpleClock::new("TIMA", TAC_CLK_0_PERIOD_MCYCLES),
+            cpu_clock: Clock::new("CPU", CPU_PERIOD_MCYCLES),
+            div_timer_clock: Clock::new("DIV", DIV_PERIOD_MCYCLES),
+            tima_timer_clock: Clock::new("TIMA", TAC_CLK_0_PERIOD_MCYCLES),
 
             cpu_delay_ticks: 0,
 

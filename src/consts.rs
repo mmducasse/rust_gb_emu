@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use xf::num::{
     irect::{ir, IRect},
     ivec2::{i2, IVec2},

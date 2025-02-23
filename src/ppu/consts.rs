@@ -1,20 +1,16 @@
-use xf::num::{
-    irect::IRect,
-    ivec2::{i2, IVec2},
-};
+use xf::num::ivec2::{i2, IVec2};
 
 use crate::{consts::P8, mem::Addr};
 
-pub const TILE_SIZE: IVec2 = P8;
 pub const VIEWPORT_P8_SIZE: IVec2 = i2(20, 18);
 pub const VIEWPORT_SIZE: IVec2 = IVec2::mul(VIEWPORT_P8_SIZE, P8);
 
 pub const TILE_MAP_P8_SIZE: IVec2 = i2(32, 32);
-pub const TILE_MAP_SIZE: IVec2 = IVec2::mul(TILE_MAP_P8_SIZE, P8);
+//pub const TILE_MAP_SIZE: IVec2 = IVec2::mul(TILE_MAP_P8_SIZE, P8);
 pub const TILE_DATA_BLOCK_DRAW_P8_SIZE: IVec2 = i2(16, 8);
 pub const TILE_DATA_BLOCK_DRAW_SIZE: IVec2 = IVec2::mul(TILE_DATA_BLOCK_DRAW_P8_SIZE, P8);
 pub const TILE_DATA_P8_SIZE: IVec2 = IVec2::mul(TILE_DATA_BLOCK_DRAW_P8_SIZE, i2(1, 3));
-pub const TILE_DATA_SIZE: IVec2 = IVec2::mul(TILE_DATA_P8_SIZE, P8);
+//pub const TILE_DATA_SIZE: IVec2 = IVec2::mul(TILE_DATA_P8_SIZE, P8);
 
 pub const TILE_MAP_ADDR_9800: Addr = 0x9800;
 pub const TILE_MAP_ADDR_9C00: Addr = 0x9C00;
@@ -38,14 +34,12 @@ pub const JOYPAD_ORG: IVec2 = i2(
 
 pub const WINDOW_P8_SIZE_NORMAL: IVec2 = i2(VIEWPORT_P8_SIZE.x + 2, VIEWPORT_P8_SIZE.y + 10);
 pub const WINDOW_SIZE_NORMAL: IVec2 = IVec2::mul(WINDOW_P8_SIZE_NORMAL, P8);
-pub const WINDOW_BOUNDS_NORMAL: IRect = IRect::of_size(WINDOW_SIZE_NORMAL);
 
 pub const WINDOW_P8_SIZE_DEBUG: IVec2 = i2(
     VIEWPORT_P8_SIZE.x + TILE_MAP_P8_SIZE.x + TILE_DATA_P8_SIZE.x + 4,
     TILE_MAP_P8_SIZE.y + 2,
 );
 pub const WINDOW_SIZE_DEBUG: IVec2 = IVec2::mul(WINDOW_P8_SIZE_DEBUG, P8);
-pub const WINDOW_BOUNDS_DEBUG: IRect = IRect::of_size(WINDOW_SIZE_DEBUG);
 
 pub fn window_size(show_vram_views: bool) -> IVec2 {
     if show_vram_views {

@@ -9,10 +9,10 @@
 // /////////////////////////////////////////////////////////// //
 
 //#![forbid(unsafe_code)]
-#![allow(dead_code)]
+//#![allow(dead_code)]
 //#![allow(unused_imports)]
 #![allow(non_camel_case_types)]
-#![allow(unused_variables)]
+//#![allow(unused_variables)]
 #![allow(static_mut_refs)]
 
 use cart::cart::Cart;
@@ -24,10 +24,7 @@ use macroquad::{
     window::next_frame,
 };
 use other::save::{load_state, save_state};
-use ppu::{
-    consts::{window_size, WINDOW_BOUNDS_DEBUG},
-    ui::render_ui,
-};
+use ppu::{consts::window_size, ui::render_ui};
 use sys::{Options, Sys};
 use xf::mq::{
     draw::draw_rect,
@@ -68,9 +65,9 @@ async fn run_emu() {
     //let path = ".\\assets\\real_gb_roms\\tetris.gb";
     //let path = ".\\assets\\real_gb_roms\\Dr_Mario.gb";
     //let path = ".\\assets\\real_gb_roms\\Pokemon.gb";
-    //let path = ".\\assets\\real_gb_roms\\Zelda.gb";
+    let path = ".\\assets\\real_gb_roms\\Zelda.gb";
     //let path = ".\\assets\\real_gb_roms\\Kirby.gb";
-    let path = ".\\assets\\real_gb_roms\\Tennis.gb";
+    //let path = ".\\assets\\real_gb_roms\\Tennis.gb";
     //let path = ".\\assets\\real_gb_roms\\Super Mario Land 2.gb";
     //let path = ".\\assets\\real_gb_roms\\Wario Land.gb";
     //let path = ".\\assets\\real_gb_roms\\DuckTales.gb";
@@ -108,9 +105,9 @@ async fn run_emu() {
         check_misc_inputs(&mut sys);
 
         window.render_pass(|| {
-            draw_rect(WINDOW_BOUNDS_DEBUG, BLACK);
+            draw_rect(window.bounds(), BLACK);
             let speed = sys.emu.speed();
-            for frame in 0..speed {
+            for _ in 0..speed {
                 while !sys.is_render_pending && !sys.hard_lock {
                     sys.run_one_m_cycle();
                 }

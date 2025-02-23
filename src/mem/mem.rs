@@ -92,39 +92,4 @@ impl Mem {
             }
         }
     }
-
-    pub fn get_section_slice(&self, section: MemSection) -> &[u8] {
-        match section {
-            MemSection::EchoRam | MemSection::UnusableMemory => {
-                return &[];
-            }
-            MemSection::CartRom => self.cart.rom(),
-            MemSection::Vram => self.vram.as_slice(),
-            MemSection::ExtRam => self.cart.ram(),
-            MemSection::Wram => self.wram.as_slice(),
-            MemSection::Oam => self.oam.as_slice(),
-            MemSection::IoRegs => self.io_regs.ram().as_slice(),
-            MemSection::Hram => self.hram.as_slice(),
-            MemSection::IeReg => self.io_regs.ie().as_slice(),
-        }
-    }
-
-    pub fn print_section(&self, section: MemSection, limit: Option<usize>) {
-        let data = self.get_section_slice(section);
-
-        println!("Mem section: {:?}", section);
-        let start = section.start_addr();
-        for (idx, data) in data.iter().enumerate() {
-            let addr = start + (idx as u16);
-            println!("  [{:0>4X}] {:0>2X}", addr, *data);
-
-            if let Some(limit) = limit {
-                if idx >= limit {
-                    println!("  ...");
-                    break;
-                }
-            }
-        }
-        println!();
-    }
 }

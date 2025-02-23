@@ -14,8 +14,8 @@ pub struct HwMbc3 {
     ram_timer_enable: bool,
     ram_rtc_register: u8,
     ram_bank_rtc_reg_sel: u8,
-    latch_clock_data: u8,
-    day_ctr: u8,
+    //latch_clock_data: u8,
+    //day_ctr: u8,
 }
 
 impl HwMbc3 {
@@ -28,8 +28,8 @@ impl HwMbc3 {
             ram_timer_enable: false,
             ram_rtc_register: 0,
             ram_bank_rtc_reg_sel: 0,
-            latch_clock_data: 0,
-            day_ctr: 0,
+            //latch_clock_data: 0,
+            //day_ctr: 0,
         }
     }
 
