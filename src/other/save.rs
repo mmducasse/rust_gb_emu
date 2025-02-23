@@ -1,18 +1,8 @@
 use std::{fs, io::Write, path::Path};
 
-use macroquad::input::{is_key_pressed, KeyCode};
-
 use crate::{sys::Sys, util::slice::copy_from_safe};
 
 const SAVE_FOLDER_PATH: &str = "C:\\Users\\matth\\Desktop";
-
-pub fn check_load_save_inputs(sys: &mut Sys) {
-    if is_key_pressed(KeyCode::Backspace) {
-        save_state(sys);
-    } else if is_key_pressed(KeyCode::Equal) {
-        load_state(sys);
-    }
-}
 
 /// Saves the contents of cartridge RAM to a file named after the currently running game.
 pub fn save_state(sys: &Sys) {

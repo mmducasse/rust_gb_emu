@@ -16,19 +16,16 @@
 #![allow(static_mut_refs)]
 
 use cart::cart::Cart;
-use consts::{PIXEL_SCALE, SCREEN_SIZE};
+use consts::PIXEL_SCALE;
 use debug::{initialize_debug, DebugConfig};
 use macroquad::{
     color::BLACK,
     input::{is_key_pressed, KeyCode},
     window::next_frame,
 };
-use other::{
-    misc::shuffle_tile_data,
-    save::{check_load_save_inputs, load_state},
-};
+use other::save::{load_state, save_state};
 use ppu::{
-    consts::{WINDOW_BOUNDS_DEBUG, WINDOW_SIZE_DEBUG, WINDOW_SIZE_NORMAL},
+    consts::{window_size, WINDOW_BOUNDS_DEBUG},
     ui::render_ui,
 };
 use sys::{Options, Sys};
@@ -57,56 +54,16 @@ mod util;
 async fn main() {
     println!("*** RUST GAMEBOY EMU (Matthew Ducasse 2025) ***");
 
-    test().await;
-    //run_blaargs_suite().await;
+    run_emu().await;
 }
 
-async fn test() {
+async fn run_emu() {
     initialize_debug(DebugConfig {
         enable_debug_print: false,
-        kill_after_cpu_ticks: None, //Some(2_000_000),
-        kill_after_nop_count: None, // Some(16),
+        kill_after_cpu_ticks: None,
+        kill_after_nop_count: None,
         last_instr_count: 15,
     });
-
-    //std::env::set_var("RUST_BACKTRACE", "1");
-
-    //test_all_opcodes();
-
-    //let path = ".\\assets\\files\\custom_roms\\ld_r8_r8\\rom.gb";
-    //let path = ".\\assets\\gb_microtest\\000-write_to_x8000.gb";
-
-    //let path = ".\\assets\\blaargs\\cpu_instrs\\cpu_instrs.gb";
-    //let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\01-special.gb";
-    //let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\02-interrupts.gb";
-    //let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\03-op sp,hl.gb";
-    //let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\04-op r,imm.gb";
-    //let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\05-op rp.gb";
-    //let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\06-ld r,r.gb";
-    //let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\07-jr,jp,call,ret,rst.gb";
-    //let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\08-misc instrs.gb";
-    //let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\09-op r,r.gb";
-    //let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\10-bit ops.gb";
-    //let path = ".\\assets\\blaargs\\cpu_instrs\\individual\\11-op a,(hl).gb";
-
-    //let path = ".\\assets\\blaargs\\instr_timing\\instr_timing.gb";
-
-    //let path = ".\\assets\\blaargs\\interrupt_time\\interrupt_time.gb";
-
-    //let path = ".\\assets\\blaargs\\mem_timing\\mem_timing\\mem_timing.gb";
-
-    //let path = ".\\assets\\blaargs\\mem_timing-2\\mem_timing-2\\mem_timing.gb";
-    //let path = ".\\assets\\blaargs\\mem_timing-2\\mem_timing-2\\rom_singles\\01-read_timing.gb";
-    //let path = ".\\assets\\blaargs\\mem_timing-2\\mem_timing-2\\rom_singles\\02-write_timing.gb";
-    //let path = ".\\assets\\blaargs\\mem_timing-2\\mem_timing-2\\rom_singles\\03-modify_timing.gb";
-
-    //let path = ".\\assets\\mooneye\\acceptance\\add_sp_e_timing.gb";
-    //let path = ".\\assets\\mooneye\\acceptance\\bits\\reg_f.gb";
-    //let path = ".\\assets\\mooneye\\acceptance\\interrupts\\ie_push.gb";
-    //let path = ".\\assets\\mooneye\\acceptance\\ppu\\hblank_ly_scx_timing-GS.gb";
-    //let path = ".\\assets\\mooneye\\acceptance\\timer\\div_write.gb";
-    //let path = ".\\assets\\mooneye\\emulator-only\\mbc1\\bits_bank1.gb";
-    //let path = ".\\assets\\mooneye\\emulator-only\\mbc1\\rom_1Mb.gb";
 
     //let path = ".\\assets\\real_gb_roms\\tetris.gb";
     //let path = ".\\assets\\real_gb_roms\\Dr_Mario.gb";
@@ -118,11 +75,6 @@ async fn test() {
     //let path = ".\\assets\\real_gb_roms\\Wario Land.gb";
     //let path = ".\\assets\\real_gb_roms\\DuckTales.gb";
 
-    //let path = ".\\assets\\real_cgb_roms\\Oracle of Seasons.gbc"; // MBC5
-    //let path = ".\\assets\\real_cgb_roms\\Oracle of Ages.gbc"; // MBC5
-    //let path = ".\\assets\\real_cgb_roms\\Link's Awakening DX.gbc"; // MBC5
-    //let path = ".\\assets\\real_cgb_roms\\Crystal Version.gbc"; // MBC3
-
     //let path = ".\\assets\\homebrew_roms\\porklike.gb";
     //let path = ".\\assets\\homebrew_roms\\20y.gb";
     //let path = ".\\assets\\homebrew_roms\\64boy-opcode-scroll.gb";
@@ -130,22 +82,13 @@ async fn test() {
 
     //let path = ".\\assets\\other\\hello_world\\rom.gb";
 
-    //emp_tests::draw_vram_tile_data_test(path).await;
-    //temp_tests::draw_vram_tile_map_test(path).await;
-    //run_blargg_test(path).await;
-    //run_gb_microtest(&path).await;
-    //run_simple_test(&path);
-
-    run_normal(&path).await;
-}
-
-async fn run_normal(path: &str) {
     let cart = match Cart::load_from(path, true) {
         Ok(cart) => cart,
         Err(msg) => {
             panic!("{}", msg);
         }
     };
+
     let show_debug_views = true;
     let options = Options {
         kill_on_infinite_loop: true,
@@ -155,47 +98,19 @@ async fn run_normal(path: &str) {
     let mut sys = Sys::new(options, cart);
 
     let window = Window::new(WindowParams {
-        resolution: if show_debug_views {
-            WINDOW_SIZE_DEBUG
-        } else {
-            WINDOW_SIZE_NORMAL
-        },
+        resolution: window_size(show_debug_views),
         scale: PIXEL_SCALE,
     });
 
-    window.render_pass(|| {});
-    next_frame().await;
-
-    // let now = Instant::now();
-    // while (Instant::now() - now).as_secs_f32() < 5.0 {
-    //     window.render_pass(|| {
-    //         draw_rect(WINDOW_BOUNDS, BLACK);
-    //     });
-    //     next_frame().await;
-    // }
-
     load_state(&mut sys);
 
-    let mut speedup = false;
-
     while !sys.hard_lock {
-        if is_key_pressed(KeyCode::Escape) {
-            sys.hard_lock = true;
-        }
-        if is_key_pressed(KeyCode::Q) {
-            shuffle_tile_data(&mut sys);
-        }
-        check_load_save_inputs(&mut sys);
-        sys.emu.update();
-        //sys.run_one_m_cycle();
+        check_misc_inputs(&mut sys);
 
-        if is_key_pressed(KeyCode::Space) {
-            speedup = !speedup;
-        }
         window.render_pass(|| {
             draw_rect(WINDOW_BOUNDS_DEBUG, BLACK);
-            let limit = if speedup { 4 } else { 1 };
-            for frame in 0..limit {
+            let speed = sys.emu.speed();
+            for frame in 0..speed {
                 while !sys.is_render_pending && !sys.hard_lock {
                     sys.run_one_m_cycle();
                 }
@@ -207,23 +122,9 @@ async fn run_normal(path: &str) {
         });
 
         next_frame().await;
-
-        // if let Some(ly) = sys.is_scanline_render_pending.take() {
-        //     window.render_pass(|| {
-        //         render_scanline(&mut sys, ly, VIEWPORT_ORG);
-        //     });
-        // }
-        // if sys.is_debug_render_pending {
-        //     window.render_pass(|| {
-        //         render_screen(&mut sys);
-        //     });
-        //     next_frame().await;
-        //     sys.is_debug_render_pending = false;
-        // }
     }
 
     debug::flush_serial_char();
-
     debug::print_system_state(&sys);
 
     loop {
@@ -235,85 +136,22 @@ async fn run_normal(path: &str) {
     }
 }
 
-async fn run_blaargs_suite() {
-    initialize_debug(DebugConfig {
-        enable_debug_print: false,
-        kill_after_cpu_ticks: None, //Some(1__000),
-        kill_after_nop_count: None, // Some(16),
-        last_instr_count: 5,
-    });
-
-    let window = Window::new(WindowParams {
-        resolution: SCREEN_SIZE,
-        scale: PIXEL_SCALE,
-    });
-
-    window.render_pass(|| {});
-    next_frame().await;
-
-    let rom_paths = [
-        ".\\assets\\blaargs\\cpu_instrs\\individual\\01-special.gb",
-        ".\\assets\\blaargs\\cpu_instrs\\individual\\02-interrupts.gb",
-        ".\\assets\\blaargs\\cpu_instrs\\individual\\03-op sp,hl.gb",
-        ".\\assets\\blaargs\\cpu_instrs\\individual\\04-op r,imm.gb",
-        ".\\assets\\blaargs\\cpu_instrs\\individual\\05-op rp.gb",
-        ".\\assets\\blaargs\\cpu_instrs\\individual\\06-ld r,r.gb",
-        ".\\assets\\blaargs\\cpu_instrs\\individual\\07-jr,jp,call,ret,rst.gb",
-        ".\\assets\\blaargs\\cpu_instrs\\individual\\08-misc instrs.gb",
-        ".\\assets\\blaargs\\cpu_instrs\\individual\\09-op r,r.gb",
-        ".\\assets\\blaargs\\cpu_instrs\\individual\\10-bit ops.gb",
-        ".\\assets\\blaargs\\cpu_instrs\\individual\\11-op a,(hl).gb",
-    ];
-
-    for path in rom_paths {
-        let options = Options {
-            kill_on_infinite_loop: true,
-            show_debug_views: true,
-        };
-        let cart = Cart::load_from(&path, false).unwrap();
-        let mut sys = Sys::new(options, cart);
-
-        let rom_name = std::path::Path::new(path)
-            .file_name()
-            .unwrap()
-            .to_str()
-            .unwrap();
-        println!("{}: ", rom_name);
-
-        while !sys.hard_lock {
-            if is_key_pressed(KeyCode::Escape) {
-                sys.hard_lock = true;
-            }
-            sys.run_one_m_cycle();
-
-            if sys.is_render_pending {
-                window.render_pass(|| {
-                    render_ui(&mut sys);
-                });
-                next_frame().await;
-                sys.is_render_pending = false;
-            }
-        }
-
-        debug::flush_serial_char();
+fn check_misc_inputs(sys: &mut Sys) {
+    if is_key_pressed(KeyCode::Escape) {
+        sys.hard_lock = true;
     }
-}
 
-#[cfg(test)]
-mod tests {
+    if is_key_pressed(KeyCode::Backspace) {
+        save_state(sys);
+    }
+    if is_key_pressed(KeyCode::Equal) {
+        load_state(sys);
+    }
 
-    #[test]
-    fn test_() {
-        let x = 0xFF;
-        let y = u8::wrapping_shr(x, 1);
-        assert_eq!(y, 0x7F);
-
-        let x = 0b1011_1111;
-        let y = u8::rotate_right(x, 2);
-        assert_eq!(y, 0b1110_1111);
-
-        let x = 0b1110_1000;
-        let y = 0b0111_0011;
-        assert_eq!(x ^ y, 0b1001_1011);
+    if is_key_pressed(KeyCode::Space) {
+        sys.emu.is_speedup_enabled = !sys.emu.is_speedup_enabled;
+    }
+    if is_key_pressed(KeyCode::T) {
+        sys.emu.show_win_map = !sys.emu.show_win_map;
     }
 }

@@ -1,51 +1,77 @@
-// use macroquad::{
-//     input::{is_key_pressed, KeyCode},
-//     window::next_frame,
-// };
-// use xf::{
-//     mq::window::{Window, WindowParams},
-//     num::ivec2::i2,
-// };
+use macroquad::{
+    input::{is_key_pressed, KeyCode},
+    window::next_frame,
+};
+use xf::mq::window::{Window, WindowParams};
 
-// use crate::{consts::PIXEL_SCALE, debug, sys::Sys};
+use crate::{
+    cart::cart::Cart,
+    consts::{PIXEL_SCALE, SCREEN_SIZE},
+    debug::{self, initialize_debug, DebugConfig},
+    ppu::ui::render_ui,
+    sys::{Options, Sys},
+};
 
-// pub async fn run_blargg_test(rom_path: &str) {
-//     let window = Window::new(WindowParams {
-//         resolution: i2(256, 256),
-//         scale: PIXEL_SCALE,
-//     });
+async fn run_blaargs_suite() {
+    initialize_debug(DebugConfig {
+        enable_debug_print: false,
+        kill_after_cpu_ticks: None, //Some(1__000),
+        kill_after_nop_count: None, // Some(16),
+        last_instr_count: 5,
+    });
 
-//     let mut sys = Sys::new();
-//     Sys::initialize(&mut sys);
+    let window = Window::new(WindowParams {
+        resolution: SCREEN_SIZE,
+        scale: PIXEL_SCALE,
+    });
 
-//     sys.mem.cart.load(rom_path);
+    window.render_pass(|| {});
+    next_frame().await;
 
-//     window.render_pass(|| {});
-//     next_frame().await;
+    let rom_paths = [
+        ".\\assets\\blaargs\\cpu_instrs\\individual\\01-special.gb",
+        ".\\assets\\blaargs\\cpu_instrs\\individual\\02-interrupts.gb",
+        ".\\assets\\blaargs\\cpu_instrs\\individual\\03-op sp,hl.gb",
+        ".\\assets\\blaargs\\cpu_instrs\\individual\\04-op r,imm.gb",
+        ".\\assets\\blaargs\\cpu_instrs\\individual\\05-op rp.gb",
+        ".\\assets\\blaargs\\cpu_instrs\\individual\\06-ld r,r.gb",
+        ".\\assets\\blaargs\\cpu_instrs\\individual\\07-jr,jp,call,ret,rst.gb",
+        ".\\assets\\blaargs\\cpu_instrs\\individual\\08-misc instrs.gb",
+        ".\\assets\\blaargs\\cpu_instrs\\individual\\09-op r,r.gb",
+        ".\\assets\\blaargs\\cpu_instrs\\individual\\10-bit ops.gb",
+        ".\\assets\\blaargs\\cpu_instrs\\individual\\11-op a,(hl).gb",
+    ];
 
-//     while !sys.hard_lock {
-//         sys.run_one_m_cycle();
-//         print_output_char(&sys);
-//     }
+    for path in rom_paths {
+        let options = Options {
+            kill_on_infinite_loop: true,
+            show_debug_views: true,
+        };
+        let cart = Cart::load_from(&path, false).unwrap();
+        let mut sys = Sys::new(options, cart);
 
-//     println!("Done");
-//     debug::print_system_state(&sys);
+        let rom_name = std::path::Path::new(path)
+            .file_name()
+            .unwrap()
+            .to_str()
+            .unwrap();
+        println!("{}: ", rom_name);
 
-//     while !is_key_pressed(KeyCode::Escape) {
-//         window.render_pass(|| {});
-//         next_frame().await;
-//     }
-// }
+        while !sys.hard_lock {
+            if is_key_pressed(KeyCode::Escape) {
+                sys.hard_lock = true;
+            }
+            sys.run_one_m_cycle();
 
-// fn print_output_char(sys: &Sys) {
-//     if sys.mem.read(0xFF02u16) == 0x81 {
-//         let data = sys.mem.read(0xFF01u16);
-//         let c = char::from_u32(data as u32).unwrap_or('?');
-//         // if c.is_whitespace() {
-//         //     println!();
-//         // } else {
-//         //     print!("{}", c);
-//         // }
-//         println!("{:02x}", data);
-//     }
-// }
+            if sys.is_render_pending {
+                window.render_pass(|| {
+                    render_ui(&mut sys);
+                });
+                next_frame().await;
+                sys.is_render_pending = false;
+            }
+        }
+
+        debug::flush_serial_char();
+    }
+}
