@@ -186,49 +186,23 @@ mod io_reg_data {
             self.write_mask
         }
 
-        fn with_read_mask(mut self, read_mask: u8) -> Self {
-            self.read_mask = read_mask;
-            self
-        }
-
-        fn with_write_mask(mut self, write_mask: u8) -> Self {
-            self.write_mask = write_mask;
-            self
-        }
-
         pub fn from_reg(reg: IoReg) -> Self {
-            let data = Self {
-                read_mask: 0xFF,
-                write_mask: 0xFF,
+            let read_mask = match reg {
+                IoReg::If => 0b0001_1111,
+                _ => 0xFF,
             };
 
-            match reg {
-                IoReg::P1 => data.with_write_mask(0b1111_0000),
-                IoReg::Sb => data,
-                IoReg::Sc => data,
-                IoReg::Div => data,
-                IoReg::Tima => data,
-                IoReg::Tma => data,
-                IoReg::Tac => data,
-                IoReg::If => data
-                    .with_read_mask(0b0001_1111)
-                    .with_write_mask(0b0001_1111),
-                // todo: Sound regs...
-                IoReg::Lcdc => data,
-                IoReg::Stat => data.with_write_mask(0b1111_1000),
-                IoReg::Scy => data,
-                IoReg::Scx => data,
-                IoReg::Ly => data.with_write_mask(0b0000_0000),
-                IoReg::Lyc => data,
-                IoReg::Dma => data,
-                IoReg::Bgp => data,
-                IoReg::Obp0 => data,
-                IoReg::Obp1 => data,
-                IoReg::Wy => data,
-                IoReg::Wx => data,
-                // todo: CGB regs...
-                IoReg::Ie => data,
-            }
+            let write_mask = match reg {
+                IoReg::If => 0b0001_1111,
+                IoReg::Stat => 0b1111_1000,
+                IoReg::Ly => 0b0000_0000,
+                _ => 0xFF,
+            };
+
+            return Self {
+                read_mask,
+                write_mask,
+            };
         }
     }
 }
