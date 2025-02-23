@@ -1,4 +1,3 @@
-
 // Emulator user settings.
 #[derive(Default)]
 pub struct Emu {

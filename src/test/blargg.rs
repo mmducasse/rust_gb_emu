@@ -12,7 +12,9 @@ use crate::{
     sys::{Options, Sys},
 };
 
-async fn run_blaargs_suite() {
+/// Runs every blargg's cpu_instrs test in sequence and prints the results
+/// to the console.
+async fn run_blarggs_test_suite() {
     initialize_debug(DebugConfig {
         enable_debug_print: false,
         kill_after_cpu_ticks: None, //Some(1__000),
