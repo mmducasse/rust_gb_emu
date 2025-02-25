@@ -138,7 +138,7 @@ pub fn execute_next_instr(sys: &mut Sys) -> u32 {
         Instr::Set_B3_R8 { b3, operand } => set_b3_r8(sys, b3, operand),
 
         // Misc.
-        Instr::HardLock => hard_lock(sys),
+        Instr::Invalid(opcode) => hard_lock(sys, opcode),
     };
 
     //print_if_ld_a_a(sys, instr);
@@ -1142,8 +1142,8 @@ fn set_b3_r8(sys: &mut Sys, b3: u8, operand: R8) -> u8 {
 }
 
 // Misc functions.
-fn hard_lock(sys: &mut Sys) -> u8 {
+fn hard_lock(sys: &mut Sys, opcode: u8) -> u8 {
     sys.hard_lock = true;
-    debug::fail("Invalid instr occurred.");
+    debug::fail(format!("Invalid instr occurred ({:0>2X}).", opcode));
     return 1;
 }

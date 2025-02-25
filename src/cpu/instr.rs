@@ -103,7 +103,7 @@ pub enum Instr {
     Set_B3_R8 { b3: u8, operand: R8 },
 
     // Misc.
-    HardLock,
+    Invalid(u8),
 }
 
 impl Instr {
@@ -410,7 +410,7 @@ fn decode_block_3_opcode(op: u8) -> DecodeResult {
         0xD3, 0xDB, 0xDD, 0xE3, 0xE4, 0xEB, 0xEC, 0xED, 0xF4, 0xFC, 0xFD,
     ];
     if INVALID_OPS.contains(&op) {
-        return Ok(Instr::HardLock);
+        return Ok(Instr::Invalid(op));
     }
 
     if op == 0xCB {
