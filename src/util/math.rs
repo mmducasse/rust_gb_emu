@@ -9,7 +9,7 @@ pub fn bits8(op: &u8, hi: usize, lo: usize) -> u8 {
     let mask = mask << (8 - (hi + 1));
     let mask = mask >> (8 - (hi + 1 - lo));
 
-    return (op >> lo) & mask;
+    (op >> lo) & mask
 }
 
 #[inline]
@@ -57,7 +57,7 @@ pub fn split_16(data: u16) -> (u8, u8) {
     let hi = ((data & 0xFF00) >> 8) as u8;
     let lo = (data & 0x00FF) as u8;
 
-    return (hi, lo);
+    (hi, lo)
 }
 
 #[inline]
@@ -65,7 +65,7 @@ pub fn join_16(hi: u8, lo: u8) -> u16 {
     let hi = (hi as u16) << 8;
     let lo = lo as u16;
 
-    return hi | lo;
+    hi | lo
 }
 
 #[inline]

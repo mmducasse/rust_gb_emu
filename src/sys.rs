@@ -71,7 +71,7 @@ impl Sys {
 
         Self::initialize(&mut sys);
 
-        return sys;
+        sys
     }
 
     fn initialize(sys: &mut Self) {
@@ -149,12 +149,7 @@ impl Sys {
             println!("FAILURE: {}", failure);
             //debug::print_system_state(&self);
             self.hard_lock = true;
-            return;
         }
-
-        //////////////////////////////////////////////////////////////
-
-        return;
     }
 
     pub fn print(&self) {

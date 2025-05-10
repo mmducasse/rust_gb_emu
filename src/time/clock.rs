@@ -24,12 +24,14 @@ impl Clock {
 
     pub fn update_and_check(&mut self) -> bool {
         self.count_dots += 1;
+
         if self.count_dots >= self.period_dots {
             self.count_dots = 0;
             self.debug_total_ticks += 1;
-            return true;
+            true
+        } else {
+            false
         }
-        return false;
     }
 
     pub fn print(&self) {

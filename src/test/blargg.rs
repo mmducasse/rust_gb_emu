@@ -50,7 +50,7 @@ async fn run_blarggs_test_suite() {
             kill_on_infinite_loop: true,
             show_vram_views: true,
         };
-        let cart = Cart::load_from(&path, false).unwrap();
+        let cart = Cart::load_from(path, false).unwrap();
         let mut sys = Sys::new(options, cart);
 
         let rom_name = std::path::Path::new(path)

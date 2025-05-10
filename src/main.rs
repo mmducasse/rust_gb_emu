@@ -61,7 +61,7 @@ fn validate_args(mut args: Vec<String>) -> Option<String> {
     }
 
     let rom_path = args.remove(1);
-    return match fs::exists(&rom_path) {
+    match fs::exists(&rom_path) {
         Ok(true) => Some(rom_path),
         Ok(false) => {
             println!("File does not exist: {}", rom_path);
@@ -71,7 +71,7 @@ fn validate_args(mut args: Vec<String>) -> Option<String> {
             println!("{}", msg);
             None
         }
-    };
+    }
 }
 
 async fn run_emu(rom_path: &str) {

@@ -14,7 +14,7 @@ impl<T> RingBuffer<T> {
     }
 
     pub fn len(&self) -> usize {
-        return self.data.len();
+        self.data.len()
     }
 
     pub fn add(&mut self, value: T) {
@@ -26,12 +26,12 @@ impl<T> RingBuffer<T> {
         }
     }
 
-    pub fn iter<'a>(&'a self) -> RingBufferIterator<'a, T> {
-        return RingBufferIterator {
+    pub fn iter(&self) -> RingBufferIterator<T> {
+        RingBufferIterator {
             ring_buffer: self,
             index: self.index,
             is_done: false,
-        };
+        }
     }
 }
 
@@ -54,6 +54,7 @@ impl<'a, T> Iterator for RingBufferIterator<'a, T> {
         if self.index == self.ring_buffer.index {
             self.is_done = true;
         }
-        return Some(value);
+
+        Some(value)
     }
 }

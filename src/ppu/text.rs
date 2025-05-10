@@ -1,3 +1,5 @@
+#![allow(static_mut_refs)]
+
 use xf::{
     mq::{draw::draw_texture, texture::Texture, textures::Textures},
     num::{
@@ -28,9 +30,7 @@ pub fn draw_text(s: impl Into<String>, org: IVec2) {
 }
 
 fn get_font_texture() -> Texture {
-    unsafe {
-        return TEXTURES.get_or_load((), |_| include_bytes!("../../assets/sprites/font_nes.png"));
-    }
+    unsafe { TEXTURES.get_or_load((), |_| include_bytes!("../../assets/sprites/font_nes.png")) }
 }
 
 fn lookup(c: char) -> IVec2 {

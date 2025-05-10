@@ -38,7 +38,7 @@ pub fn tile_data_idx_to_addr(data_idx: u16, is_data_mode_8000: bool) -> Addr {
         (data_idx - 128) * TILE_DATA_TILE_SIZE + TILE_DATA_ADDR_8800
     };
 
-    return data_addr;
+    data_addr
 }
 
 pub fn draw_line(pos: IVec2, len: i32, is_vert: bool, color: Color) {
@@ -57,11 +57,11 @@ pub fn draw_pixel<const TRANSPARENT: bool>(pos: IVec2, palette: &Palette, color_
 
 #[inline]
 fn get_color(color_value: u8) -> Color {
-    return match color_value {
+    match color_value {
         0b00 => WHITE,
         0b01 => LIGHTGRAY,
         0b10 => DARKGRAY,
         0b11 => BLACK,
         _ => unreachable!(),
-    };
+    }
 }
