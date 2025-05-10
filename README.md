@@ -2,7 +2,7 @@
 
 An emulator for the original Nintendo Game Boy (1989) written in Rust.
 
-![preview](https://github.com/mmducasse/rust_gb_2/blob/master/assets/gifs/emu_gif.gif)
+![preview](https://github.com/mmducasse/rust_gb_2/blob/master/assets/gifs/rust-gb-emu-clips-ezgif-800px.gif)
 
 ### Features
 - Displays live VRAM tile map and tile data.
