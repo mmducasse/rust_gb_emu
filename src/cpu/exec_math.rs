@@ -7,7 +7,7 @@ pub struct Result<T> {
 }
 
 pub fn add_2_u8(a: u8, b: u8) -> Result<u8> {
-    return add_3_u8(a, b, 0);
+    add_3_u8(a, b, 0)
 }
 
 pub fn add_3_u8(a: u8, b: u8, c: u8) -> Result<u8> {
@@ -16,15 +16,15 @@ pub fn add_3_u8(a: u8, b: u8, c: u8) -> Result<u8> {
     let c = c as i16;
     let y = a + b + c;
 
-    return Result {
+    Result {
         ans: (y & 0xFF) as u8,
         h: (a & 0xF) + (b & 0xF) + (c & 0xF) > 0xF,
         c: y > 0xFF,
-    };
+    }
 }
 
 pub fn sub_2_u8(a: u8, b: u8) -> Result<u8> {
-    return sub_3_u8(a, b, 0);
+    sub_3_u8(a, b, 0)
 }
 
 pub fn sub_3_u8(a: u8, b: u8, c: u8) -> Result<u8> {
@@ -33,11 +33,11 @@ pub fn sub_3_u8(a: u8, b: u8, c: u8) -> Result<u8> {
     let c = c as i16;
     let y = a - b - c;
 
-    return Result {
+    Result {
         ans: (y & 0xFF) as u8,
         h: (a & 0xF) - (b & 0xF) - (c & 0xF) < 0,
         c: y < 0,
-    };
+    }
 }
 
 pub fn add_u16_i8(a: u16, b: i8) -> Result<u16> {
@@ -54,11 +54,11 @@ pub fn add_u16_i8(a: u16, b: i8) -> Result<u16> {
         c = y < 0;
     }
 
-    return Result {
+    Result {
         ans: (y & 0xFFFF) as u16,
         h,
         c,
-    };
+    }
 }
 
 pub fn add_sp_i8(sp: u16, b: i8) -> Result<u16> {
@@ -68,7 +68,7 @@ pub fn add_sp_i8(sp: u16, b: i8) -> Result<u16> {
     let b = unsafe { transmute(b) };
     let Result { ans: _, h, c } = add_2_u8(lo, b);
 
-    return Result { ans, h, c };
+    Result { ans, h, c }
 }
 
 #[cfg(test)]
@@ -80,98 +80,98 @@ mod tests {
     fn test_add_3_u8() {
         let res = add_3_u8(0xFF, 0x01, 0);
         assert_eq!(res.ans, 0x00);
-        assert_eq!(res.h, true);
-        assert_eq!(res.c, true);
+        assert!(res.h);
+        assert!(res.c);
 
         let res = add_3_u8(0xFF, 0x00, 1);
         assert_eq!(res.ans, 0x00);
-        assert_eq!(res.h, true);
-        assert_eq!(res.c, true);
+        assert!(res.h);
+        assert!(res.c);
 
         let res = add_3_u8(0xFF, 0x00, 0);
         assert_eq!(res.ans, 0xFF);
-        assert_eq!(res.h, false);
-        assert_eq!(res.c, false);
+        assert!(!res.h);
+        assert!(!res.c);
 
         let res = add_3_u8(0xFF, 0xFF, 1);
         assert_eq!(res.ans, 0xFF);
-        assert_eq!(res.h, true);
-        assert_eq!(res.c, true);
+        assert!(res.h);
+        assert!(res.c);
 
         let res = add_3_u8(0x0F, 0x01, 0);
         assert_eq!(res.ans, 0x10);
-        assert_eq!(res.h, true);
-        assert_eq!(res.c, false);
+        assert!(res.h);
+        assert!(!res.c);
     }
 
     #[test]
     fn test_sub_3_u8() {
         let res = sub_3_u8(0xFF, 0x01, 0);
         assert_eq!(res.ans, 0xFE);
-        assert_eq!(res.h, false);
-        assert_eq!(res.c, false);
+        assert!(!res.h);
+        assert!(!res.c);
 
         let res = sub_3_u8(0x01, 0x00, 1);
         assert_eq!(res.ans, 0x00);
-        assert_eq!(res.h, false);
-        assert_eq!(res.c, false);
+        assert!(!res.h);
+        assert!(!res.c);
 
         let res = sub_3_u8(0x00, 0x01, 0);
         assert_eq!(res.ans, 0xFF);
-        assert_eq!(res.h, true);
-        assert_eq!(res.c, true);
+        assert!(res.h);
+        assert!(res.c);
 
         let res = sub_3_u8(0xFF, 0xFF, 1);
         assert_eq!(res.ans, 0xFF);
-        assert_eq!(res.h, true);
-        assert_eq!(res.c, true);
+        assert!(res.h);
+        assert!(res.c);
 
         let res = sub_3_u8(0x10, 0x01, 0);
         assert_eq!(res.ans, 0x0F);
-        assert_eq!(res.h, true);
-        assert_eq!(res.c, false);
+        assert!(res.h);
+        assert!(!res.c);
     }
 
     #[test]
     fn test_add_u16_i8() {
         let res = add_u16_i8(0xFFFF, 1);
         assert_eq!(res.ans, 0x0000);
-        assert_eq!(res.h, true);
-        assert_eq!(res.c, true);
+        assert!(res.h);
+        assert!(res.c);
 
         let res = add_u16_i8(0xFFFF, -1);
         assert_eq!(res.ans, 0xFFFE);
-        assert_eq!(res.h, false);
-        assert_eq!(res.c, false);
+        assert!(!res.h);
+        assert!(!res.c);
 
         let res = add_u16_i8(0, 1);
         assert_eq!(res.ans, 0x0001);
-        assert_eq!(res.h, false);
-        assert_eq!(res.c, false);
+        assert!(!res.h);
+        assert!(!res.c);
 
         let res = add_u16_i8(0, -1);
         assert_eq!(res.ans, 0xFFFF);
-        assert_eq!(res.h, true);
-        assert_eq!(res.c, true);
+        assert!(res.h);
+        assert!(res.c);
 
         let res = add_u16_i8(0x0FFF, 1);
         assert_eq!(res.ans, 0x1000);
-        assert_eq!(res.h, true);
-        assert_eq!(res.c, false);
+        assert!(res.h);
+        assert!(!res.c);
 
         let res = add_u16_i8(0x1000, 1);
         assert_eq!(res.ans, 0x1001);
-        assert_eq!(res.h, false);
-        assert_eq!(res.c, false);
+        assert!(!res.h);
+        assert!(!res.c);
 
         let res = add_u16_i8(0x1000, -1);
         assert_eq!(res.ans, 0x0FFF);
-        assert_eq!(res.h, true);
-        assert_eq!(res.c, false);
+        assert!(res.h);
+        assert!(!res.c);
 
         let res = add_u16_i8(0x0FFF, -1);
         assert_eq!(res.ans, 0x0FFE);
-        assert_eq!(res.h, false);
-        assert_eq!(res.c, false);
+        assert!(!res.h);
+        assert!(!res.c);
     }
 }

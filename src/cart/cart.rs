@@ -34,9 +34,7 @@ impl Cart {
         };
 
         if ext != OsStr::new("gb") && ext != OsStr::new("gbc") {
-            return Err(format!(
-                "Couldnt load gb rom. Expected a \".gb\" or \".gbc\" file."
-            ));
+            return Err("Couldnt load gb rom. Expected a \".gb\" or \".gbc\" file.".to_string());
         }
 
         let Ok(rom) = fs::read(file_path) else {
@@ -62,7 +60,7 @@ impl Cart {
 
         let hw = Self::create_hw(&header, &rom);
 
-        return Ok(Self { header, hw });
+        Ok(Self { header, hw })
     }
 
     /// Creates the specific cartridge hardware implementation for the cartridge type
@@ -84,11 +82,11 @@ impl Cart {
 
         copy_from_safe(cart_hw.rom_mut(), rom);
 
-        return cart_hw;
+        cart_hw
     }
 
     pub fn read(&self, addr: Addr) -> u8 {
-        return self.hw.read(addr);
+        self.hw.read(addr)
     }
 
     pub fn write(&mut self, addr: Addr, data: u8) {

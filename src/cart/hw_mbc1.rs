@@ -55,16 +55,15 @@ impl HwMbc1 {
             0
         };
 
-        let bank = (upper << 5) | lower;
-        return bank;
+        (upper << 5) | lower
     }
 
     pub fn ram_bank_sel(&self) -> u8 {
-        return if self.mode_sel == Mode::RamBanking {
+        if self.mode_sel == Mode::RamBanking {
             bits8(&self.bank_sel_upper_2, 1, 0)
         } else {
             0
-        };
+        }
     }
 }
 
@@ -131,7 +130,7 @@ impl CartHw for HwMbc1 {
             }
             0x6000..=0x7FFF => {
                 self.mode_sel = Mode::from_u8(bit8(&data, 0))
-                    .expect(&format!("Invalid MBC1 banking mode value: {}.", data));
+                    .unwrap_or_else(|| panic!("Invalid MBC1 banking mode value: {}.", data));
             }
             0xA000..=0xBFFF => {
                 if self.ram_enable {

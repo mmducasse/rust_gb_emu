@@ -21,19 +21,19 @@ pub enum InterruptType {
 
 impl InterruptType {
     pub fn jump_addr(self) -> Addr {
-        return match self {
+        match self {
             InterruptType::VBlank => 0x40,
             InterruptType::Stat => 0x48,
             InterruptType::Timer => 0x50,
             InterruptType::Serial => 0x58,
             InterruptType::Joypad => 0x60,
-        };
+        }
     }
 }
 
 impl InterruptType {
     pub fn flag_idx(self) -> u8 {
-        return self as u8;
+        self as u8
     }
 }
 

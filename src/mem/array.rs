@@ -16,7 +16,7 @@ impl Array {
 
     pub fn read(&self, abs_addr: impl Into<Addr>) -> u8 {
         let idx = self.to_idx(abs_addr);
-        return self.memory[idx];
+        self.memory[idx]
     }
 
     pub fn write(&mut self, abs_addr: impl Into<Addr>, data: u8) {
@@ -26,18 +26,18 @@ impl Array {
 
     pub fn mut_(&mut self, abs_addr: impl Into<Addr>) -> &mut u8 {
         let idx = self.to_idx(abs_addr);
-        return &mut self.memory[idx];
+        &mut self.memory[idx]
     }
 
     #[inline]
     fn to_idx(&self, abs_addr: impl Into<Addr>) -> usize {
         let abs_addr: Addr = abs_addr.into();
         let rel_addr = abs_addr - self.start_addr;
-        return rel_addr as usize;
+        rel_addr as usize
     }
 
     pub fn as_slice(&self) -> &[u8] {
-        return self.memory.as_slice();
+        self.memory.as_slice()
     }
 }
 

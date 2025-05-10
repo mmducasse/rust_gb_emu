@@ -69,17 +69,16 @@ impl CartType {
     pub fn is_supported_by_emu(self) -> bool {
         use CartType::*;
 
-        return false
-            == matches!(
-                self,
-                Mmm01
-                    | Mmm01_Ram
-                    | Mmm01_Ram_Battery
-                    | Pocket_Camera
-                    | Bandai_Tama5
-                    | Hu3
-                    | HuC1_Ram_Battery
-            );
+        !matches!(
+            self,
+            Mmm01
+                | Mmm01_Ram
+                | Mmm01_Ram_Battery
+                | Pocket_Camera
+                | Bandai_Tama5
+                | Hu3
+                | HuC1_Ram_Battery
+        )
     }
 
     pub fn mbc_type(self) -> Option<MbcType> {
@@ -105,7 +104,7 @@ impl CartType {
             }
         };
 
-        return Some(type_);
+        Some(type_)
     }
 
     // pub fn max_rom_size(self) -> usize {

@@ -1,9 +1,6 @@
 #![allow(static_mut_refs)]
 
-use std::{
-    collections::HashMap,
-    mem::{self, transmute},
-};
+use std::{collections::HashMap, mem::transmute};
 
 use strum::IntoEnumIterator;
 
@@ -69,7 +66,7 @@ pub fn debug_state() -> &'static mut DebugState {
         let Some(debug) = &mut DEBUG_STATE else {
             unreachable!();
         };
-        return debug;
+        debug
     }
 }
 
@@ -93,7 +90,7 @@ pub fn push_serial_char(c: char) {
 }
 
 pub fn flush_serial_char() {
-    let s = mem::replace(&mut debug_state().serial_out_log, String::new());
+    let s = std::mem::take(&mut debug_state().serial_out_log);
     println!("{}", s);
 }
 
@@ -225,21 +222,19 @@ pub fn record_curr_instr(sys: &Sys) {
 
 /// is_write: false for read, true for write.
 pub fn record_io_reg_usage(reg: IoReg, is_write: bool, data: u8) {
-    if !debug_state().used_io_regs.contains_key(&reg) {
-        debug_state().used_io_regs.insert(
-            reg,
-            IoRegRecord {
-                reads: 0,
-                writes: 0,
-                last_write_data: 0,
-            },
-        );
-    }
+    debug_state()
+        .used_io_regs
+        .entry(reg)
+        .or_insert(IoRegRecord {
+            reads: 0,
+            writes: 0,
+            last_write_data: 0,
+        });
     let record = debug_state().used_io_regs.get_mut(&reg).unwrap();
-    if is_write == false {
+    if !is_write {
         record.reads += 1;
     }
-    if is_write == true {
+    if is_write {
         record.writes += 1;
         record.last_write_data = data;
     }

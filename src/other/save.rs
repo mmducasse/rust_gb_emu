@@ -16,10 +16,10 @@ pub fn save_state(sys: &Sys) {
     let mut file = fs::OpenOptions::new()
         .create(true)
         .write(true)
-        .open(&path)
+        .open(path)
         .unwrap();
 
-    file.write_all(&cart_ram).unwrap();
+    file.write_all(cart_ram).unwrap();
 
     println!("Saved to: {:?}", path);
 }
@@ -38,5 +38,5 @@ pub fn load_state(sys: &mut Sys) -> bool {
 
     println!("Loaded from: {}", path);
 
-    return true;
+    true
 }

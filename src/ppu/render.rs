@@ -55,13 +55,13 @@ pub fn render_scanline(sys: &mut Sys, ly: u8, org: IVec2) {
 fn sample_pixel_from_bg_tilemap(sys: &Sys, x: u8, y: u8) -> u8 {
     let lcdc = LcdcState::from(sys);
 
-    return sample_pixel_from_tilemap(
+    sample_pixel_from_tilemap(
         sys,
         x,
         y,
         lcdc.bg_tile_map_area_is_9c00,
         lcdc.bg_window_tile_data_area_is_8000,
-    );
+    )
 }
 
 #[inline]
@@ -90,7 +90,8 @@ fn sample_pixel_from_window_tilemap(sys: &Sys, x: u8, y: u8) -> Option<u8> {
         lcdc.window_tile_map_area_is_9c00,
         lcdc.bg_window_tile_data_area_is_8000,
     );
-    return Some(pixel);
+
+    Some(pixel)
 }
 
 #[inline]
@@ -119,7 +120,7 @@ fn sample_pixel_from_tilemap(
     let lo = bit8(&sys.mem.read(row_lowers_addr), pixel_x_bit);
     let hi = bit8(&sys.mem.read(row_uppers_addr), pixel_x_bit);
 
-    return (hi << 1) | lo;
+    (hi << 1) | lo
 }
 
 #[inline]
@@ -127,7 +128,7 @@ fn try_draw_obj_row(sys: &Sys, obj_idx: u8, ly: u8, org: IVec2) {
     let lcdc = LcdcState::from(sys);
 
     let obj_addr = OAM_ADDR_FE00 + (OAM_OBJ_SIZE * obj_idx as Addr);
-    let y_pos = sys.mem.read(obj_addr + 0);
+    let y_pos = sys.mem.read(obj_addr);
     let x_pos = sys.mem.read(obj_addr + 1);
     let mut tile_idx = sys.mem.read(obj_addr + 2) as u16;
     let attrs = sys.mem.read(obj_addr + 3);

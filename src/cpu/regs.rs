@@ -89,8 +89,8 @@ impl CpuRegs {
                 let (reg_hi, reg_lo) = reg.get_parts();
                 let hi = self.get_8(reg_hi);
                 let lo = self.get_8(reg_lo);
-                let data = join_16(hi, lo);
-                data
+
+                join_16(hi, lo)
             }
         }
     }
@@ -118,7 +118,7 @@ impl CpuRegs {
 
     pub fn get_flag(&self, flag: CpuFlag) -> bool {
         let idx = flag as u8;
-        return bit8(&self.get_8(CpuReg8::F), idx) == 1;
+        bit8(&self.get_8(CpuReg8::F), idx) == 1
     }
 
     pub fn set_flag(&mut self, flag: CpuFlag, value: bool) {

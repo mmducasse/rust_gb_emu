@@ -29,7 +29,7 @@ impl CartHeader {
             let title = title
                 .iter()
                 .take_while(|c| **c != 0)
-                .map(|c| *c)
+                .copied()
                 .collect::<Vec<_>>();
 
             std::str::from_utf8(&title)
@@ -67,7 +67,7 @@ impl CartHeader {
 
         let (checksum, is_matching) = check_header_checksum(rom);
 
-        return Ok(Self {
+        Ok(Self {
             title,
             cgb_flag,
             cart_type,
@@ -76,7 +76,7 @@ impl CartHeader {
             is_nintendo_logo_matching,
             checksum,
             is_checksum_matching: is_matching,
-        });
+        })
     }
 
     pub fn title(&self) -> &str {
@@ -144,16 +144,16 @@ fn check_header_checksum(rom: &[u8]) -> (u8, bool) {
 
     let is_matching = checksum == rom[0x14D];
 
-    return (checksum, is_matching);
+    (checksum, is_matching)
 }
 
 fn check_nintendo_logo(rom: &[u8]) -> bool {
-    let logo_text = String::from_utf8(NINTENDO_LOGO.to_vec())
-        .expect(&format!("Unable to read nintendo logo file.",));
+    let logo_text =
+        String::from_utf8(NINTENDO_LOGO.to_vec()).expect("Unable to read nintendo logo file.");
 
     let logo_bytes = logo_text
         .split_ascii_whitespace()
-        .map(|s| u8::from_str_radix(&s, 16).unwrap())
+        .map(|s| u8::from_str_radix(s, 16).unwrap())
         .collect::<Vec<_>>();
 
     let cart_rom_span = &rom[0x104..0x134];
@@ -164,7 +164,7 @@ fn check_nintendo_logo(rom: &[u8]) -> bool {
         }
     }
 
-    return true;
+    true
 }
 
 fn get_rom_bank_count(code: u8) -> Option<usize> {
@@ -183,7 +183,7 @@ fn get_rom_bank_count(code: u8) -> Option<usize> {
         }
     };
 
-    return Some(count);
+    Some(count)
 }
 
 fn get_ram_bank_count(code: u8) -> Option<usize> {
@@ -199,5 +199,5 @@ fn get_ram_bank_count(code: u8) -> Option<usize> {
         }
     };
 
-    return Some(count);
+    Some(count)
 }

@@ -55,9 +55,9 @@ impl IoReg {
     }
 }
 
-impl Into<Addr> for IoReg {
-    fn into(self) -> Addr {
-        return self as Addr;
+impl From<IoReg> for Addr {
+    fn from(val: IoReg) -> Self {
+        val as Addr
     }
 }
 
@@ -77,13 +77,13 @@ impl IoRegs {
             reg_datas.insert(reg, reg_data);
         }
 
-        return Self {
+        Self {
             mem: MemSection::into_array(MemSection::IoRegs),
             ie: MemSection::into_array(MemSection::IeReg),
             reg_datas,
 
             dma_requested: false,
-        };
+        }
     }
 
     /// Reads from the readable bits in the IO register.
@@ -103,16 +103,16 @@ impl IoRegs {
             data &= reg_data.read_mask();
         }
 
-        return data;
+        data
     }
 
     /// Reads the entire IO register.
     pub fn get(&self, reg: IoReg) -> u8 {
-        return if reg == IoReg::Ie {
+        if reg == IoReg::Ie {
             self.ie.read(reg)
         } else {
             self.mem.read(reg)
-        };
+        }
     }
 
     /// Writes to the writeable bits in the IO register.
@@ -147,15 +147,15 @@ impl IoRegs {
 
     /// Sets the entire IO register.
     pub fn set(&mut self, reg: IoReg, data: u8) {
-        return if reg == IoReg::Ie {
+        if reg == IoReg::Ie {
             self.ie.write(reg, data)
         } else {
             self.mem.write(reg, data)
-        };
+        }
     }
 
     /// Gets a mutable reference to the IO register.
-    pub fn mut_(&mut self, reg: IoReg, mut f: impl FnMut(&mut u8) -> ()) -> u8 {
+    pub fn mut_(&mut self, reg: IoReg, mut f: impl FnMut(&mut u8)) -> u8 {
         let data = if reg == IoReg::Ie {
             self.ie.mut_(reg)
         } else {
@@ -164,7 +164,7 @@ impl IoRegs {
 
         f(data);
 
-        return *data;
+        *data
     }
 }
 
@@ -199,10 +199,10 @@ mod io_reg_data {
                 _ => 0xFF,
             };
 
-            return Self {
+            Self {
                 read_mask,
                 write_mask,
-            };
+            }
         }
     }
 }

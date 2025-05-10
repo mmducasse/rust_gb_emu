@@ -30,7 +30,7 @@ impl CartHw for HwRomOnly {
 
     fn read(&self, addr: Addr) -> u8 {
         let addr = addr as usize;
-        return *self.rom.get(addr).unwrap_or(&0);
+        *self.rom.get(addr).unwrap_or(&0)
     }
 
     fn write(&mut self, _: Addr, _: u8) {

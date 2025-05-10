@@ -148,7 +148,7 @@ pub fn execute_next_instr(sys: &mut Sys) -> u32 {
         debug::debug_state().request_print_last_instr -= 1;
     }
 
-    return cycles as u32;
+    cycles as u32
 }
 
 // Helper functions.
@@ -187,12 +187,12 @@ fn take_imm_u8(sys: &mut Sys) -> u8 {
         println!("  imm8: {:0>2X} ({})", imm8, imm8);
     }
 
-    return imm8;
+    imm8
 }
 
 fn take_imm_i8(sys: &mut Sys) -> i8 {
     let imm8 = take_imm_u8(sys);
-    return unsafe { transmute(imm8) };
+    unsafe { transmute(imm8) }
 }
 
 fn take_imm_u16(sys: &mut Sys) -> u16 {
@@ -207,7 +207,7 @@ fn take_imm_u16(sys: &mut Sys) -> u16 {
         println!("  imm16: {:0>4X} ({})", imm16, imm16);
     }
 
-    return imm16;
+    imm16
 }
 
 fn is_condition_met(sys: &mut Sys, cond: Cond) -> bool {
@@ -224,10 +224,10 @@ fn is_condition_met(sys: &mut Sys, cond: Cond) -> bool {
 
 fn get_r8_data(sys: &mut Sys, operand: R8) -> u8 {
     if let Some(reg) = operand.get_reg() {
-        return sys.regs.get_8(reg);
+        sys.regs.get_8(reg)
     } else {
         let addr = sys.regs.get_16(CpuReg16::HL);
-        return sys.mem.read(addr);
+        sys.mem.read(addr)
     }
 }
 
@@ -257,7 +257,7 @@ fn pop_16(sys: &mut Sys) -> u16 {
     let hi = sys.mem.read(sys.regs.sp());
     inc_sp(sys);
 
-    return join_16(hi, lo);
+    join_16(hi, lo)
 }
 
 pub fn call(sys: &mut Sys, prev_pc: u16, next_pc: u16) {
@@ -267,7 +267,7 @@ pub fn call(sys: &mut Sys, prev_pc: u16, next_pc: u16) {
 
 // Block 0 functions.
 fn nop(_: &mut Sys) -> u8 {
-    return 1;
+    1
 }
 
 fn ld_r16_imm16(sys: &mut Sys, dst: R16) -> u8 {
@@ -275,7 +275,7 @@ fn ld_r16_imm16(sys: &mut Sys, dst: R16) -> u8 {
     let reg = dst.get_reg();
     sys.regs.set_16(reg, imm16);
 
-    return 3;
+    3
 }
 
 fn ld_r16memp_a(sys: &mut Sys, dst: R16Mem) -> u8 {
@@ -286,7 +286,7 @@ fn ld_r16memp_a(sys: &mut Sys, dst: R16Mem) -> u8 {
     sys.mem.write(addr, data);
     sys.regs.set_16(dstp, add16_ui(addr, inc));
 
-    return 2;
+    2
 }
 
 fn ld_a_r16memp(sys: &mut Sys, src: R16Mem) -> u8 {
@@ -298,7 +298,7 @@ fn ld_a_r16memp(sys: &mut Sys, src: R16Mem) -> u8 {
 
     sys.regs.set_8(CpuReg8::A, data);
 
-    return 2;
+    2
 }
 
 fn ld_imm16_sp(sys: &mut Sys) -> u8 {
@@ -308,7 +308,7 @@ fn ld_imm16_sp(sys: &mut Sys) -> u8 {
     sys.mem.write(addr, lo);
     sys.mem.write(addr + 1, hi);
 
-    return 5;
+    5
 }
 
 fn inc_dec_r16(sys: &mut Sys, operand: R16, inc: i16) -> u8 {
@@ -316,7 +316,7 @@ fn inc_dec_r16(sys: &mut Sys, operand: R16, inc: i16) -> u8 {
     data = add16_ui(data, inc);
     sys.regs.set_16(operand.get_reg(), data);
 
-    return 2;
+    2
 }
 
 fn add_hl_r16(sys: &mut Sys, operand: R16) -> u8 {
@@ -331,7 +331,7 @@ fn add_hl_r16(sys: &mut Sys, operand: R16) -> u8 {
     sys.regs.set_flag(CpuFlag::H, h);
     sys.regs.set_flag(CpuFlag::C, c);
 
-    return 2;
+    2
 }
 
 fn inc_r8(sys: &mut Sys, operand: R8) -> u8 {
@@ -346,7 +346,11 @@ fn inc_r8(sys: &mut Sys, operand: R8) -> u8 {
     sys.regs.set_flag(CpuFlag::N, false);
     sys.regs.set_flag(CpuFlag::H, h);
 
-    return if operand == R8::HlMem { 3 } else { 1 };
+    if operand == R8::HlMem {
+        3
+    } else {
+        1
+    }
 }
 
 fn dec_r8(sys: &mut Sys, operand: R8) -> u8 {
@@ -359,21 +363,29 @@ fn dec_r8(sys: &mut Sys, operand: R8) -> u8 {
     sys.regs.set_flag(CpuFlag::N, true);
     sys.regs.set_flag(CpuFlag::H, res.h);
 
-    return if operand == R8::HlMem { 3 } else { 1 };
+    if operand == R8::HlMem {
+        3
+    } else {
+        1
+    }
 }
 
 fn ld_r8_imm8(sys: &mut Sys, dst: R8) -> u8 {
     let imm8 = take_imm_u8(sys);
     set_r8_data(sys, dst, imm8);
 
-    return if dst == R8::HlMem { 3 } else { 2 };
+    if dst == R8::HlMem {
+        3
+    } else {
+        2
+    }
 }
 
 fn rlca(sys: &mut Sys) -> u8 {
     rlc_r8(sys, R8::A);
     sys.regs.set_flag(CpuFlag::Z, false);
 
-    return 1;
+    1
 }
 
 fn rrca(sys: &mut Sys) -> u8 {
@@ -387,7 +399,7 @@ fn rrca(sys: &mut Sys) -> u8 {
     sys.regs.set_flag(CpuFlag::H, false);
     sys.regs.set_flag(CpuFlag::C, c);
 
-    return 1;
+    1
 }
 
 fn rla(sys: &mut Sys) -> u8 {
@@ -407,7 +419,7 @@ fn rla(sys: &mut Sys) -> u8 {
     sys.regs.set_flag(CpuFlag::H, false);
     sys.regs.set_flag(CpuFlag::C, c_);
 
-    return 1;
+    1
 }
 
 fn rra(sys: &mut Sys) -> u8 {
@@ -415,7 +427,7 @@ fn rra(sys: &mut Sys) -> u8 {
 
     sys.regs.set_flag(CpuFlag::Z, false);
 
-    return 1;
+    1
 }
 
 fn daa(sys: &mut Sys) -> u8 {
@@ -448,7 +460,8 @@ fn daa(sys: &mut Sys) -> u8 {
     sys.regs.set_flag(CpuFlag::Z, ans == 0);
     sys.regs.set_flag(CpuFlag::H, false);
     sys.regs.set_flag(CpuFlag::C, should_carry);
-    return 1;
+
+    1
 }
 
 fn cpl(sys: &mut Sys) -> u8 {
@@ -459,7 +472,7 @@ fn cpl(sys: &mut Sys) -> u8 {
     sys.regs.set_flag(CpuFlag::N, true);
     sys.regs.set_flag(CpuFlag::H, true);
 
-    return 1;
+    1
 }
 
 fn scf(sys: &mut Sys) -> u8 {
@@ -467,7 +480,7 @@ fn scf(sys: &mut Sys) -> u8 {
     sys.regs.set_flag(CpuFlag::H, false);
     sys.regs.set_flag(CpuFlag::C, true);
 
-    return 1;
+    1
 }
 
 fn ccf(sys: &mut Sys) -> u8 {
@@ -477,7 +490,7 @@ fn ccf(sys: &mut Sys) -> u8 {
     sys.regs.set_flag(CpuFlag::H, false);
     sys.regs.set_flag(CpuFlag::C, !c);
 
-    return 1;
+    1
 }
 
 fn jr_imm8(sys: &mut Sys) -> u8 {
@@ -492,7 +505,7 @@ fn jr_imm8(sys: &mut Sys) -> u8 {
 
     set_pc(sys, pc);
 
-    return 3;
+    3
 }
 
 fn jr_cond_imm8(sys: &mut Sys, cond: Cond) -> u8 {
@@ -504,9 +517,9 @@ fn jr_cond_imm8(sys: &mut Sys, cond: Cond) -> u8 {
 
         set_pc(sys, pc);
 
-        return 3;
+        3
     } else {
-        return 2;
+        2
     }
 
     // todo jumping from correct starting addr??
@@ -515,7 +528,7 @@ fn jr_cond_imm8(sys: &mut Sys, cond: Cond) -> u8 {
 fn stop(_: &mut Sys) -> u8 {
     //sys.cpu_enable = false;
 
-    return 1;
+    1
 }
 
 // Block 1 functions.
@@ -527,17 +540,17 @@ fn ld_r8_r8(sys: &mut Sys, dst: R8, src: R8) -> u8 {
         debug::request_breakpoint();
     }
 
-    return if dst == R8::HlMem || src == R8::HlMem {
+    if dst == R8::HlMem || src == R8::HlMem {
         2
     } else {
         1
-    };
+    }
 }
 
 fn halt(sys: &mut Sys) -> u8 {
     sys.cpu_enable = false;
 
-    return 1;
+    1
 }
 
 // Block 2 functions.
@@ -553,7 +566,11 @@ fn add_a_r8(sys: &mut Sys, operand: R8) -> u8 {
     sys.regs.set_flag(CpuFlag::H, res.h);
     sys.regs.set_flag(CpuFlag::C, res.c);
 
-    return if operand == R8::HlMem { 2 } else { 1 };
+    if operand == R8::HlMem {
+        2
+    } else {
+        1
+    }
 }
 
 fn adc_a_r8(sys: &mut Sys, operand: R8) -> u8 {
@@ -569,7 +586,11 @@ fn adc_a_r8(sys: &mut Sys, operand: R8) -> u8 {
     sys.regs.set_flag(CpuFlag::H, res.h);
     sys.regs.set_flag(CpuFlag::C, res.c);
 
-    return if operand == R8::HlMem { 2 } else { 1 };
+    if operand == R8::HlMem {
+        2
+    } else {
+        1
+    }
 }
 
 fn sub_a_r8(sys: &mut Sys, operand: R8) -> u8 {
@@ -584,7 +605,11 @@ fn sub_a_r8(sys: &mut Sys, operand: R8) -> u8 {
     sys.regs.set_flag(CpuFlag::H, res.h);
     sys.regs.set_flag(CpuFlag::C, res.c);
 
-    return if operand == R8::HlMem { 2 } else { 1 };
+    if operand == R8::HlMem {
+        2
+    } else {
+        1
+    }
 }
 
 fn sbc_a_r8(sys: &mut Sys, operand: R8) -> u8 {
@@ -600,7 +625,11 @@ fn sbc_a_r8(sys: &mut Sys, operand: R8) -> u8 {
     sys.regs.set_flag(CpuFlag::H, res.h);
     sys.regs.set_flag(CpuFlag::C, res.c);
 
-    return if operand == R8::HlMem { 2 } else { 1 };
+    if operand == R8::HlMem {
+        2
+    } else {
+        1
+    }
 }
 
 fn and_a_r8(sys: &mut Sys, operand: R8) -> u8 {
@@ -615,7 +644,11 @@ fn and_a_r8(sys: &mut Sys, operand: R8) -> u8 {
     sys.regs.set_flag(CpuFlag::H, true);
     sys.regs.set_flag(CpuFlag::C, false);
 
-    return if operand == R8::HlMem { 2 } else { 1 };
+    if operand == R8::HlMem {
+        2
+    } else {
+        1
+    }
 }
 
 fn xor_a_r8(sys: &mut Sys, operand: R8) -> u8 {
@@ -630,7 +663,11 @@ fn xor_a_r8(sys: &mut Sys, operand: R8) -> u8 {
     sys.regs.set_flag(CpuFlag::H, false);
     sys.regs.set_flag(CpuFlag::C, false);
 
-    return if operand == R8::HlMem { 2 } else { 1 };
+    if operand == R8::HlMem {
+        2
+    } else {
+        1
+    }
 }
 
 fn or_a_r8(sys: &mut Sys, operand: R8) -> u8 {
@@ -645,7 +682,11 @@ fn or_a_r8(sys: &mut Sys, operand: R8) -> u8 {
     sys.regs.set_flag(CpuFlag::H, false);
     sys.regs.set_flag(CpuFlag::C, false);
 
-    return if operand == R8::HlMem { 2 } else { 1 };
+    if operand == R8::HlMem {
+        2
+    } else {
+        1
+    }
 }
 
 fn cp_a_r8(sys: &mut Sys, operand: R8) -> u8 {
@@ -659,7 +700,11 @@ fn cp_a_r8(sys: &mut Sys, operand: R8) -> u8 {
     sys.regs.set_flag(CpuFlag::H, res.h);
     sys.regs.set_flag(CpuFlag::C, res.c);
 
-    return if operand == R8::HlMem { 2 } else { 1 };
+    if operand == R8::HlMem {
+        2
+    } else {
+        1
+    }
 }
 
 // Block 3 functions.
@@ -675,7 +720,7 @@ fn add_a_imm8(sys: &mut Sys) -> u8 {
     sys.regs.set_flag(CpuFlag::H, res.h);
     sys.regs.set_flag(CpuFlag::C, res.c);
 
-    return 2;
+    2
 }
 
 fn adc_a_imm8(sys: &mut Sys) -> u8 {
@@ -691,7 +736,7 @@ fn adc_a_imm8(sys: &mut Sys) -> u8 {
     sys.regs.set_flag(CpuFlag::H, res.h);
     sys.regs.set_flag(CpuFlag::C, res.c);
 
-    return 2;
+    2
 }
 
 fn sub_a_imm8(sys: &mut Sys) -> u8 {
@@ -706,7 +751,7 @@ fn sub_a_imm8(sys: &mut Sys) -> u8 {
     sys.regs.set_flag(CpuFlag::H, res.h);
     sys.regs.set_flag(CpuFlag::C, res.c);
 
-    return 2;
+    2
 }
 
 fn sbc_a_imm8(sys: &mut Sys) -> u8 {
@@ -722,7 +767,7 @@ fn sbc_a_imm8(sys: &mut Sys) -> u8 {
     sys.regs.set_flag(CpuFlag::H, res.h);
     sys.regs.set_flag(CpuFlag::C, res.c);
 
-    return 2;
+    2
 }
 
 fn and_a_imm8(sys: &mut Sys) -> u8 {
@@ -737,7 +782,7 @@ fn and_a_imm8(sys: &mut Sys) -> u8 {
     sys.regs.set_flag(CpuFlag::H, true);
     sys.regs.set_flag(CpuFlag::C, false);
 
-    return 2;
+    2
 }
 
 fn xor_a_imm8(sys: &mut Sys) -> u8 {
@@ -752,7 +797,7 @@ fn xor_a_imm8(sys: &mut Sys) -> u8 {
     sys.regs.set_flag(CpuFlag::H, false);
     sys.regs.set_flag(CpuFlag::C, false);
 
-    return 2;
+    2
 }
 
 fn or_a_imm8(sys: &mut Sys) -> u8 {
@@ -767,7 +812,7 @@ fn or_a_imm8(sys: &mut Sys) -> u8 {
     sys.regs.set_flag(CpuFlag::H, false);
     sys.regs.set_flag(CpuFlag::C, false);
 
-    return 2;
+    2
 }
 
 fn cp_a_imm8(sys: &mut Sys) -> u8 {
@@ -781,7 +826,7 @@ fn cp_a_imm8(sys: &mut Sys) -> u8 {
     sys.regs.set_flag(CpuFlag::H, res.h);
     sys.regs.set_flag(CpuFlag::C, res.c);
 
-    return 2;
+    2
 }
 
 fn ret_cond(sys: &mut Sys, cond: Cond) -> u8 {
@@ -791,14 +836,14 @@ fn ret_cond(sys: &mut Sys, cond: Cond) -> u8 {
         return 5;
     }
 
-    return 2;
+    2
 }
 
 fn ret(sys: &mut Sys) -> u8 {
     let addr = pop_16(sys);
     set_pc(sys, addr);
 
-    return 4;
+    4
 }
 
 fn reti(sys: &mut Sys) -> u8 {
@@ -807,7 +852,7 @@ fn reti(sys: &mut Sys) -> u8 {
 
     sys.interrupt_master_enable = true;
 
-    return 4;
+    4
 }
 
 fn jp_cond_imm16(sys: &mut Sys, cond: Cond) -> u8 {
@@ -818,21 +863,21 @@ fn jp_cond_imm16(sys: &mut Sys, cond: Cond) -> u8 {
         return 4;
     }
 
-    return 3;
+    3
 }
 
 fn jp_imm16(sys: &mut Sys) -> u8 {
     let imm16 = take_imm_u16(sys);
     set_pc(sys, imm16);
 
-    return 4;
+    4
 }
 
 fn jp_hl(sys: &mut Sys) -> u8 {
     let hl = sys.regs.get_16(CpuReg16::HL);
     set_pc(sys, hl);
 
-    return 1;
+    1
 }
 
 fn call_cond_imm16(sys: &mut Sys, cond: Cond) -> u8 {
@@ -844,7 +889,7 @@ fn call_cond_imm16(sys: &mut Sys, cond: Cond) -> u8 {
         return 6;
     }
 
-    return 3;
+    3
 }
 
 fn call_imm16(sys: &mut Sys) -> u8 {
@@ -852,7 +897,7 @@ fn call_imm16(sys: &mut Sys) -> u8 {
     let pc = sys.regs.pc();
     call(sys, pc, imm16);
 
-    return 6;
+    6
 }
 
 fn rst_tgt3(sys: &mut Sys, tgt3: u8) -> u8 {
@@ -862,21 +907,21 @@ fn rst_tgt3(sys: &mut Sys, tgt3: u8) -> u8 {
     let tgt = (tgt3 as u16) << 3;
     set_pc(sys, tgt);
 
-    return 4;
+    4
 }
 
 fn pop_r16stk(sys: &mut Sys, reg: R16Stk) -> u8 {
     let data = pop_16(sys);
     sys.regs.set_16(reg.get_reg(), data);
 
-    return 3;
+    3
 }
 
 fn push_r16stk(sys: &mut Sys, reg: R16Stk) -> u8 {
     let data = sys.regs.get_16(reg.get_reg());
     push_16(sys, data);
 
-    return 4;
+    4
 }
 
 fn ldh_cp_a(sys: &mut Sys) -> u8 {
@@ -886,7 +931,7 @@ fn ldh_cp_a(sys: &mut Sys) -> u8 {
 
     sys.mem.write(addr, a_data);
 
-    return 2;
+    2
 }
 
 fn ldh_imm8p_a(sys: &mut Sys) -> u8 {
@@ -896,7 +941,7 @@ fn ldh_imm8p_a(sys: &mut Sys) -> u8 {
 
     sys.mem.write(addr, a_data);
 
-    return 3;
+    3
 }
 
 fn ld_imm16p_a(sys: &mut Sys) -> u8 {
@@ -906,7 +951,7 @@ fn ld_imm16p_a(sys: &mut Sys) -> u8 {
 
     sys.mem.write(addr, data);
 
-    return 4;
+    4
 }
 
 fn ldh_a_cp(sys: &mut Sys) -> u8 {
@@ -916,7 +961,7 @@ fn ldh_a_cp(sys: &mut Sys) -> u8 {
 
     sys.regs.set_8(CpuReg8::A, data);
 
-    return 2;
+    2
 }
 
 fn ldh_a_imm8p(sys: &mut Sys) -> u8 {
@@ -926,7 +971,7 @@ fn ldh_a_imm8p(sys: &mut Sys) -> u8 {
 
     sys.regs.set_8(CpuReg8::A, data);
 
-    return 4;
+    4
 }
 
 fn ld_a_imm16p(sys: &mut Sys) -> u8 {
@@ -935,7 +980,7 @@ fn ld_a_imm16p(sys: &mut Sys) -> u8 {
 
     sys.regs.set_8(CpuReg8::A, data);
 
-    return 3;
+    3
 }
 
 fn add_sp_imm8(sys: &mut Sys) -> u8 {
@@ -950,7 +995,7 @@ fn add_sp_imm8(sys: &mut Sys) -> u8 {
     sys.regs.set_flag(CpuFlag::H, res.h);
     sys.regs.set_flag(CpuFlag::C, res.c);
 
-    return 4;
+    4
 }
 
 fn ld_hl_spimm8(sys: &mut Sys) -> u8 {
@@ -965,26 +1010,26 @@ fn ld_hl_spimm8(sys: &mut Sys) -> u8 {
     sys.regs.set_flag(CpuFlag::H, res.h);
     sys.regs.set_flag(CpuFlag::C, res.c);
 
-    return 3;
+    3
 }
 
 fn ld_sp_hl(sys: &mut Sys) -> u8 {
     let data = sys.regs.get_16(CpuReg16::HL);
     set_sp(sys, data);
 
-    return 2;
+    2
 }
 
 fn di(sys: &mut Sys) -> u8 {
     sys.interrupt_master_enable = false;
 
-    return 1;
+    1
 }
 
 fn ei(sys: &mut Sys) -> u8 {
     sys.interrupt_master_enable = true;
 
-    return 1;
+    1
 }
 
 // 0xCB prefix functions.
@@ -1000,7 +1045,7 @@ fn rlc_r8(sys: &mut Sys, operand: R8) -> u8 {
     sys.regs.set_flag(CpuFlag::H, false);
     sys.regs.set_flag(CpuFlag::C, c_ == 1);
 
-    return 2;
+    2
 }
 
 fn rrc_r8(sys: &mut Sys, operand: R8) -> u8 {
@@ -1015,7 +1060,7 @@ fn rrc_r8(sys: &mut Sys, operand: R8) -> u8 {
     sys.regs.set_flag(CpuFlag::H, false);
     sys.regs.set_flag(CpuFlag::C, c_ == 1);
 
-    return 2;
+    2
 }
 
 fn rl_r8(sys: &mut Sys, operand: R8) -> u8 {
@@ -1032,7 +1077,7 @@ fn rl_r8(sys: &mut Sys, operand: R8) -> u8 {
     sys.regs.set_flag(CpuFlag::H, false);
     sys.regs.set_flag(CpuFlag::C, c_ == 1);
 
-    return 2;
+    2
 }
 
 fn rr_r8(sys: &mut Sys, operand: R8) -> u8 {
@@ -1049,7 +1094,7 @@ fn rr_r8(sys: &mut Sys, operand: R8) -> u8 {
     sys.regs.set_flag(CpuFlag::H, false);
     sys.regs.set_flag(CpuFlag::C, c_ == 1);
 
-    return 2;
+    2
 }
 
 fn sla_r8(sys: &mut Sys, operand: R8) -> u8 {
@@ -1064,7 +1109,7 @@ fn sla_r8(sys: &mut Sys, operand: R8) -> u8 {
     sys.regs.set_flag(CpuFlag::H, false);
     sys.regs.set_flag(CpuFlag::C, c_ == 1);
 
-    return 2;
+    2
 }
 
 fn sra_r8(sys: &mut Sys, operand: R8) -> u8 {
@@ -1081,7 +1126,7 @@ fn sra_r8(sys: &mut Sys, operand: R8) -> u8 {
     sys.regs.set_flag(CpuFlag::H, false);
     sys.regs.set_flag(CpuFlag::C, c_ == 1);
 
-    return 2;
+    2
 }
 
 fn swap_r8(sys: &mut Sys, operand: R8) -> u8 {
@@ -1096,7 +1141,7 @@ fn swap_r8(sys: &mut Sys, operand: R8) -> u8 {
     sys.regs.set_flag(CpuFlag::H, false);
     sys.regs.set_flag(CpuFlag::C, false);
 
-    return 2;
+    2
 }
 
 fn srl_r8(sys: &mut Sys, operand: R8) -> u8 {
@@ -1111,7 +1156,7 @@ fn srl_r8(sys: &mut Sys, operand: R8) -> u8 {
     sys.regs.set_flag(CpuFlag::H, false);
     sys.regs.set_flag(CpuFlag::C, c_ == 1);
 
-    return 2;
+    2
 }
 
 fn bit_b3_r8(sys: &mut Sys, b3: u8, operand: R8) -> u8 {
@@ -1122,7 +1167,11 @@ fn bit_b3_r8(sys: &mut Sys, b3: u8, operand: R8) -> u8 {
     sys.regs.set_flag(CpuFlag::N, false);
     sys.regs.set_flag(CpuFlag::H, true);
 
-    return if operand == R8::HlMem { 3 } else { 2 };
+    if operand == R8::HlMem {
+        3
+    } else {
+        2
+    }
 }
 
 fn res_b3_r8(sys: &mut Sys, b3: u8, operand: R8) -> u8 {
@@ -1130,7 +1179,11 @@ fn res_b3_r8(sys: &mut Sys, b3: u8, operand: R8) -> u8 {
     set_bit8(&mut data, b3, 0);
     set_r8_data(sys, operand, data);
 
-    return if operand == R8::HlMem { 4 } else { 2 };
+    if operand == R8::HlMem {
+        4
+    } else {
+        2
+    }
 }
 
 fn set_b3_r8(sys: &mut Sys, b3: u8, operand: R8) -> u8 {
@@ -1138,12 +1191,16 @@ fn set_b3_r8(sys: &mut Sys, b3: u8, operand: R8) -> u8 {
     set_bit8(&mut data, b3, 1);
     set_r8_data(sys, operand, data);
 
-    return if operand == R8::HlMem { 4 } else { 2 };
+    if operand == R8::HlMem {
+        4
+    } else {
+        2
+    }
 }
 
 // Misc functions.
 fn hard_lock(sys: &mut Sys, opcode: u8) -> u8 {
     sys.hard_lock = true;
     debug::fail(format!("Invalid instr occurred ({:0>2X}).", opcode));
-    return 1;
+    1
 }

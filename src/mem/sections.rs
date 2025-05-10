@@ -36,7 +36,7 @@ impl MemSection {
 
     /// Creates an array that represents this section of memory.
     pub fn into_array(section: Self) -> Array {
-        return Array::new(section.start_addr(), section.size());
+        Array::new(section.start_addr(), section.size())
     }
 
     /// The number of bytes in this section of memory.
@@ -48,8 +48,7 @@ impl MemSection {
         let next = (self as usize) + 1;
         let next: Self = num::FromPrimitive::from_usize(next).unwrap();
 
-        let section_size = next.start_addr() - self.start_addr();
-        return section_size;
+        next.start_addr() - self.start_addr()
     }
 
     /// Returns the memory section that the address belongs to, as

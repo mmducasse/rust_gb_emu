@@ -158,7 +158,7 @@ pub enum R8 {
 
 impl R8 {
     pub fn from_u8(x: u8) -> Self {
-        return num::FromPrimitive::from_u8(x).unwrap();
+        num::FromPrimitive::from_u8(x).unwrap()
     }
 
     pub fn get_reg(self) -> Option<CpuReg8> {
@@ -175,7 +175,7 @@ impl R8 {
             Self::A => CpuReg8::A,
         };
 
-        return Some(reg);
+        Some(reg)
     }
 }
 
@@ -189,7 +189,7 @@ pub enum R16 {
 
 impl R16 {
     pub fn from_u8(x: u8) -> Self {
-        return num::FromPrimitive::from_u8(x).unwrap();
+        num::FromPrimitive::from_u8(x).unwrap()
     }
 
     pub fn get_reg(self) -> CpuReg16 {
@@ -212,7 +212,7 @@ pub enum R16Stk {
 
 impl R16Stk {
     pub fn from_u8(x: u8) -> Self {
-        return num::FromPrimitive::from_u8(x).unwrap();
+        num::FromPrimitive::from_u8(x).unwrap()
     }
 
     pub fn get_reg(self) -> CpuReg16 {
@@ -235,7 +235,7 @@ pub enum R16Mem {
 
 impl R16Mem {
     pub fn from_u8(x: u8) -> Self {
-        return num::FromPrimitive::from_u8(x).unwrap();
+        num::FromPrimitive::from_u8(x).unwrap()
     }
 
     /// Returns the corresponding CPU Reg16 and increment behavior.
@@ -252,7 +252,7 @@ impl R16Mem {
             _ => 0,
         };
 
-        return (reg, inc);
+        (reg, inc)
     }
 }
 
@@ -266,7 +266,7 @@ pub enum Cond {
 
 impl Cond {
     pub fn from_u8(x: u8) -> Cond {
-        return num::FromPrimitive::from_u8(x).unwrap();
+        num::FromPrimitive::from_u8(x).unwrap()
     }
 }
 
@@ -285,13 +285,13 @@ pub fn decode(op: u8, has_cb_prefix: bool) -> DecodeResult {
     }
 
     let block = bits8(&op, 7, 6);
-    return match block {
+    match block {
         0b00 => decode_block_0_opcode(op),
         0b01 => Ok(decode_block_1_opcode(op)),
         0b10 => Ok(decode_block_2_opcode(op)),
         0b11 => decode_block_3_opcode(op),
         _ => unreachable!(),
-    };
+    }
 }
 
 fn decode_block_0_opcode(op: u8) -> DecodeResult {
@@ -370,20 +370,20 @@ fn decode_block_0_opcode(op: u8) -> DecodeResult {
         return Ok(Instr::Stop);
     }
 
-    return Err(format!(
+    Err(format!(
         "Unexpected block 0 opcode: {:#02x} ({:#02b})",
         op, op
-    ));
+    ))
 }
 
 fn decode_block_1_opcode(op: u8) -> Instr {
     if op == 0b0111_0110 {
-        return Instr::Halt;
+        Instr::Halt
     } else {
         let dst = R8::from_u8(bits8(&op, 5, 3));
         let src = R8::from_u8(bits8(&op, 2, 0));
 
-        return Instr::Ld_R8_R8 { dst, src };
+        Instr::Ld_R8_R8 { dst, src }
     }
 }
 
@@ -519,10 +519,10 @@ fn decode_block_3_opcode(op: u8) -> DecodeResult {
         _ => {}
     };
 
-    return Err(format!(
+    Err(format!(
         "Unexpected block 3 opcode: {:#02x} ({:#02b})",
         op, op
-    ));
+    ))
 }
 
 fn decode_cp_prefix_opcode(op: u8) -> Instr {
@@ -545,11 +545,11 @@ fn decode_cp_prefix_opcode(op: u8) -> Instr {
     }
 
     let b3 = bits8(&op, 5, 3);
-    return match bits8(&op, 7, 6) {
+    match bits8(&op, 7, 6) {
         0b01 => Instr::Bit_B3_R8 { b3, operand },
         0b10 => Instr::Res_B3_R8 { b3, operand },
         0b11 => Instr::Set_B3_R8 { b3, operand },
 
         _ => unreachable!(),
-    };
+    }
 }

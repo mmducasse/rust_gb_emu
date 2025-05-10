@@ -12,12 +12,12 @@ impl Palette {
     /// Loads a `Palette` from an IO register.
     pub fn from_reg(sys: &Sys, reg: IoReg) -> Self {
         let data = sys.mem.io_regs.get(reg);
-        return Self::new(data);
+        Self::new(data)
     }
 
     pub const fn new(data: u8) -> Self {
         Self {
-            val0: (data >> 0) & 0b11,
+            val0: data & 0b11,
             val1: (data >> 2) & 0b11,
             val2: (data >> 4) & 0b11,
             val3: (data >> 6) & 0b11,

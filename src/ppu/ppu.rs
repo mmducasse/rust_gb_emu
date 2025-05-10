@@ -65,7 +65,7 @@ fn update(sys: &mut Sys) {
     if sys.ppu.curr_scanline_dot >= DOTS_PER_SCANLINE {
         sys.ppu.curr_scanline_dot = 0;
         ly += 1;
-        if ly >= SCANLINES_PER_FRAME as u8 {
+        if ly >= SCANLINES_PER_FRAME {
             ly = 0;
             sys.ppu.total_frames_drawn += 1;
         }
@@ -82,7 +82,7 @@ fn update(sys: &mut Sys) {
 
 fn get_mode(dot: u32, scanline: u8) -> PpuMode {
     if scanline >= 144 {
-        return PpuMode::VBlank;
+        PpuMode::VBlank
     } else if dot < 80 {
         return PpuMode::OamScan;
     } else if dot - 80 < 172 {
