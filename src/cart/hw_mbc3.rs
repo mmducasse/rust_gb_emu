@@ -38,7 +38,7 @@ impl HwMbc3 {
     }
 
     pub fn ram_bank_sel(&self) -> u8 {
-        self.ram_rtc_register // todo
+        self.ram_rtc_register
     }
 }
 

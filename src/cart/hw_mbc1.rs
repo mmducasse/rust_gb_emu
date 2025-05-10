@@ -80,7 +80,6 @@ impl CartHw for HwMbc1 {
         &mut self.ram
     }
 
-    // todo cleanup
     fn read(&self, addr: Addr) -> u8 {
         match addr {
             0x0000..=0x3FFF => {
@@ -116,7 +115,6 @@ impl CartHw for HwMbc1 {
         }
     }
 
-    // todo cleanup
     fn write(&mut self, addr: Addr, data: u8) {
         match addr {
             0x0000..=0x1FFF => {

@@ -32,7 +32,7 @@ pub fn update_timer_regs(sys: &mut Sys) {
 
     // Update TIMA
     let tac = sys.mem.io_regs.get(IoReg::Tac);
-    let enable = bit8(&tac, 2) == 1; // todo unused
+    let enable = bit8(&tac, 2) == 1; // unused
     let clock_sel = bits8(&tac, 1, 0);
     let tima_clk_period = match clock_sel {
         0 => TAC_CLK_0_PERIOD_MCYCLES,

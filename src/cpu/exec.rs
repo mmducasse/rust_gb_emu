@@ -157,7 +157,6 @@ fn set_pc(sys: &mut Sys, addr: Addr) {
 }
 
 fn inc_pc(sys: &mut Sys) {
-    //
     let mut pc = sys.regs.pc();
     pc = u16::wrapping_add(pc, 1);
     sys.regs.set_16(CpuReg16::PC, pc);
@@ -521,8 +520,6 @@ fn jr_cond_imm8(sys: &mut Sys, cond: Cond) -> u8 {
     } else {
         2
     }
-
-    // todo jumping from correct starting addr??
 }
 
 fn stop(_: &mut Sys) -> u8 {

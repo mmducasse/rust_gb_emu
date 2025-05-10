@@ -8,30 +8,6 @@ pub enum MbcType {
     Mbc7,
 }
 
-// impl MbcType {
-//     pub fn max_rom_size(self) -> usize {
-//         match self {
-//             MbcType::Mbc1 => MB_2,
-//             MbcType::Mbc2 => KB_256,
-//             MbcType::Mbc3 => MB_2,
-//             MbcType::Mbc5 => MB_8,
-//             MbcType::Mbc6 => todo!(),
-//             MbcType::Mbc7 => todo!(),
-//         }
-//     }
-
-//     pub fn max_ram_size(self) -> usize {
-//         match self {
-//             MbcType::Mbc1 => KB_32,
-//             MbcType::Mbc2 => B_512,
-//             MbcType::Mbc3 => KB_64,
-//             MbcType::Mbc5 => KB_128,
-//             MbcType::Mbc6 => todo!(),
-//             MbcType::Mbc7 => todo!(),
-//         }
-//     }
-// }
-
 #[derive(Clone, Copy, PartialEq, Eq, Debug, FromPrimitive)]
 #[allow(non_camel_case_types)]
 pub enum CartType {
@@ -106,26 +82,4 @@ impl CartType {
 
         Some(type_)
     }
-
-    // pub fn max_rom_size(self) -> usize {
-    //     if self.is_rom_only() {
-    //         return KB_32;
-    //     }
-    //     if let Some(mbc_type) = self.mbc_type() {
-    //         return mbc_type.max_rom_size();
-    //     }
-
-    //     todo!()
-    // }
-
-    // pub fn max_ram_size(self) -> usize {
-    //     if self.is_rom_only() {
-    //         return 0;
-    //     }
-    //     if let Some(mbc_type) = self.mbc_type() {
-    //         return mbc_type.max_ram_size();
-    //     }
-
-    //     todo!()
-    // }
 }
