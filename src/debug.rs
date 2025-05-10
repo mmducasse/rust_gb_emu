@@ -39,8 +39,6 @@ pub struct DebugState {
     used_instr_variants: HashMap<String, u64>,
     used_io_regs: HashMap<IoReg, IoRegRecord>,
     pub request_print_last_instr: u64,
-    pub print_count: u64,
-    pub max_print_count: u64,
     serial_out_log: String,
     interrupt_counts: HashMap<InterruptType, u64>,
 }
@@ -60,8 +58,6 @@ pub fn initialize_debug(config: DebugConfig) {
             used_instr_variants: HashMap::new(),
             used_io_regs: HashMap::new(),
             request_print_last_instr: 0,
-            print_count: 0,
-            max_print_count: 5,
             serial_out_log: String::new(),
             interrupt_counts: HashMap::new(),
         });

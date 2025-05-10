@@ -8,6 +8,8 @@
 //                                                             //
 // /////////////////////////////////////////////////////////// //
 
+use std::{env, fs};
+
 use cart::cart::Cart;
 use consts::PIXEL_SCALE;
 use debug::{initialize_debug, DebugConfig};
@@ -44,10 +46,35 @@ mod util;
 async fn main() {
     println!("*** RUST GAMEBOY EMU (Matthew Ducasse 2025) ***");
 
-    run_emu().await;
+    if let Some(rom_path) = validate_args(env::args().collect()) {
+        run_emu(&rom_path).await;
+    }
 }
 
-async fn run_emu() {
+fn validate_args(mut args: Vec<String>) -> Option<String> {
+    const USAGE_STR: &str = "usage: rust_gb_2.exe <gb-rom-file-path>";
+
+    if args.len() != 2 {
+        println!("Expected a file path to a .gb rom file.");
+        println!("{}", USAGE_STR);
+        return None;
+    }
+
+    let rom_path = args.remove(1);
+    return match fs::exists(&rom_path) {
+        Ok(true) => Some(rom_path),
+        Ok(false) => {
+            println!("File does not exist: {}", rom_path);
+            None
+        }
+        Err(msg) => {
+            println!("{}", msg);
+            None
+        }
+    };
+}
+
+async fn run_emu(rom_path: &str) {
     initialize_debug(DebugConfig {
         enable_debug_print: false,
         kill_after_cpu_ticks: None,
@@ -55,45 +82,34 @@ async fn run_emu() {
         last_instr_count: 15,
     });
 
-    //let path = ".\\assets\\real_gb_roms\\tetris.gb";
-    //let path = ".\\assets\\real_gb_roms\\Dr_Mario.gb";
-    //let path = ".\\assets\\real_gb_roms\\Pokemon.gb";
-    let path = ".\\assets\\real_gb_roms\\Zelda.gb";
-    //let path = ".\\assets\\real_gb_roms\\Kirby.gb";
-    //let path = ".\\assets\\real_gb_roms\\Tennis.gb";
-    //let path = ".\\assets\\real_gb_roms\\Super Mario Land 2.gb";
-    //let path = ".\\assets\\real_gb_roms\\Wario Land.gb";
-    //let path = ".\\assets\\real_gb_roms\\DuckTales.gb";
-
-    //let path = ".\\assets\\homebrew_roms\\porklike.gb";
-    //let path = ".\\assets\\homebrew_roms\\20y.gb";
-    //let path = ".\\assets\\homebrew_roms\\64boy-opcode-scroll.gb";
-    //let path = ".\\assets\\homebrew_roms\\life.gb";
-
-    //let path = ".\\assets\\other\\hello_world\\rom.gb";
-
-    let cart = match Cart::load_from(path, true) {
+    // Instantiate the game cartridge.
+    let cart = match Cart::load_from(rom_path, true) {
         Ok(cart) => cart,
         Err(msg) => {
             panic!("{}", msg);
         }
     };
 
+    // Set emulator options.
     let show_vram_views = true;
     let options = Options {
         kill_on_infinite_loop: true,
         show_vram_views,
     };
 
+    // Instantiate the emulator state.
     let mut sys = Sys::new(options, cart);
 
+    // Instantiate the UI window.
     let window = Window::new(WindowParams {
         resolution: window_size(show_vram_views),
         scale: PIXEL_SCALE,
     });
 
+    // Load the saved game state.
     load_state(&mut sys);
 
+    // Main loop.
     while !sys.hard_lock {
         check_misc_inputs(&mut sys);
 
