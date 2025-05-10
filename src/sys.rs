@@ -38,7 +38,7 @@ pub struct Sys {
     pub cpu_delay_ticks: u32,
 
     pub cpu_enable: bool,
-    pub lcd_enable: bool,
+    //pub lcd_enable: bool,
     pub interrupt_master_enable: bool,
 
     pub hard_lock: bool,
@@ -62,7 +62,7 @@ impl Sys {
             cpu_delay_ticks: 0,
 
             cpu_enable: true,
-            lcd_enable: true,
+            //lcd_enable: true,
             interrupt_master_enable: false,
 
             hard_lock: false,

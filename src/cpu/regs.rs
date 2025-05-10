@@ -61,11 +61,11 @@ pub struct CpuRegs {
 
 impl CpuRegs {
     pub fn new() -> Self {
-        let mut regs = Self::default();
-        regs.pc = 0x0100;
-        regs.sp = 0xFFFE;
-
-        regs
+        Self {
+            pc: 0x100,
+            sp: 0xFFFE,
+            ..Default::default()
+        }
     }
 
     pub fn get_8(&self, reg: CpuReg8) -> u8 {

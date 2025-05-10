@@ -198,18 +198,13 @@ pub fn record_curr_instr(sys: &Sys) {
 
     debug_state().instr_ring_buffer.add(record);
 
-    if debug_state().used_instrs.get(&instr).is_none() {
-        debug_state().used_instrs.insert(instr, 0);
-    }
+    debug_state().used_instrs.entry(instr).or_insert(0);
+
     let count = debug_state().used_instrs.get(&instr).unwrap();
     debug_state().used_instrs.insert(instr, count + 1);
 
     let variant_str = format!("{:?}", instr).split("{").collect::<Vec<_>>()[0].to_owned();
-    if debug_state()
-        .used_instr_variants
-        .get(&variant_str)
-        .is_none()
-    {
+    if !debug_state().used_instr_variants.contains_key(&variant_str) {
         debug_state()
             .used_instr_variants
             .insert(variant_str.clone(), 0);

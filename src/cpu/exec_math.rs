@@ -1,4 +1,4 @@
-use std::mem::transmute;
+use std::{cmp::Ordering, mem::transmute};
 
 pub struct Result<T> {
     pub ans: T,
@@ -44,14 +44,22 @@ pub fn add_u16_i8(a: u16, b: i8) -> Result<u16> {
     let a = a as i32;
     let b = b as i32;
     let y = a + b;
-    let mut h = false;
-    let mut c = false;
-    if b > 0 {
-        h = (a & 0xFFF) + b > 0xFFF;
-        c = y > 0xFFFF;
-    } else if b < 0 {
-        h = (a & 0xFFF) + b < 0;
-        c = y < 0;
+
+    let h;
+    let c;
+    match b.cmp(&0) {
+        Ordering::Less => {
+            h = (a & 0xFFF) + b < 0;
+            c = y < 0;
+        }
+        Ordering::Equal => {
+            h = false;
+            c = false;
+        }
+        Ordering::Greater => {
+            h = (a & 0xFFF) + b > 0xFFF;
+            c = y > 0xFFFF;
+        }
     }
 
     Result {
@@ -65,7 +73,7 @@ pub fn add_sp_i8(sp: u16, b: i8) -> Result<u16> {
     let ans = add_u16_i8(sp, b).ans;
 
     let lo = (sp & 0xFF) as u8;
-    let b = unsafe { transmute(b) };
+    let b = unsafe { transmute::<i8, u8>(b) };
     let Result { ans: _, h, c } = add_2_u8(lo, b);
 
     Result { ans, h, c }

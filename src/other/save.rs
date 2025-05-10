@@ -14,7 +14,7 @@ pub fn save_state(sys: &Sys) {
     let path = Path::new(&path);
 
     let mut file = fs::OpenOptions::new()
-        .create(true)
+        .truncate(true)
         .write(true)
         .open(path)
         .unwrap();

@@ -20,17 +20,15 @@ use super::{
 /// Renders one of the tile data blocks to the screen.
 #[inline]
 pub fn render_tile_data_block(sys: &Sys, block_addr: Addr, org: IVec2) {
-    let mut i = 0;
     let range = block_addr..(block_addr + TILE_DATA_BLOCK_SIZE);
-    for addr in range.clone().step_by(16) {
+    for (i, addr) in range.clone().step_by(16).enumerate() {
+        let i = i as i32;
         let x = i % TILE_DATA_P8_SIZE.x;
         let y = i / TILE_DATA_P8_SIZE.x;
 
         let rel_addr = (addr - TILE_DATA_ADDR_8000) as usize;
         let tile_size = TILE_DATA_TILE_SIZE as usize;
         let bytes = &sys.mem.vram.as_slice()[rel_addr..(rel_addr + tile_size)];
-
-        i += 1;
 
         draw_tile(bytes, org + i2(x * 8, y * 8));
     }
